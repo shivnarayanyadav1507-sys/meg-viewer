@@ -625,8 +625,8 @@ async function loadRasters(files){
 }
 
 async function loadFromUrl(entry){
-  const url = entry.url;
-  const name = (url.split('/').pop() || url).split('?')[0];
+  const url = new URL(entry.url, document.baseURI).href;   // absolute: geotiff.js streams in a Worker, which can't resolve relative URLs
+  const name = (entry.url.split('/').pop() || entry.url).split('?')[0];
   try {
     status(`Streaming ${name} …`, { busy:true });
     let georaster;
