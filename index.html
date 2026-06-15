@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Bagel+Fat+One&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 
 <style>
   :root{
@@ -27,10 +27,10 @@
   }
   *{box-sizing:border-box}
   html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
-    font-family:'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
+    font-family:'Space Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
   #map{position:absolute;inset:0;background:var(--bg)}
   .leaflet-container{background:var(--bg)}
-  .leaflet-control-attribution{font-family:'IBM Plex Mono',monospace;font-size:9px;background:rgba(0,0,0,.45)!important;color:var(--muted-dim)!important}
+  .leaflet-control-attribution{font-family:'JetBrains Mono',monospace;font-size:9px;background:rgba(0,0,0,.45)!important;color:var(--muted-dim)!important}
   .leaflet-control-attribution a{color:var(--muted)!important}
   .leaflet-control-zoom a{background:var(--panel-solid)!important;color:var(--text)!important;border-color:var(--border-strong)!important}
   .leaflet-control-zoom a:hover{background:var(--accent-dim)!important;color:#fff!important}
@@ -41,7 +41,7 @@
   .map-tools svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
   .measure-readout{display:flex;align-items:center;gap:10px;background:var(--panel);
     border:1px solid var(--border);border-radius:10px;padding:7px 9px 7px 12px;box-shadow:var(--shadow)}
-  .measure-readout #measure-text{display:flex;flex-direction:column;line-height:1.25;font-family:'IBM Plex Mono',monospace}
+  .measure-readout #measure-text{display:flex;flex-direction:column;line-height:1.25;font-family:'JetBrains Mono',monospace}
   .measure-readout b{color:var(--accent);font-size:14px;font-weight:600}
   .measure-readout .sub{color:var(--muted);font-size:10px}
   .measure-readout a{display:flex;color:var(--muted-dim)}
@@ -63,16 +63,23 @@
   .logo{width:11px;height:11px;border-radius:3px;background:var(--accent);box-shadow:0 0 14px var(--accent-dim);flex:none}
   .logo.vec{background:var(--warn);box-shadow:0 0 14px rgba(255,138,76,.25)}
   .panel-head h1{font-size:12.5px;letter-spacing:.13em;text-transform:uppercase;
-    margin:0;font-weight:600;font-family:'IBM Plex Mono',monospace}
+    margin:0;font-weight:600;font-family:'JetBrains Mono',monospace}
+  .app-title{display:flex;align-items:flex-start;gap:10px;background:var(--panel);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--border);
+    border-radius:14px;box-shadow:var(--shadow);padding:13px 15px}
+  .app-title .logo{margin-top:3px}
+  .app-title-main{font-family:'Syne',ui-sans-serif,sans-serif;font-size:13.5px;font-weight:800;line-height:1.2;color:var(--text)}
+  .app-title-sub{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.2em;
+    color:var(--accent);margin-top:4px}
   .panel-body{padding:14px 15px;display:flex;flex-direction:column;gap:12px}
 
   .group-label{font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;
-    color:var(--muted-dim);font-family:'IBM Plex Mono',monospace;margin-bottom:-4px}
+    color:var(--muted-dim);font-family:'JetBrains Mono',monospace;margin-bottom:-4px}
 
   .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
     padding:10px 12px;border:1px solid var(--border-strong);border-radius:9px;
     background:rgba(255,255,255,.03);color:var(--text);font-size:12.5px;font-weight:500;
-    cursor:pointer;transition:all .15s ease;font-family:'IBM Plex Sans',sans-serif}
+    cursor:pointer;transition:all .15s ease;font-family:'Space Grotesk',sans-serif}
   .btn:hover{background:var(--accent-dim);border-color:var(--accent);color:#fff}
   .btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.7}
   .btn.ghost{border-style:dashed;color:var(--muted)}
@@ -86,13 +93,13 @@
 
   select{width:100%;padding:9px 11px;border:1px solid var(--border-strong);border-radius:9px;
     background:var(--panel-solid);color:var(--text);font-size:12px;cursor:pointer;
-    font-family:'IBM Plex Sans',sans-serif;appearance:none;
+    font-family:'Space Grotesk',sans-serif;appearance:none;
     background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%238a97a2' stroke-width='2'><path d='M2 4l4 4 4-4'/></svg>");
     background-repeat:no-repeat;background-position:right 11px center}
 
   input[type=number]{width:100%;padding:7px 8px;border:1px solid var(--border-strong);border-radius:8px;
-    background:var(--panel-solid);color:var(--text);font-size:12px;font-family:'IBM Plex Mono',monospace}
-  .maxin{display:flex;align-items:center;gap:5px;flex:1;font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace}
+    background:var(--panel-solid);color:var(--text);font-size:12px;font-family:'JetBrains Mono',monospace}
+  .maxin{display:flex;align-items:center;gap:5px;flex:1;font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace}
   .maxin input{flex:1;min-width:0;text-align:center;padding:6px 4px}
 
   .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -114,7 +121,7 @@
   .lyr{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:8px;
     background:rgba(255,255,255,.03);border:1px solid var(--border);font-size:11.5px}
   .lyr.off{opacity:.5}
-  .lyr .yr{font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--accent);font-size:12px;min-width:34px}
+  .lyr .yr{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--accent);font-size:12px;min-width:34px}
   .lyr .nm{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
   .lyr .dot{width:10px;height:10px;border-radius:50%;flex:none}
   .eye,.x{background:none;border:none;cursor:pointer;padding:2px;display:flex;align-items:center;color:var(--muted-dim);flex:none}
@@ -128,11 +135,11 @@
   .lyr .label:hover{color:var(--text)}
   .lyr .label:disabled{opacity:.3;cursor:default}
   .leaflet-tooltip.vec-label{background:transparent;border:none;box-shadow:none;padding:0;margin:0;color:#fff;
-    font:600 11px 'IBM Plex Sans',sans-serif;white-space:nowrap;pointer-events:none;
+    font:600 11px 'Space Grotesk',sans-serif;white-space:nowrap;pointer-events:none;
     text-shadow:0 0 3px #000,0 0 3px #000,0 1px 2px #000}
   .leaflet-tooltip.vec-label::before{display:none}
   .leaflet-popup-content-wrapper{background:var(--panel-solid);color:var(--text);border:1px solid var(--border-strong);border-radius:10px;box-shadow:var(--shadow)}
-  .leaflet-popup-content{margin:9px 12px;font-family:'IBM Plex Sans',sans-serif}
+  .leaflet-popup-content{margin:9px 12px;font-family:'Space Grotesk',sans-serif}
   .leaflet-popup-tip{background:var(--panel-solid);box-shadow:none}
   .leaflet-popup-close-button{color:var(--muted)!important;padding:6px 7px 0 0!important}
   .leaflet-popup-close-button:hover{color:var(--text)!important}
@@ -143,8 +150,8 @@
   .stab.on{background:var(--accent);color:#0a0c0e}
   .ndvi-legend{display:flex;flex-direction:column;gap:4px}
   .ndvi-legend .ramp{height:10px;border-radius:5px;border:1px solid var(--border)}
-  .ndvi-legend .ramp-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--muted-dim);font-family:'IBM Plex Mono',monospace}
-  .stack-badge{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;color:#0a0c0e;background:var(--accent);padding:2px 7px;border-radius:6px;align-self:center}
+  .ndvi-legend .ramp-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--muted-dim);font-family:'JetBrains Mono',monospace}
+  .stack-badge{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;color:#0a0c0e;background:var(--accent);padding:2px 7px;border-radius:6px;align-self:center}
 
   /* ---------- Timeline ---------- */
   .timeline{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);z-index:1000;
@@ -155,9 +162,9 @@
   .timeline.show{display:block}
   .tl-top{display:flex;align-items:center;gap:16px;margin-bottom:14px}
   .readout{display:flex;align-items:baseline;gap:9px}
-  .readout .year{font-family:'IBM Plex Mono',monospace;font-size:30px;font-weight:600;
+  .readout .year{font-family:'JetBrains Mono',monospace;font-size:30px;font-weight:600;
     color:var(--accent);letter-spacing:.02em;line-height:1;text-shadow:0 0 24px var(--accent-dim)}
-  .readout .blend{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--muted-dim);letter-spacing:.08em}
+  .readout .blend{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--muted-dim);letter-spacing:.08em}
   .tl-controls{margin-left:auto;display:flex;align-items:center;gap:7px}
   .ctrl{width:36px;height:36px;display:flex;align-items:center;justify-content:center;
     border:1px solid var(--border-strong);border-radius:9px;background:rgba(255,255,255,.03);
@@ -175,7 +182,7 @@
   .tick{position:absolute;top:50%;width:9px;height:9px;border-radius:50%;background:var(--panel-solid);
     border:2px solid var(--muted-dim);transform:translate(-50%,-50%);pointer-events:none;transition:border-color .15s}
   .tick.active{border-color:var(--accent)}
-  .tick-label{position:absolute;top:18px;transform:translateX(-50%);font-family:'IBM Plex Mono',monospace;
+  .tick-label{position:absolute;top:18px;transform:translateX(-50%);font-family:'JetBrains Mono',monospace;
     font-size:10px;color:var(--muted-dim);white-space:nowrap;pointer-events:none;transition:color .15s}
   .tick-label.active{color:var(--accent)}
   .handle{position:absolute;top:50%;width:20px;height:20px;border-radius:50%;background:#fff;
@@ -183,11 +190,11 @@
     box-shadow:0 2px 10px rgba(0,0,0,.5),0 0 0 6px var(--accent-dim);transition:box-shadow .15s;z-index:3}
   .handle:active{cursor:grabbing}
   .tl-foot{display:flex;align-items:center;justify-content:space-between;margin-top:22px}
-  .tl-foot .hint{font-size:10px;color:var(--muted-dim);font-family:'IBM Plex Mono',monospace;letter-spacing:.05em}
+  .tl-foot .hint{font-size:10px;color:var(--muted-dim);font-family:'JetBrains Mono',monospace;letter-spacing:.05em}
 
   .toast{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:1100;
     background:var(--panel-solid);border:1px solid var(--border-strong);border-radius:10px;
-    padding:10px 16px;font-size:12px;font-family:'IBM Plex Mono',monospace;letter-spacing:.03em;
+    padding:10px 16px;font-size:12px;font-family:'JetBrains Mono',monospace;letter-spacing:.03em;
     box-shadow:var(--shadow);display:none;align-items:center;gap:10px;color:var(--text);max-width:60vw}
   .toast.show{display:flex}
   .toast.warn{border-color:var(--warn);color:var(--warn)}
@@ -200,7 +207,7 @@
     border:2px dashed var(--accent);border-radius:0;background:rgba(182,244,65,.06);
     align-items:center;justify-content:center}
   .drop-veil.show{display:flex}
-  .drop-veil span{font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--accent);
+  .drop-veil span{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--accent);
     background:var(--panel-solid);padding:12px 20px;border-radius:12px;border:1px solid var(--accent)}
 
   input[type=file]{display:none}
@@ -209,15 +216,172 @@
     .left-stack{width:calc(100vw - 28px)}
     .timeline{width:calc(100vw - 28px);min-width:0}
   }
+
+  /* ---- Intro experience (optional, skippable) ---- */
+  #intro{position:fixed;inset:0;z-index:6000;background:#0a0c0e;color:var(--text);
+    --accent:#a0c258;--accent-dim:rgba(160,194,88,.12);
+    display:flex;align-items:center;justify-content:center;padding:24px;
+    font-family:'Space Grotesk',system-ui,sans-serif;transition:opacity .55s ease}
+  #intro.done{opacity:0;pointer-events:none}
+  #intro::after{content:'';position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(120% 90% at 50% 16%, rgba(160,194,88,.05), transparent 60%)}
+  .intro-skip{position:absolute;top:18px;right:20px;z-index:2;background:none;border:none;cursor:pointer;
+    color:var(--muted-dim);font:600 11px 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase}
+  .intro-skip:hover{color:var(--text)}
+  .intro-step{display:none;position:relative;z-index:1;width:min(540px,92vw);text-align:center;
+    flex-direction:column;align-items:center;gap:18px;animation:introIn .5s ease}
+  .intro-step.on{display:flex}
+  @keyframes introIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .intro-kicker{font:600 10.5px 'JetBrains Mono',monospace;letter-spacing:.28em;text-transform:uppercase;color:var(--accent)}
+  .intro-h{font-size:26px;font-weight:700;letter-spacing:-.01em;line-height:1.2;margin:0}
+  .intro-step[data-step="forest"] .intro-h{font-family:'Bagel Fat One',ui-sans-serif,sans-serif;font-weight:400;font-size:25px;letter-spacing:0;line-height:1.18}
+  .intro-p{font-size:14px;color:var(--muted);line-height:1.6;margin:0;max-width:440px}
+  .intro-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:4px}
+  .intro-btn{border:1px solid var(--accent);background:var(--accent);color:#0a0c0e;border-radius:10px;
+    padding:11px 20px;font:600 13px 'Space Grotesk',sans-serif;cursor:pointer;transition:.15s}
+  .intro-btn:hover{filter:brightness(1.08)}
+  .intro-btn.ghost{background:none;color:var(--muted)}
+  .intro-btn.ghost:hover{border-color:var(--border-strong);color:var(--text)}
+  .q-opts{display:flex;flex-direction:column;gap:9px;width:100%;max-width:380px}
+  .q-opt{text-align:left;border:1px solid var(--border-strong);background:rgba(255,255,255,.03);color:var(--text);
+    border-radius:11px;padding:13px 15px;font-size:13.5px;cursor:pointer;transition:.15s;font-family:inherit}
+  .q-opt:hover:not(:disabled){border-color:var(--accent);background:var(--accent-dim)}
+  .q-opt:disabled{cursor:default}
+  .q-opt.right{border-color:var(--accent);background:var(--accent-dim);color:#fff}
+  .q-opt.wrong{border-color:var(--warn);opacity:.8}
+  .q-reveal{display:none;flex-direction:column;gap:14px;align-items:center;animation:introIn .4s ease}
+  .q-reveal.on{display:flex}
+  .q-fact{font-size:13px;color:var(--muted);line-height:1.6;max-width:430px;
+    border-left:2px solid var(--accent);padding:2px 0 2px 14px;text-align:left}
+  .forest{position:relative;width:min(540px,90vw);height:232px;overflow:hidden;border-radius:14px;
+    background:linear-gradient(180deg,rgba(18,28,24,0) 42%,rgba(18,28,24,.4))}
+  .forest .hills{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0}
+  .forest .dawn{position:absolute;inset:0;z-index:0;pointer-events:none;
+    background:radial-gradient(110% 78% at 50% 72%, rgba(255,142,76,.30), rgba(255,142,76,.07) 40%, transparent 66%)}
+  .cloud{position:absolute;z-index:1;display:flex;align-items:flex-end;filter:blur(3px)}
+  .cloud i{display:block;background:rgba(255,255,255,.9);border-radius:50%}
+  .cloud i:nth-child(1){width:24px;height:24px}
+  .cloud i:nth-child(2){width:40px;height:40px;margin:0 -10px}
+  .cloud i:nth-child(3){width:22px;height:22px}
+  .cloud.c1{top:24px;left:10%;animation:drift1 26s ease-in-out infinite}
+  .cloud.c2{top:52px;left:48%;animation:drift2 34s ease-in-out infinite}
+  .cloud.c3{top:14px;left:70%;animation:drift3 30s ease-in-out infinite}
+  @keyframes drift1{0%,100%{transform:translateX(-22px)}50%{transform:translateX(30px)}}
+  @keyframes drift2{0%,100%{transform:translateX(24px) scale(.82)}50%{transform:translateX(-24px) scale(.82)}}
+  @keyframes drift3{0%,100%{transform:translateX(-18px) scale(1.16)}50%{transform:translateX(26px) scale(1.16)}}
+  .forest .ground{position:absolute;z-index:2;left:6%;right:6%;bottom:24px;height:2px;
+    background:linear-gradient(90deg,transparent,rgba(182,244,65,.4),transparent)}
+  .tree{position:absolute;z-index:2;bottom:24px;transform:scale(0);transform-origin:bottom center;opacity:0}
+  .forest.grow .tree{animation:treeGrow .85s cubic-bezier(.2,.85,.25,1) forwards;animation-delay:var(--d,0s)}
+  @keyframes treeGrow{0%{transform:scale(0);opacity:0}55%{opacity:1}100%{transform:scale(1);opacity:1}}
+  .tree i{display:block;width:var(--w,46px);height:var(--w,46px);background:var(--c,#2e7d32);
+    border-radius:46% 46% 44% 44% / 62% 62% 40% 40%}
+  .tree b{display:block;width:6px;height:15px;margin:-5px auto 0;background:#5a3d2b;border-radius:0 0 2px 2px}
+  .forest-next{display:none}
+  .forest-next.on{display:inline-block;animation:introIn .4s ease}
+  .code-card{display:flex;flex-direction:column;gap:13px;align-items:center;width:100%;max-width:400px}
+  .code-card.shake{animation:shake .4s}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+  .code-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+  .code-chip{border:1px dashed var(--border-strong);background:none;color:var(--accent);border-radius:20px;
+    padding:6px 13px;font:600 11.5px 'JetBrains Mono',monospace;cursor:pointer;transition:.15s}
+  .code-chip:hover{border-color:var(--accent);background:var(--accent-dim);color:#fff}
+  #intro-code{width:100%;text-align:center;background:var(--panel-solid);color:var(--text);box-sizing:border-box;
+    border:1px solid var(--border-strong);border-radius:11px;padding:12px;font:600 14px 'JetBrains Mono',monospace;
+    letter-spacing:.14em;text-transform:uppercase}
+  #intro-code:focus{outline:none;border-color:var(--accent)}
+  .code-hint{font-size:11.5px;color:var(--muted-dim);min-height:14px}
 </style>
 </head>
 <body>
+
+<div id="intro" aria-label="Intro tour">
+  <button class="intro-skip" data-skip>Skip intro ✕</button>
+
+  <div class="intro-step on" data-step="welcome">
+    <div class="intro-kicker">Meghalaya · Abode of the Clouds</div>
+    <h2 class="intro-h">Before you explore the forests…</h2>
+    <p class="intro-p">A 30-second detour through clouds, root bridges and conservation — or jump straight to the map.</p>
+    <div class="intro-actions">
+      <button class="intro-btn" data-begin>Begin the tour</button>
+      <button class="intro-btn ghost" data-skip>Skip to the map →</button>
+    </div>
+  </div>
+
+  <div class="intro-step" data-step="quiz">
+    <div class="intro-kicker">First, a quick check-in</div>
+    <h2 class="intro-h">How is your mood today?</h2>
+    <div class="q-opts">
+      <button class="q-opt" data-msg="Love that — let's grow something good today.">Great</button>
+      <button class="q-opt" data-msg="Glad to hear it. A calm mind pairs well with a growing forest.">Pretty good</button>
+      <button class="q-opt" data-msg="That's alright. Even a slow-growing forest still reaches the sky.">So-so</button>
+      <button class="q-opt" data-msg="Take a breath — the trees have waited years, the map can wait a moment.">A bit tired</button>
+    </div>
+    <div class="q-reveal">
+      <p class="q-fact" id="mood-msg"></p>
+      <button class="intro-btn" data-quiz-next>Continue</button>
+    </div>
+  </div>
+
+  <div class="intro-step" data-step="forest">
+    <div class="intro-kicker">Reforesting…</div>
+    <h2 class="intro-h">A future worth protecting</h2>
+    <div class="forest">
+      <span class="dawn"></span>
+      <svg class="hills" viewBox="0 0 540 232" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0,126 C70,94 140,150 210,122 C280,96 350,150 420,118 C470,98 510,128 540,114 L540,232 L0,232 Z" fill="#33513f"/>
+        <path d="M0,162 C80,132 150,178 240,150 C320,126 400,172 480,150 C505,144 525,150 540,148 L540,232 L0,232 Z" fill="#26402f"/>
+        <path d="M0,196 C90,176 180,202 280,186 C370,172 450,198 520,188 C530,187 536,188 540,188 L540,232 L0,232 Z" fill="#1b2e22"/>
+      </svg>
+      <span class="cloud c1"><i></i><i></i><i></i></span>
+      <span class="cloud c2"><i></i><i></i><i></i></span>
+      <span class="cloud c3"><i></i><i></i><i></i></span>
+      <span class="tree" style="left:8%;--w:42px;--c:#1b5e20;--d:.05s"><i></i><b></b></span>
+      <span class="tree" style="left:18%;--w:58px;--c:#2e7d32;--d:.18s"><i></i><b></b></span>
+      <span class="tree" style="left:30%;--w:38px;--c:#43a047;--d:.30s"><i></i><b></b></span>
+      <span class="tree" style="left:40%;--w:64px;--c:#388e3c;--d:.10s"><i></i><b></b></span>
+      <span class="tree" style="left:52%;--w:46px;--c:#66bb6a;--d:.40s"><i></i><b></b></span>
+      <span class="tree" style="left:62%;--w:56px;--c:#2e7d32;--d:.22s"><i></i><b></b></span>
+      <span class="tree" style="left:73%;--w:40px;--c:#9ccc65;--d:.50s"><i></i><b></b></span>
+      <span class="tree" style="left:82%;--w:60px;--c:#388e3c;--d:.14s"><i></i><b></b></span>
+      <span class="tree" style="left:90%;--w:44px;--c:#b6f441;--d:.34s"><i></i><b></b></span>
+      <span class="ground"></span>
+    </div>
+    <button class="intro-btn forest-next" data-forest-next>Continue</button>
+  </div>
+
+  <div class="intro-step" data-step="code">
+    <div class="intro-kicker">Almost there</div>
+    <h2 class="intro-h">Enter an access code</h2>
+    <p class="intro-p">Tap one (it's just for fun):</p>
+    <div class="code-card">
+      <div class="code-chips">
+        <button class="code-chip">ABODE-OF-CLOUDS</button>
+        <button class="code-chip">ROOT-BRIDGE</button>
+        <button class="code-chip">TREE-MENDOUS</button>
+        <button class="code-chip">CLOUD-9</button>
+        <button class="code-chip">LEAF-IT-TO-ME</button>
+      </div>
+      <input id="intro-code" placeholder="type a code" autocomplete="off" spellcheck="false">
+      <button class="intro-btn" data-unlock>Unlock the map</button>
+      <div class="code-hint"></div>
+    </div>
+  </div>
+</div>
 
 <div id="map"></div>
 <div class="drop-veil" id="drop-veil"><span>Drop vector files to add</span></div>
 
 <!-- ============ Left panel stack ============ -->
 <div class="left-stack">
+
+  <div class="app-title">
+    <span class="logo"></span>
+    <div>
+      <div class="app-title-main">Meghalaya Historical Imagery Visualizer</div>
+      <div class="app-title-sub">2015 – 2020</div>
+    </div>
+  </div>
 
   <!-- Imagery (COG) panel -->
   <div class="panel">
@@ -255,7 +419,7 @@
         <select id="basemap">
           <option value="esri">Satellite (Esri)</option>
           <option value="osm">Streets (OSM)</option>
-          <option value="dark">Dark canvas</option>
+          <option value="dark" selected>Dark canvas</option>
           <option value="none">None</option>
         </select>
 
@@ -287,7 +451,7 @@
         </div>
         <div class="empty-hint" style="margin-top:-3px">Mirrors QGIS "Stretch to MinMax" — copy its R/G/B Max here. Lower = brighter.</div>
 
-        <div class="empty-hint" style="text-align:center;opacity:.55;letter-spacing:.08em">build · rgb + ndvi · measure · kml · labels</div>
+        <div class="empty-hint" style="text-align:center;opacity:.55;letter-spacing:.08em">build · rgb + ndvi · measure · kml · labels · intro</div>
       </div>
     </div>
   </div>
@@ -427,7 +591,7 @@ const basemaps = {
         { maxZoom:19, attribution:'© CARTO © OSM' }),
   none: null
 };
-let currentBase = basemaps.esri.addTo(map);
+let currentBase = basemaps.dark.addTo(map);
 
 /* ---- State ---- */
 const rasters = [];        // { year, name, georaster, layer, visible }
@@ -577,7 +741,8 @@ function addRaster(georaster, name, year, opts = {}){
   const stack = isNdvi ? 'ndvi' : 'rgb';
   const layer = makeLayer(georaster, { ...opts, ndvi: isNdvi });
   layer.addTo(map);
-  rasters.push({ year, name, georaster, layer, visible:true, stack });
+  try { layer.setOpacity(0); } catch(_){}                 // start hidden — every image toggle off by default
+  rasters.push({ year, name, georaster, layer, visible:false, stack });
 }
 
 /* Detect YCbCr JPEG/WebP 3-band COGs (geotiff.js returns raw Y/Cb/Cr -> teal). */
@@ -748,6 +913,9 @@ function finalizeRasters(){
     try { map.fitBounds(vis[vis.length-1].layer.getBounds(), { padding:[20,20] }); } catch(e){}
     setPos(stackPos[activeStack]);
     status(`${rasters.length} layer${rasters.length>1?'s':''} loaded`);
+  } else if (rasters.length){
+    try { map.fitBounds(rasters[rasters.length-1].layer.getBounds(), { padding:[20,20] }); } catch(e){}
+    status(`${rasters.length} layer${rasters.length>1?'s':''} loaded — toggle one on to view`);
   }
 }
 
@@ -961,23 +1129,29 @@ async function loadGpkg(file){
 /* ---- Add a parsed vector layer ---- */
 function addVector(gj, name){
   if (!gj){ status(`Nothing to add from ${name}`, { warn:true, sticky:true }); return; }
-  const color = VEC_COLORS[vecColorIdx++ % VEC_COLORS.length];
+  const lname = (name || '').toLowerCase();
+  const isDistrict = /district/.test(lname) && !/sub/.test(lname);    // District = dark, hollow boundary
+  const color = isDistrict ? '#46566a' : VEC_COLORS[vecColorIdx++ % VEC_COLORS.length];
+  const polyStyle = isDistrict
+    ? { color, weight:2.6, opacity:1, fill:false }
+    : { color, weight:2, opacity:.95, fillColor:color, fillOpacity:.08 };
   const layer = L.geoJSON(gj, {
-    style: { color, weight:2, opacity:.95, fillColor:color, fillOpacity:.08 },
+    style: polyStyle,
     pointToLayer: (f, latlng) => L.circleMarker(latlng, { radius:5, color, fillColor:color, fillOpacity:.5, weight:2 }),
     onEachFeature: (f, l) => {
       const p = f.properties || {};
       const nm = p.name || p.Name || p.NAME || p.id || '';
       const rows = Object.entries(p).slice(0, 12)
-        .map(([k,v]) => `<div style="font:11px IBM Plex Mono,monospace;color:#8a97a2">${escapeHtml(k)}: <span style="color:#e9eef2">${escapeHtml(String(v))}</span></div>`).join('');
-      l.bindPopup(`<div style="font:600 12px IBM Plex Sans;color:${color};margin-bottom:4px">${escapeHtml(nm || 'Feature')}</div>${rows}`);
+        .map(([k,v]) => `<div style="font:11px JetBrains Mono,monospace;color:#8a97a2">${escapeHtml(k)}: <span style="color:#e9eef2">${escapeHtml(String(v))}</span></div>`).join('');
+      l.bindPopup(`<div style="font:600 12px Space Grotesk;color:${color};margin-bottom:4px">${escapeHtml(nm || 'Feature')}</div>${rows}`);
     }
   });
-  layer.addTo(map);
   const _lf = pickLabelField(layer);
   let _fc = 0; try { _fc = layer.getLayers().length; } catch(_){}
   const _big = _fc > LABEL_AUTO_MAX;                       // many features (e.g. villages) -> labels off + zoom-gated
-  vectors.push({ name, layer, color, visible:true, labelField:_lf, labelsOn: !!_lf && !_big, labelMinZoom: _big ? LABEL_FAR_MINZOOM : 0 });
+  const startOn = isDistrict;                              // default ON for District only; Villages (and others) start OFF
+  if (startOn) layer.addTo(map);
+  vectors.push({ name, layer, color, visible:startOn, labelField:_lf, labelsOn: startOn && !!_lf && !_big, labelMinZoom: _big ? LABEL_FAR_MINZOOM : 0 });
   rebuildVecList();
   scheduleLabels();
   let cnt = 0; try { cnt = layer.getLayers().length; } catch(_){}
@@ -1385,6 +1559,66 @@ window.addEventListener('load', () => {
     bootstrapData();
   }
 });
+</script>
+<script>
+(function(){
+  const ov = document.getElementById('intro');
+  if (!ov) return;
+  const steps = Array.prototype.slice.call(ov.querySelectorAll('.intro-step'));
+  function show(n){
+    steps.forEach(function(s,k){ s.classList.toggle('on', k === n); });
+    if (steps[n] && steps[n].dataset.step === 'forest') runForest();
+  }
+  function finish(){
+    ov.classList.add('done');
+    document.removeEventListener('keydown', onKey);
+    setTimeout(function(){ if (ov.parentNode) ov.parentNode.removeChild(ov); }, 600);
+  }
+  function onKey(e){ if (e.key === 'Escape') finish(); }
+  document.addEventListener('keydown', onKey);
+
+  ov.querySelectorAll('[data-skip]').forEach(function(b){ b.addEventListener('click', finish); });
+  const begin = ov.querySelector('[data-begin]');
+  if (begin) begin.addEventListener('click', function(){ show(1); });
+
+  ov.querySelectorAll('.q-opt').forEach(function(b){
+    b.addEventListener('click', function(){
+      ov.querySelectorAll('.q-opt').forEach(function(x){ x.disabled = true; x.classList.remove('right'); });
+      b.classList.add('right');
+      const msg = ov.querySelector('#mood-msg'); if (msg) msg.textContent = b.getAttribute('data-msg') || '';
+      const r = ov.querySelector('.q-reveal'); if (r) r.classList.add('on');
+    });
+  });
+  const qn = ov.querySelector('[data-quiz-next]');
+  if (qn) qn.addEventListener('click', function(){ show(2); });
+
+  function runForest(){
+    const f = ov.querySelector('.forest'), nb = ov.querySelector('[data-forest-next]');
+    if (nb) nb.classList.remove('on');
+    if (f){ f.classList.remove('grow'); void f.offsetWidth; f.classList.add('grow'); }
+    setTimeout(function(){ if (nb) nb.classList.add('on'); }, 2100);
+  }
+  const fn = ov.querySelector('[data-forest-next]');
+  if (fn) fn.addEventListener('click', function(){ show(3); });
+
+  const CODES = ['ABODEOFCLOUDS','ROOTBRIDGE','TREEMENDOUS','CLOUD9','LEAFITTOME'];
+  const inp = document.getElementById('intro-code');
+  ov.querySelectorAll('.code-chip').forEach(function(c){
+    c.addEventListener('click', function(){ if (inp){ inp.value = c.textContent.trim(); inp.focus(); } });
+  });
+  function norm(s){ return (s || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
+  function tryCode(){
+    if (CODES.indexOf(norm(inp && inp.value)) !== -1){ finish(); return; }
+    const card = ov.querySelector('.code-card'), hint = ov.querySelector('.code-hint');
+    if (card){ card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake'); }
+    if (hint) hint.textContent = 'Not quite — tap one of the codes above.';
+  }
+  const unlock = ov.querySelector('[data-unlock]');
+  if (unlock) unlock.addEventListener('click', tryCode);
+  if (inp) inp.addEventListener('keydown', function(e){ if (e.key === 'Enter') tryCode(); });
+
+  show(0);
+})();
 </script>
 </body>
 </html>
