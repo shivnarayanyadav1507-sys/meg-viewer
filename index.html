@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>Historical Image Visualizer — Deforestation Check</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#0a0c0e;
+    --panel:rgba(15,19,23,.86);
+    --panel-solid:#0f1317;
+    --border:rgba(255,255,255,.09);
+    --border-strong:rgba(255,255,255,.16);
+    --text:#e9eef2;
+    --muted:#8a97a2;
+    --muted-dim:#5d6873;
+    --accent:#b6f441;
+    --accent-dim:rgba(182,244,65,.18);
+    --warn:#ff8a4c;
+    --shadow:0 10px 40px rgba(0,0,0,.55);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
+    font-family:'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
+  #map{position:absolute;inset:0;background:var(--bg)}
+  .leaflet-container{background:var(--bg)}
+  .leaflet-control-attribution{font-family:'IBM Plex Mono',monospace;font-size:9px;background:rgba(0,0,0,.45)!important;color:var(--muted-dim)!important}
+  .leaflet-control-attribution a{color:var(--muted)!important}
+  .leaflet-control-zoom a{background:var(--panel-solid)!important;color:var(--text)!important;border-color:var(--border-strong)!important}
+  .leaflet-control-zoom a:hover{background:var(--accent-dim)!important;color:#fff!important}
+  .map-tools a{width:30px;height:30px;display:flex;align-items:center;justify-content:center;
+    background:var(--panel-solid)!important;color:var(--text)!important;border-color:var(--border-strong)!important}
+  .map-tools a:hover{background:var(--accent-dim)!important;color:#fff!important}
+  .map-tools a.active{background:var(--accent)!important;color:#0a0c0e!important}
+  .map-tools svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .measure-readout{display:flex;align-items:center;gap:10px;background:var(--panel);
+    border:1px solid var(--border);border-radius:10px;padding:7px 9px 7px 12px;box-shadow:var(--shadow)}
+  .measure-readout #measure-text{display:flex;flex-direction:column;line-height:1.25;font-family:'IBM Plex Mono',monospace}
+  .measure-readout b{color:var(--accent);font-size:14px;font-weight:600}
+  .measure-readout .sub{color:var(--muted);font-size:10px}
+  .measure-readout a{display:flex;color:var(--muted-dim)}
+  .measure-readout a:hover{color:var(--warn)}
+  .measure-readout svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
+  .lyr .zoom{background:none;border:none;cursor:pointer;padding:2px;display:flex;align-items:center;color:var(--muted-dim);flex:none}
+  .lyr .zoom svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .lyr .zoom:hover{color:var(--accent)}
+
+  /* ---------- Left panel stack ---------- */
+  .left-stack{position:absolute;top:14px;left:14px;z-index:1000;width:290px;
+    display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 28px);overflow-y:auto;padding-right:2px}
+  .panel{
+    position:relative;width:100%;
+    background:var(--panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;flex:none;
+  }
+  .panel-head{display:flex;align-items:center;gap:10px;padding:13px 15px;border-bottom:1px solid var(--border)}
+  .logo{width:11px;height:11px;border-radius:3px;background:var(--accent);box-shadow:0 0 14px var(--accent-dim);flex:none}
+  .logo.vec{background:var(--warn);box-shadow:0 0 14px rgba(255,138,76,.25)}
+  .panel-head h1{font-size:12.5px;letter-spacing:.13em;text-transform:uppercase;
+    margin:0;font-weight:600;font-family:'IBM Plex Mono',monospace}
+  .panel-body{padding:14px 15px;display:flex;flex-direction:column;gap:12px}
+
+  .group-label{font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;
+    color:var(--muted-dim);font-family:'IBM Plex Mono',monospace;margin-bottom:-4px}
+
+  .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+    padding:10px 12px;border:1px solid var(--border-strong);border-radius:9px;
+    background:rgba(255,255,255,.03);color:var(--text);font-size:12.5px;font-weight:500;
+    cursor:pointer;transition:all .15s ease;font-family:'IBM Plex Sans',sans-serif}
+  .btn:hover{background:var(--accent-dim);border-color:var(--accent);color:#fff}
+  .btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.7}
+  .btn.ghost{border-style:dashed;color:var(--muted)}
+  .btn.tiny{padding:7px 10px;font-size:11px}
+
+  .iconbtn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;
+    border:1px solid var(--border-strong);border-radius:8px;background:rgba(255,255,255,.03);
+    color:var(--muted);cursor:pointer;transition:.15s;flex:none}
+  .iconbtn:hover{color:#fff;border-color:var(--accent);background:var(--accent-dim)}
+  .iconbtn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.7}
+
+  select{width:100%;padding:9px 11px;border:1px solid var(--border-strong);border-radius:9px;
+    background:var(--panel-solid);color:var(--text);font-size:12px;cursor:pointer;
+    font-family:'IBM Plex Sans',sans-serif;appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%238a97a2' stroke-width='2'><path d='M2 4l4 4 4-4'/></svg>");
+    background-repeat:no-repeat;background-position:right 11px center}
+
+  input[type=number]{width:100%;padding:7px 8px;border:1px solid var(--border-strong);border-radius:8px;
+    background:var(--panel-solid);color:var(--text);font-size:12px;font-family:'IBM Plex Mono',monospace}
+  .maxin{display:flex;align-items:center;gap:5px;flex:1;font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace}
+  .maxin input{flex:1;min-width:0;text-align:center;padding:6px 4px}
+
+  .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .switch{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--muted);cursor:pointer;user-select:none}
+  .switch input[type=checkbox]{appearance:none;width:34px;height:19px;border-radius:99px;background:rgba(255,255,255,.1);
+    position:relative;cursor:pointer;transition:.2s;flex:none;border:1px solid var(--border)}
+  .switch input[type=checkbox]:checked{background:var(--accent-dim);border-color:var(--accent)}
+  .switch input[type=checkbox]::after{content:"";position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;
+    background:var(--muted);transition:.2s}
+  .switch input[type=checkbox]:checked::after{transform:translateX(15px);background:var(--accent)}
+
+  /* gear-hidden display settings */
+  .settings{display:none;flex-direction:column;gap:12px;
+    margin-top:2px;padding-top:12px;border-top:1px dashed var(--border)}
+  .settings.open{display:flex}
+
+  /* layer lists */
+  .layers{display:flex;flex-direction:column;gap:6px;max-height:168px;overflow:auto}
+  .lyr{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:8px;
+    background:rgba(255,255,255,.03);border:1px solid var(--border);font-size:11.5px}
+  .lyr.off{opacity:.5}
+  .lyr .yr{font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--accent);font-size:12px;min-width:34px}
+  .lyr .nm{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+  .lyr .dot{width:10px;height:10px;border-radius:50%;flex:none}
+  .eye,.x{background:none;border:none;cursor:pointer;padding:2px;display:flex;align-items:center;color:var(--muted-dim);flex:none}
+  .eye svg,.x svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.7}
+  .eye.on{color:var(--accent)}
+  .eye:hover{color:var(--text)}
+  .x:hover{color:var(--warn)}
+  .empty-hint{font-size:11px;color:var(--muted-dim);line-height:1.5;padding:2px 0}
+  .stack-tabs{display:flex;gap:4px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:9px;padding:3px}
+  .stab{flex:1;padding:6px 0;border:none;border-radius:7px;background:none;color:var(--muted);font-size:12px;font-weight:600;letter-spacing:.05em;cursor:pointer;font-family:inherit}
+  .stab:hover{color:var(--text)}
+  .stab.on{background:var(--accent);color:#0a0c0e}
+  .ndvi-legend{display:flex;flex-direction:column;gap:4px}
+  .ndvi-legend .ramp{height:10px;border-radius:5px;border:1px solid var(--border)}
+  .ndvi-legend .ramp-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--muted-dim);font-family:'IBM Plex Mono',monospace}
+  .stack-badge{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;color:#0a0c0e;background:var(--accent);padding:2px 7px;border-radius:6px;align-self:center}
+
+  /* ---------- Timeline ---------- */
+  .timeline{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);z-index:1000;
+    width:min(620px,calc(100vw - 340px));min-width:320px;
+    background:var(--panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);
+    padding:15px 20px 17px;display:none}
+  .timeline.show{display:block}
+  .tl-top{display:flex;align-items:center;gap:16px;margin-bottom:14px}
+  .readout{display:flex;align-items:baseline;gap:9px}
+  .readout .year{font-family:'IBM Plex Mono',monospace;font-size:30px;font-weight:600;
+    color:var(--accent);letter-spacing:.02em;line-height:1;text-shadow:0 0 24px var(--accent-dim)}
+  .readout .blend{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--muted-dim);letter-spacing:.08em}
+  .tl-controls{margin-left:auto;display:flex;align-items:center;gap:7px}
+  .ctrl{width:36px;height:36px;display:flex;align-items:center;justify-content:center;
+    border:1px solid var(--border-strong);border-radius:9px;background:rgba(255,255,255,.03);
+    color:var(--text);cursor:pointer;transition:all .15s}
+  .ctrl:hover{background:var(--accent-dim);border-color:var(--accent)}
+  .ctrl svg{width:16px;height:16px;fill:currentColor}
+  .ctrl.play{background:var(--accent);color:#0a0c0e;border-color:var(--accent)}
+  .ctrl.play:hover{filter:brightness(1.1)}
+  .ctrl:disabled{opacity:.3;cursor:not-allowed}
+
+  .track-wrap{position:relative;padding:10px 6px 2px}
+  .track{position:relative;height:4px;background:rgba(255,255,255,.12);border-radius:99px;cursor:pointer}
+  .track-fill{position:absolute;left:0;top:0;height:100%;background:linear-gradient(90deg,rgba(182,244,65,.35),var(--accent));
+    border-radius:99px;pointer-events:none}
+  .tick{position:absolute;top:50%;width:9px;height:9px;border-radius:50%;background:var(--panel-solid);
+    border:2px solid var(--muted-dim);transform:translate(-50%,-50%);pointer-events:none;transition:border-color .15s}
+  .tick.active{border-color:var(--accent)}
+  .tick-label{position:absolute;top:18px;transform:translateX(-50%);font-family:'IBM Plex Mono',monospace;
+    font-size:10px;color:var(--muted-dim);white-space:nowrap;pointer-events:none;transition:color .15s}
+  .tick-label.active{color:var(--accent)}
+  .handle{position:absolute;top:50%;width:20px;height:20px;border-radius:50%;background:#fff;
+    border:3px solid var(--accent);transform:translate(-50%,-50%);cursor:grab;
+    box-shadow:0 2px 10px rgba(0,0,0,.5),0 0 0 6px var(--accent-dim);transition:box-shadow .15s;z-index:3}
+  .handle:active{cursor:grabbing}
+  .tl-foot{display:flex;align-items:center;justify-content:space-between;margin-top:22px}
+  .tl-foot .hint{font-size:10px;color:var(--muted-dim);font-family:'IBM Plex Mono',monospace;letter-spacing:.05em}
+
+  .toast{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:1100;
+    background:var(--panel-solid);border:1px solid var(--border-strong);border-radius:10px;
+    padding:10px 16px;font-size:12px;font-family:'IBM Plex Mono',monospace;letter-spacing:.03em;
+    box-shadow:var(--shadow);display:none;align-items:center;gap:10px;color:var(--text);max-width:60vw}
+  .toast.show{display:flex}
+  .toast.warn{border-color:var(--warn);color:var(--warn)}
+  .spinner{width:13px;height:13px;border:2px solid var(--border-strong);border-top-color:var(--accent);
+    border-radius:50%;animation:spin .7s linear infinite;flex:none}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* drop hint */
+  .drop-veil{position:absolute;inset:0;z-index:1500;display:none;pointer-events:none;
+    border:2px dashed var(--accent);border-radius:0;background:rgba(182,244,65,.06);
+    align-items:center;justify-content:center}
+  .drop-veil.show{display:flex}
+  .drop-veil span{font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--accent);
+    background:var(--panel-solid);padding:12px 20px;border-radius:12px;border:1px solid var(--accent)}
+
+  input[type=file]{display:none}
+
+  @media (max-width:760px){
+    .left-stack{width:calc(100vw - 28px)}
+    .timeline{width:calc(100vw - 28px);min-width:0}
+  }
+</style>
+</head>
+<body>
+
+<div id="map"></div>
+<div class="drop-veil" id="drop-veil"><span>Drop vector files to add</span></div>
+
+<!-- ============ Left panel stack ============ -->
+<div class="left-stack">
+
+  <!-- Imagery (COG) panel -->
+  <div class="panel">
+    <div class="panel-head">
+      <span class="logo"></span>
+      <h1>Imagery · COG</h1>
+      <button class="iconbtn" id="gear" title="Display settings" style="margin-left:auto">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      </button>
+    </div>
+    <div class="panel-body">
+      <button class="btn" id="load-rasters">
+        <svg viewBox="0 0 24 24"><path d="M4 16l4-5 3 4 4-6 5 7"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+        Load COG files
+      </button>
+      <div class="stack-tabs" id="stack-tabs">
+        <button class="stab on" data-stack="rgb">RGB</button>
+        <button class="stab" data-stack="ndvi">NDVI</button>
+      </div>
+      <div class="layers" id="raster-list">
+        <div class="empty-hint">No COGs yet. Load 2+ of your 8-bit COGs to build the timeline — years are read from filenames.</div>
+      </div>
+      <div class="row" style="justify-content:flex-end">
+        <button class="btn tiny" id="clear-rasters" style="width:auto">Clear imagery</button>
+      </div>
+
+      <div class="ndvi-legend" id="ndvi-legend" style="display:none">
+        <div class="ramp" id="ndvi-ramp"></div>
+        <div class="ramp-labels"><span>water</span><span>bare</span><span>sparse</span><span>dense</span></div>
+      </div>
+
+      <!-- gear-hidden display settings -->
+      <div class="settings" id="settings">
+        <div class="group-label">Basemap</div>
+        <select id="basemap">
+          <option value="esri">Satellite (Esri)</option>
+          <option value="osm">Streets (OSM)</option>
+          <option value="dark">Dark canvas</option>
+          <option value="none">None</option>
+        </select>
+
+        <div class="group-label" style="color:var(--muted)">JPEG / WebP colour fix</div>
+        <select id="yccmode">
+          <option value="auto">Auto-detect (recommended)</option>
+          <option value="on">Force on (YCbCr→RGB)</option>
+          <option value="off">Force off (plain RGB)</option>
+        </select>
+        <div class="empty-hint" style="margin-top:-3px">Auto detects &amp; fixes YCbCr JPEG/WebP COGs. DEFLATE/LZW need no fix.</div>
+
+        <div class="group-label" style="color:var(--muted)">Band combo (Float32 mosaics)</div>
+        <select id="bandcombo">
+          <option value="natural">Natural · B4 B3 B2</option>
+          <option value="false">False colour · B8 B4 B3</option>
+          <option value="nirgb">NIR · Green · Blue</option>
+        </select>
+
+        <label class="switch" style="justify-content:space-between;width:100%">Brightness
+          <input type="range" id="brightness" min="0.4" max="2.5" step="0.05" value="1.0"
+                 style="width:110px;accent-color:var(--accent)">
+        </label>
+
+        <div class="group-label" style="margin-top:0;color:var(--muted)">8-bit stretch · Max per band (Min 0)</div>
+        <div class="row" style="gap:6px">
+          <label class="maxin">R<input type="number" id="maxR" value="113" min="1" max="255" step="1"></label>
+          <label class="maxin">G<input type="number" id="maxG" value="130" min="1" max="255" step="1"></label>
+          <label class="maxin">B<input type="number" id="maxB" value="116" min="1" max="255" step="1"></label>
+        </div>
+        <div class="empty-hint" style="margin-top:-3px">Mirrors QGIS "Stretch to MinMax" — copy its R/G/B Max here. Lower = brighter.</div>
+
+        <div class="empty-hint" style="text-align:center;opacity:.55;letter-spacing:.08em">build · rgb + ndvi · measure · kml</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vectors panel -->
+  <div class="panel">
+    <div class="panel-head">
+      <span class="logo vec"></span>
+      <h1>Vectors</h1>
+    </div>
+    <div class="panel-body">
+      <button class="btn ghost" id="load-vectors">
+        <svg viewBox="0 0 24 24"><path d="M5 7l4-3 6 3 4-2v13l-4 2-6-3-4 3z"/><path d="M9 4v13M15 7v13"/></svg>
+        Add vector
+      </button>
+      <div class="empty-hint" style="margin-top:-6px">KML · GeoJSON · Shapefile (.shp&nbsp;+&nbsp;.dbf&nbsp;+&nbsp;.prj, or a .zip) · GeoPackage (.gpkg). Select a shapefile's parts together, or drop files on the map.</div>
+      <div class="layers" id="vector-list">
+        <div class="empty-hint">No vector layers yet.</div>
+      </div>
+      <div class="row" style="justify-content:flex-end">
+        <button class="btn tiny" id="clear-vectors" style="width:auto">Clear vectors</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============ Timeline ============ -->
+<div class="timeline" id="timeline">
+  <div class="tl-top">
+    <div class="readout">
+      <span class="year" id="year-readout">----</span>
+      <span class="stack-badge" id="stack-badge">RGB</span>
+      <span class="blend" id="blend-readout"></span>
+    </div>
+    <div class="tl-controls">
+      <button class="ctrl" id="prev" title="Previous (←)"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6z"/></svg></button>
+      <button class="ctrl play" id="play" title="Play / Pause (Space)"><svg viewBox="0 0 24 24" id="play-icon"><path d="M8 5v14l11-7z"/></svg></button>
+      <button class="ctrl" id="next" title="Next (→)"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6z"/></svg></button>
+    </div>
+  </div>
+  <div class="track-wrap">
+    <div class="track" id="track">
+      <div class="track-fill" id="track-fill"></div>
+      <div class="handle" id="handle"></div>
+    </div>
+  </div>
+  <div class="tl-foot">
+    <label class="switch"><input type="checkbox" id="snap"> Snap to year</label>
+    <span class="hint">drag to fade between years</span>
+    <label class="switch" style="gap:7px">speed
+      <input type="range" id="speed" min="0.2" max="2" step="0.1" value="0.6" style="width:70px;accent-color:var(--accent)">
+    </label>
+  </div>
+</div>
+
+<!-- ============ Status toast ============ -->
+<div class="toast" id="toast"></div>
+
+<!-- hidden inputs -->
+<input type="file" id="raster-input" accept=".tif,.tiff" multiple>
+<input type="file" id="vector-input" accept=".kml,.geojson,.json,.shp,.dbf,.shx,.prj,.cpg,.zip,.gpkg" multiple>
+
+<!-- ============ Libraries ============ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/proj4@2.11.0/dist/proj4.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/georaster@1.6.0/dist/georaster.browser.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/georaster-layer-for-leaflet@3.10.0/dist/georaster-layer-for-leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/geotiff@2.1.3/dist-browser/geotiff.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/togeojson/0.16.0/togeojson.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/shpjs@6.1.0/dist/shp.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sql.js@1.13.0/dist/sql-wasm.js"></script>
+
+<script>
+/* ---------------------------------------------------------------------------
+   HISTORICAL IMAGE VISUALIZER
+   - Local COG loading + crossfade/snap timeline across N years
+   - Per-layer show/hide for imagery AND vectors
+   - Vectors: KML, GeoJSON, Shapefile (shp+dbf+prj or zip), GeoPackage (gpkg)
+   - UTM 45N/46N reprojection via global proj4; SHP/GPKG reproject from their CRS
+--------------------------------------------------------------------------- */
+
+const PRELOAD = [
+  // { url: "./Meghalaya_S2_2016_RGB_8bit_COG.tif", year: 2016 },
+  // { url: "./Meghalaya_S2_2024_RGB_8bit_COG.tif", year: 2024 },
+];
+
+/* Vector layers to load automatically at startup (districts / blocks / villages, etc).
+   Same hosting rule as the COGs: serve over http(s) — GitHub Pages is fine; file:// is
+   blocked by the browser. GeoJSON is the lightest for the web. For shapefiles, either
+   zip the parts into one .zip, or list the parts in "urls". .gpkg and .kml also work.
+   Fill in the real paths (relative to this file) and uncomment: */
+const VECTOR_PRELOAD = [
+  // { url: "data/vectors/Meghalaya_Districts.geojson" },
+  // { url: "data/vectors/Meghalaya_SubDistricts.geojson" },
+  // { url: "data/vectors/Meghalaya_Villages.geojson" },
+  //
+  // zipped shapefile:  { url: "data/vectors/Meghalaya_Districts.zip" }
+  // loose shapefile:   { urls: ["data/vectors/Districts.shp","data/vectors/Districts.dbf","data/vectors/Districts.shx","data/vectors/Districts.prj"] }
+  // geopackage:        { url: "data/vectors/Meghalaya_admin.gpkg" }
+];
+
+/* ===========================================================================
+   AUTOLOAD — pull imagery automatically so nobody has to load files by hand.
+   If PRELOAD above is empty, the app falls back to AUTOLOAD.mode:
+     "manifest"  fetch a small JSON list (default ./data/manifest.json) and
+                 load every entry. Add a year by editing that JSON — not this file.
+     "github"    ask the GitHub API what .tif files live in <githubPath>, then
+                 load them straight from this site. Just commit a new COG and it
+                 appears automatically — no list to maintain.
+     "off"       start blank; use the Load button / drag-drop.
+   manifest.json format:  { "layers": [ { "url": "data/..2016..tif", "year": 2016 }, ... ] }
+=========================================================================== */
+const AUTOLOAD = {
+  mode: "manifest",                            // "manifest" | "github" | "off"
+  manifestUrl: "./data/manifest.json",
+  githubRepo: "YOURNAME/meghalaya-viewer",     // "user/repo"  (only used by mode:"github")
+  githubPath: "data",                          // folder in the repo that holds the COGs
+  githubBranch: "main"
+};
+
+proj4.defs("EPSG:32645", "+proj=utm +zone=45 +datum=WGS84 +units=m +no_defs +type=crs");
+proj4.defs("EPSG:32646", "+proj=utm +zone=46 +datum=WGS84 +units=m +no_defs +type=crs");
+window.proj4 = proj4;
+
+/* ---- Map + basemaps ---- */
+const map = L.map('map', { center:[25.55, 91.3], zoom:8, zoomControl:true, preferCanvas:true });
+map.zoomControl.setPosition('topright');            // zoom +/- on the RIGHT
+L.control.scale({ imperial:false }).addTo(map);
+
+const basemaps = {
+  esri: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        { maxZoom:19, attribution:'Imagery © Esri' }),
+  osm:  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        { maxZoom:19, attribution:'© OpenStreetMap contributors' }),
+  dark: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+        { maxZoom:19, attribution:'© CARTO © OSM' }),
+  none: null
+};
+let currentBase = basemaps.esri.addTo(map);
+
+/* ---- State ---- */
+const rasters = [];        // { year, name, georaster, layer, visible }
+const vectors = [];        // { name, layer, color, visible }
+let _preloadingVectors = false;   // while true, addVector skips its auto fit-to-bounds
+let pos = 0;               // continuous position into the VISIBLE raster list
+let activeStack = 'rgb';   // which stack the timeline drives: 'rgb' | 'ndvi'
+const stackPos = { rgb: 0, ndvi: 0 };   // each stack remembers its own year position
+let playing = false, rafId = null;
+let vecColorIdx = 0;
+const VEC_COLORS = ['#ff8a4c','#5dade2','#f4d03f','#bb8fce','#58d68d','#ec7063','#5dd5c4','#f1948a'];
+
+const DISP = { combo:'natural', gain:1.0, yccMode:'auto', maxR:113, maxG:130, maxB:116 };
+const CEILINGS = {
+  natural:{ bands:[2,1,0], hi:[0.12, 0.12, 0.15] },
+  false:  { bands:[3,2,1], hi:[0.45, 0.13, 0.13] },
+  nirgb:  { bands:[3,1,0], hi:[0.45, 0.12, 0.15] }
+};
+
+/* NDVI colour ramp: blue water -> brown bare -> yellow sparse -> green dense. */
+const NDVI_STOPS = [
+  [-1.00, [ 60, 92,160]], [-0.10, [120,140,170]], [ 0.00, [168,128, 96]],
+  [ 0.15, [205,170,110]], [ 0.30, [240,222,150]], [ 0.45, [200,222,128]],
+  [ 0.60, [120,196,100]], [ 0.75, [ 52,160, 64]], [ 1.00, [  0,104, 55]]
+];
+function ndviColor(ndvi){
+  if (ndvi <= NDVI_STOPS[0][0]){ const c = NDVI_STOPS[0][1]; return `rgb(${c[0]},${c[1]},${c[2]})`; }
+  for (let i = 1; i < NDVI_STOPS.length; i++){
+    const t0 = NDVI_STOPS[i-1][0], c0 = NDVI_STOPS[i-1][1], t1 = NDVI_STOPS[i][0], c1 = NDVI_STOPS[i][1];
+    if (ndvi <= t1){ const f = (ndvi - t0) / (t1 - t0);
+      return `rgb(${Math.round(c0[0]+(c1[0]-c0[0])*f)},${Math.round(c0[1]+(c1[1]-c0[1])*f)},${Math.round(c0[2]+(c1[2]-c0[2])*f)})`; }
+  }
+  const c = NDVI_STOPS[NDVI_STOPS.length-1][1]; return `rgb(${c[0]},${c[1]},${c[2]})`;
+}
+function paintNdviLegend(){
+  const el = $('ndvi-ramp'); if (!el) return;
+  el.style.background = 'linear-gradient(90deg, ' +
+    NDVI_STOPS.map(([t,c]) => `rgb(${c[0]},${c[1]},${c[2]}) ${Math.round((t+1)/2*100)}%`).join(', ') + ')';
+}
+
+/* ---- DOM refs ---- */
+const $ = id => document.getElementById(id);
+const timelineEl = $('timeline'), trackEl = $('track'), fillEl = $('track-fill'),
+      handleEl = $('handle'), yearOut = $('year-readout'), blendOut = $('blend-readout'),
+      snapCb = $('snap'), speedEl = $('speed'), toastEl = $('toast'),
+      rasterListEl = $('raster-list'), vecListEl = $('vector-list');
+
+const escapeHtml = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const eyeSvg = on => on
+  ? '<svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>'
+  : '<svg viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M10.6 10.6a3 3 0 004.2 4.2"/><path d="M9.4 5.4A10.6 10.6 0 0112 5c7 0 11 7 11 7a18.5 18.5 0 01-3.4 4.1M6.1 6.1A18.6 18.6 0 001 12s4 7 11 7c1 0 1.9-.1 2.8-.4"/></svg>';
+const xSvg = () => '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+
+/* ---- Display controls ---- */
+$('basemap').onchange = e => {
+  if (currentBase) map.removeLayer(currentBase);
+  currentBase = basemaps[e.target.value];
+  if (currentBase) currentBase.addTo(map).bringToBack();
+};
+$('bandcombo').onchange = e => { DISP.combo = e.target.value; redrawRasters(); };
+$('brightness').oninput = e => { DISP.gain = parseFloat(e.target.value) || 1; redrawRasters(); };
+$('yccmode').onchange   = e => { DISP.yccMode = e.target.value; redrawRasters(); };
+['maxR','maxG','maxB'].forEach(id => { $(id).oninput = e => { DISP[id] = parseFloat(e.target.value) || 255; redrawRasters(); }; });
+$('gear').onclick = () => $('settings').classList.toggle('open');
+function redrawRasters(){ rasters.forEach(r => { try { r.layer.redraw(); } catch(_){} }); }
+
+/* ---- Status toast ---- */
+let toastTimer = null;
+function status(msg, { busy=false, warn=false, sticky=false } = {}){
+  clearTimeout(toastTimer);
+  if (!msg){ toastEl.classList.remove('show'); return; }
+  toastEl.className = 'toast show' + (warn ? ' warn' : '');
+  toastEl.innerHTML = (busy ? '<span class="spinner"></span>' : '') + msg;
+  if (!sticky && !busy) toastTimer = setTimeout(()=>toastEl.classList.remove('show'), 2800);
+}
+
+function extractYear(name){ const m = name.match(/(?:19|20)\d{2}/); return m ? parseInt(m[0], 10) : null; }
+
+/* =========================================================================
+   RASTER LOADING
+========================================================================= */
+$('load-rasters').onclick = () => $('raster-input').click();
+$('raster-input').onchange = e => { loadRasters([...e.target.files]); e.target.value = ''; };
+
+function makeLayer(georaster, opts = {}){
+  const nd = georaster.noDataValue;
+  const forceByte = opts.byte;
+  const userBands = opts.bands ? opts.bands.map(b => b - 1) : null;
+  return new GeoRasterLayer({
+    georaster, resolution: 256, opacity: 0,
+    pixelValuesToColorFn: v => {
+      if (!v) return null;
+
+      if (opts.ndvi || v.length === 1){            // single-band NDVI COG
+        const b = v[0];
+        if (b == null || b === 0) return null;     // 0 = NaN / fill -> transparent
+        return ndviColor((b - 1) / 127 - 1);       // decode byte -> NDVI -> ramp
+      }
+
+      const isByte = forceByte != null ? forceByte : (v.length < 4);
+
+      if (isByte){                                   // 8-bit COG
+        const useYcc = DISP.yccMode === 'on'  ? true
+                     : DISP.yccMode === 'off' ? false
+                     : !!opts.byteYcc;
+        let R, G, B;
+        if (useYcc){                                 // JPEG/WebP YCbCr -> RGB (full-range JFIF)
+          const Y = v[0], Cb = v[1], Cr = v[2];
+          if (Y == null) return null;
+          if (Y <= 1 && Math.abs(Cb - 128) < 3 && Math.abs(Cr - 128) < 3) return null;  // fill
+          R = Y + 1.402 * (Cr - 128);
+          G = Y - 0.344136 * (Cb - 128) - 0.714136 * (Cr - 128);
+          B = Y + 1.772 * (Cb - 128);
+        } else {                                     // plain RGB (DEFLATE/LZW)
+          const pk = userBands || [0,1,2];
+          R = v[pk[0]]; G = v[pk[1] ?? pk[0]]; B = v[pk[2] ?? pk[0]];
+          if (R == null) return null;
+          if (nd != null && R === nd && G === nd && B === nd) return null;
+          if (R === 0 && G === 0 && B === 0) return null;
+        }
+        // Per-channel MinMax stretch (Min 0; Max from controls = QGIS values) + Brightness.
+        const gain = DISP.gain || 1;
+        const sh = (x, h) => { const t = (x / (h || 255)) * gain; return t <= 0 ? 0 : t >= 1 ? 255 : Math.round(t * 255); };
+        return `rgb(${sh(R, DISP.maxR)},${sh(G, DISP.maxG)},${sh(B, DISP.maxB)})`;
+      }
+
+      // Float32 reflectance -> per-channel white-balanced stretch + gamma + master gain.
+      const cfg = CEILINGS[DISP.combo] || CEILINGS.natural;
+      const pk = cfg.bands;
+      const r = v[pk[0]], g = v[pk[1]], b = v[pk[2]];
+      if (r == null) return null;
+      if (nd != null && r === nd && g === nd && b === nd) return null;
+      if (r <= 0 && g <= 0 && b <= 0) return null;
+      const gain = DISP.gain || 1;
+      const ch = (x, hiBase) => { const hi = hiBase / gain; x = x / hi; return x <= 0 ? 0 : x >= 1 ? 255 : Math.round(Math.pow(x, 0.85) * 255); };
+      return `rgb(${ch(r, cfg.hi[0])},${ch(g, cfg.hi[1])},${ch(b, cfg.hi[2])})`;
+    }
+  });
+}
+
+function addRaster(georaster, name, year, opts = {}){
+  const isNdvi = /ndvi/i.test(name) || georaster.numberOfRasters === 1;
+  const stack = isNdvi ? 'ndvi' : 'rgb';
+  const layer = makeLayer(georaster, { ...opts, ndvi: isNdvi });
+  layer.addTo(map);
+  rasters.push({ year, name, georaster, layer, visible:true, stack });
+}
+
+/* Detect YCbCr JPEG/WebP 3-band COGs (geotiff.js returns raw Y/Cb/Cr -> teal). */
+async function detectYcc(source){
+  try {
+    if (typeof GeoTIFF === 'undefined') return false;
+    const tiff = source instanceof Blob       ? await GeoTIFF.fromBlob(source)
+               : source instanceof ArrayBuffer ? await GeoTIFF.fromArrayBuffer(source)
+               :                                 await GeoTIFF.fromUrl(source);
+    const img = await tiff.getImage();
+    if (img.getSamplesPerPixel() !== 3) return false;
+    const w = img.getWidth(), h = img.getHeight();
+    const x = Math.max(0, (w >> 1) - 8), y = Math.max(0, (h >> 1) - 8);
+    const d = await img.readRasters({ window:[x, y, x + 16, y + 16], interleave:true });
+    let cb = 0, cr = 0, n = 0;
+    for (let i = 0; i < d.length; i += 3){
+      const Y = d[i], Cb = d[i+1], Cr = d[i+2];
+      if (!(Y === 0 && Cb === 0 && Cr === 0)){ cb += Cb; cr += Cr; n++; }
+    }
+    if (!n) return false;
+    const mCb = cb / n, mCr = cr / n;
+    return (mCb > 100 && mCb < 156 && mCr > 100 && mCr < 156);
+  } catch (e){ console.warn('YCbCr probe failed:', e); return false; }
+}
+
+async function loadRasters(files){
+  for (const file of files){
+    if (file.size > 800 * 1024 * 1024){
+      const gb = (file.size / 1e9).toFixed(2);
+      if (!confirm(`"${file.name}" is ${gb} GB.\n\nThe file picker reads the whole file into memory — large Float32 mosaics may freeze the tab.\nFor multi-GB mosaics, preload them by URL over a range-capable server instead (see PRELOAD at the top of this file).\n\nTry to load anyway?`)) continue;
+    }
+    try {
+      status(`Reading ${file.name} …`, { busy:true });
+      const buf = await file.arrayBuffer();
+      status(`Parsing ${file.name} …`, { busy:true });
+      const georaster = await parseGeoraster(buf);
+      const byteYcc = await detectYcc(file);
+      addRaster(georaster, file.name, extractYear(file.name), { byteYcc });
+    } catch (err){
+      console.error(err);
+      status(`Failed to read ${file.name} — is it a valid GeoTIFF/COG?`, { warn:true, sticky:true });
+    }
+  }
+  finalizeRasters();
+}
+
+async function loadFromUrl(entry){
+  const url = entry.url;
+  const name = (url.split('/').pop() || url).split('?')[0];
+  try {
+    status(`Streaming ${name} …`, { busy:true });
+    let georaster;
+    try { georaster = await parseGeoraster(url); }
+    catch (e1){
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      georaster = await parseGeoraster(await resp.arrayBuffer());
+    }
+    addRaster(georaster, name, entry.year ?? extractYear(name), { ...entry, byteYcc: await detectYcc(url) });
+  } catch (err){
+    console.error(err);
+    status(`Couldn't load ${name}. Serve the folder over http (file:// is blocked) with a range-capable server.`, { warn:true, sticky:true });
+  }
+}
+
+async function preloadRasters(){
+  if (!Array.isArray(PRELOAD) || !PRELOAD.length) return;
+  for (const entry of PRELOAD) await loadFromUrl(entry);
+  finalizeRasters();
+}
+
+/* Load every layer listed in a manifest.json (host-agnostic). */
+async function autoloadFromManifest(){
+  try {
+    const resp = await fetch(AUTOLOAD.manifestUrl, { cache:'no-cache' });
+    if (!resp.ok) return;                                   // no manifest -> stay blank
+    const data = await resp.json();
+    const list = Array.isArray(data) ? data : (data.layers || data.rasters || []);
+    if (!list.length) return;
+    status(`Loading ${list.length} layer${list.length>1?'s':''} from manifest …`, { busy:true });
+    for (const item of list){
+      const entry = typeof item === 'string' ? { url:item } : item;
+      if (entry && entry.url) await loadFromUrl(entry);
+    }
+    finalizeRasters();
+  } catch(e){ console.warn('manifest autoload failed:', e); }
+}
+
+/* Discover *.tif in a GitHub repo folder via the Contents API, then load each
+   from THIS site (same-origin), so streaming + CORS just work. */
+async function autoloadFromGithub(){
+  const { githubRepo, githubPath, githubBranch } = AUTOLOAD;
+  if (!githubRepo || githubRepo.includes('YOURNAME')){ return autoloadFromManifest(); }
+  const api = `https://api.github.com/repos/${githubRepo}/contents/${githubPath}?ref=${githubBranch || 'main'}`;
+  try {
+    const resp = await fetch(api, { headers:{ 'Accept':'application/vnd.github+json' } });
+    if (!resp.ok) throw new Error('GitHub API HTTP ' + resp.status);
+    const files = await resp.json();
+    if (!Array.isArray(files)) throw new Error('unexpected API response');
+    const tifs = files
+      .filter(f => f.type === 'file' && /\.tiff?$/i.test(f.name))
+      .map(f => ({ url: (githubPath ? githubPath + '/' : '') + f.name, year: extractYear(f.name) }))
+      .sort((a,b) => (a.year ?? 1e9) - (b.year ?? 1e9));
+    if (!tifs.length){ status('No GeoTIFFs found in the data folder.', { warn:true }); return; }
+    status(`Found ${tifs.length} image${tifs.length>1?'s':''} — loading …`, { busy:true });
+    for (const entry of tifs) await loadFromUrl(entry);
+    finalizeRasters();
+  } catch(e){
+    console.warn('github autoload failed:', e);
+    status('Auto-discovery unavailable (API limit or wrong repo) — trying manifest …', { warn:true });
+    await autoloadFromManifest();                           // graceful fallback
+  }
+}
+
+/* Decide how to populate the map at startup. */
+async function bootstrapData(){
+  if (Array.isArray(PRELOAD) && PRELOAD.length){ await preloadRasters(); }
+  else if (AUTOLOAD.mode === 'github')   { await autoloadFromGithub();   }
+  else if (AUTOLOAD.mode === 'manifest') { await autoloadFromManifest(); }
+  await preloadVectors();
+}
+
+/* Fetch each VECTOR_PRELOAD entry and route it through the same loader the file
+   picker uses, so every supported format (GeoJSON / KML / zipped or loose SHP / GPKG)
+   just works. Per-layer auto-zoom is suppressed; the view stays on the imagery. */
+async function preloadVectors(){
+  if (!Array.isArray(VECTOR_PRELOAD) || !VECTOR_PRELOAD.length) return;
+  _preloadingVectors = true;
+  try {
+    for (const entry of VECTOR_PRELOAD){
+      const urls = entry.urls || (entry.url ? [entry.url] : []);
+      if (!urls.length) continue;
+      try {
+        const files = [];
+        for (const u of urls){
+          const resp = await fetch(u, { cache:'no-cache' });
+          if (!resp.ok) throw new Error('HTTP ' + resp.status + ' for ' + u);
+          const fname = (u.split('/').pop() || 'layer').split('?')[0];
+          files.push(new File([await resp.blob()], fname));
+        }
+        await handleVectorFiles(files);
+      } catch(err){
+        console.error(err);
+        status(`Couldn't preload ${entry.name || urls[0]} — serve over http and check the path.`, { warn:true, sticky:true });
+      }
+    }
+  } finally {
+    _preloadingVectors = false;
+    if (!rasters.length && vectors.length){            // no imagery? frame the boundaries instead
+      try { let b = vectors[0].layer.getBounds();
+            vectors.forEach(v => { try { b = b.extend(v.layer.getBounds()); } catch(_){} });
+            if (b.isValid()) map.fitBounds(b, { padding:[20,20] }); } catch(_){}
+    }
+  }
+}
+
+function finalizeRasters(){
+  rasters.sort((a,b)=>{ if (a.year == null) return 1; if (b.year == null) return -1; return a.year - b.year; });
+  if (!rasters.some(r => r.stack === 'rgb') && rasters.some(r => r.stack === 'ndvi')) activeStack = 'ndvi';
+  stackPos.rgb  = Math.max(0, rasters.filter(r => r.stack === 'rgb'  && r.visible).length - 1);
+  stackPos.ndvi = Math.max(0, rasters.filter(r => r.stack === 'ndvi' && r.visible).length - 1);
+  setStackUI();
+  rebuildLayerList();
+  buildTimeline();
+  const vis = visibleRasters();
+  if (vis.length){
+    timelineEl.classList.add('show');
+    try { map.fitBounds(vis[vis.length-1].layer.getBounds(), { padding:[20,20] }); } catch(e){}
+    setPos(stackPos[activeStack]);
+    status(`${rasters.length} layer${rasters.length>1?'s':''} loaded`);
+  }
+}
+
+/* ---- Raster show/hide + remove ---- */
+function toggleRaster(i){
+  const r = rasters[i]; if (!r) return;
+  r.visible = !r.visible;
+  if (!r.visible){ try { r.layer.setOpacity(0); } catch(_){} }
+  buildTimeline();
+  setPos(Math.min(pos, Math.max(0, visibleRasters().length - 1)));
+  rebuildRasterList();
+}
+function removeRaster(i){
+  const r = rasters[i]; if (!r) return;
+  try { map.removeLayer(r.layer); } catch(_){}
+  rasters.splice(i, 1);
+  buildTimeline();
+  if (!visibleRasters().length){ stopPlay(); timelineEl.classList.remove('show'); }
+  else setPos(Math.min(pos, visibleRasters().length - 1));
+  rebuildRasterList();
+}
+rasterListEl.onclick = e => {
+  const eye = e.target.closest('.eye'), x = e.target.closest('.x');
+  if (eye) toggleRaster(+eye.dataset.i);
+  else if (x) removeRaster(+x.dataset.i);
+};
+$('clear-rasters').onclick = () => {
+  rasters.forEach(r => { try { map.removeLayer(r.layer); } catch(_){} });
+  rasters.length = 0; stopPlay(); timelineEl.classList.remove('show');
+  buildTimeline(); rebuildRasterList(); status('Imagery cleared');
+};
+
+/* ---- RGB / NDVI stack switch (one stack at a time, each keeps its own year) ---- */
+function setStackUI(){
+  document.querySelectorAll('.stab').forEach(b => b.classList.toggle('on', b.dataset.stack === activeStack));
+  const badge = $('stack-badge'); if (badge) badge.textContent = activeStack.toUpperCase();
+  const lg = $('ndvi-legend');    if (lg) lg.style.display = activeStack === 'ndvi' ? 'flex' : 'none';
+}
+function switchStack(name){
+  if (name === activeStack || (name !== 'rgb' && name !== 'ndvi')) return;
+  stackPos[activeStack] = pos;                 // remember where this stack was
+  activeStack = name;
+  setStackUI();
+  rebuildRasterList();
+  buildTimeline();
+  const vis = visibleRasters();
+  if (vis.length){
+    timelineEl.classList.add('show');
+    setPos(Math.min(stackPos[activeStack], vis.length - 1));
+  } else {
+    stopPlay(); timelineEl.classList.remove('show');
+    rasters.forEach(r => { try { r.layer.setOpacity(0); } catch(_){} });
+  }
+}
+$('stack-tabs').onclick = e => { const b = e.target.closest('.stab'); if (b){ stopPlay(); switchStack(b.dataset.stack); } };
+
+/* =========================================================================
+   VECTOR LOADING — KML / GeoJSON / Shapefile / GeoPackage
+========================================================================= */
+$('load-vectors').onclick = () => $('vector-input').click();
+$('vector-input').onchange = e => { handleVectorFiles([...e.target.files]); e.target.value = ''; };
+
+/* drag-and-drop onto the map */
+const veil = $('drop-veil');
+let dragDepth = 0;
+window.addEventListener('dragenter', e => { if (e.dataTransfer && [...e.dataTransfer.types].includes('Files')){ dragDepth++; veil.classList.add('show'); } });
+window.addEventListener('dragover', e => { e.preventDefault(); });
+window.addEventListener('dragleave', e => { dragDepth = Math.max(0, dragDepth - 1); if (!dragDepth) veil.classList.remove('show'); });
+window.addEventListener('drop', e => {
+  e.preventDefault(); dragDepth = 0; veil.classList.remove('show');
+  if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) handleVectorFiles([...e.dataTransfer.files]);
+});
+
+async function handleVectorFiles(files){
+  const groups = {};          // basename -> { shp,dbf,shx,prj,... }  (shapefile parts)
+  const singles = [];
+  for (const f of files){
+    const ext = (f.name.split('.').pop() || '').toLowerCase();
+    if (['shp','dbf','shx','prj','cpg'].includes(ext)){
+      const base = f.name.slice(0, -(ext.length + 1));
+      (groups[base] = groups[base] || {})[ext] = f;
+    } else singles.push(f);
+  }
+
+  for (const f of singles){
+    const ext = (f.name.split('.').pop() || '').toLowerCase();
+    try {
+      if (ext === 'kml'){
+        const xml = new DOMParser().parseFromString(await f.text(), 'text/xml');
+        addVector(toGeoJSON.kml(xml), f.name);
+      } else if (ext === 'geojson' || ext === 'json'){
+        addVector(JSON.parse(await f.text()), f.name);
+      } else if (ext === 'zip'){
+        status(`Reading ${f.name} …`, { busy:true });
+        addVectorMaybeMulti(await shp(await f.arrayBuffer()), f.name);
+      } else if (ext === 'gpkg'){
+        await loadGpkg(f);
+      } else {
+        status(`Unsupported file: ${f.name}`, { warn:true, sticky:true });
+      }
+    } catch (err){ console.error(err); status(`Could not read ${f.name}`, { warn:true, sticky:true }); }
+  }
+
+  for (const base in groups){
+    const g = groups[base];
+    if (!g.shp){ status(`"${base}" — no .shp file found in the selection`, { warn:true, sticky:true }); continue; }
+    try {
+      status(`Reading ${base}.shp …`, { busy:true });
+      const shpBuf = await g.shp.arrayBuffer();
+      const prj = g.prj ? await g.prj.text() : undefined;     // shpjs reprojects from the .prj
+      const geoms = shp.parseShp(shpBuf, prj);
+      const props = g.dbf ? shp.parseDbf(await g.dbf.arrayBuffer())
+                          : (Array.isArray(geoms) ? geoms.map(()=>({})) : []);
+      let gj;
+      try { gj = shp.combine([geoms, props]); }
+      catch(_) {
+        const arr = Array.isArray(geoms) ? geoms : (geoms && geoms.features) || [];
+        gj = { type:'FeatureCollection', features: arr.map(gm => ({ type:'Feature', geometry: gm.geometry || gm, properties:{} })) };
+      }
+      addVector(gj, base + '.shp');
+      if (!g.prj) status(`Loaded ${base}.shp — no .prj found, so coordinates are assumed lon/lat. If the layer is misplaced, include the .prj.`, { warn:true, sticky:true });
+    } catch (err){ console.error(err); status(`Could not read ${base}.shp`, { warn:true, sticky:true }); }
+  }
+}
+
+function addVectorMaybeMulti(gj, name){
+  if (Array.isArray(gj)) gj.forEach((g, i) => addVector(g, (g && g.fileName) || `${name} [${i+1}]`));
+  else addVector(gj, (gj && gj.fileName) || name);
+}
+
+/* ---- GeoPackage (SQLite + GeoPackageBinary + WKB) ---- */
+let _sqlPromise = null;
+function getSql(){
+  if (!_sqlPromise){
+    if (typeof initSqlJs === 'undefined') return Promise.reject(new Error('sql.js not loaded'));
+    _sqlPromise = initSqlJs({ locateFile: f => 'https://cdn.jsdelivr.net/npm/sql.js@1.13.0/dist/' + f });
+  }
+  return _sqlPromise;
+}
+function parseWKB(dv, ref, reproj){
+  const le = dv.getUint8(ref.p) === 1; ref.p += 1;
+  const t = dv.getUint32(ref.p, le); ref.p += 4;
+  const base = t % 1000;
+  let dim = 2; if (t >= 1000 && t < 2000) dim = 3; else if (t >= 2000 && t < 3000) dim = 3; else if (t >= 3000) dim = 4;
+  const pt = () => { const x = dv.getFloat64(ref.p, le), y = dv.getFloat64(ref.p + 8, le); ref.p += 8 * dim; return reproj(x, y); };
+  const ring = () => { const n = dv.getUint32(ref.p, le); ref.p += 4; const a = []; for (let i = 0; i < n; i++) a.push(pt()); return a; };
+  if (base === 1) return { type:'Point', coordinates: pt() };
+  if (base === 2){ const n = dv.getUint32(ref.p, le); ref.p += 4; const a = []; for (let i = 0; i < n; i++) a.push(pt()); return { type:'LineString', coordinates:a }; }
+  if (base === 3){ const n = dv.getUint32(ref.p, le); ref.p += 4; const a = []; for (let i = 0; i < n; i++) a.push(ring()); return { type:'Polygon', coordinates:a }; }
+  if (base === 4){ const n = dv.getUint32(ref.p, le); ref.p += 4; const a = []; for (let i = 0; i < n; i++) a.push(parseWKB(dv, ref, reproj).coordinates); return { type:'MultiPoint', coordinates:a }; }
+  if (base === 5){ const n = dv.getUint32(ref.p, le); ref.p += 4; const a = []; for (let i = 0; i < n; i++) a.push(parseWKB(dv, ref, reproj).coordinates); return { type:'MultiLineString', coordinates:a }; }
+  if (base === 6){ const n = dv.getUint32(ref.p, le); ref.p += 4; const a = []; for (let i = 0; i < n; i++) a.push(parseWKB(dv, ref, reproj).coordinates); return { type:'MultiPolygon', coordinates:a }; }
+  if (base === 7){ const n = dv.getUint32(ref.p, le); ref.p += 4; const a = []; for (let i = 0; i < n; i++) a.push(parseWKB(dv, ref, reproj)); return { type:'GeometryCollection', geometries:a }; }
+  return null;
+}
+function gpkgGeomToGeoJSON(u8, reproj){
+  const dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength);
+  if (dv.getUint8(0) !== 0x47 || dv.getUint8(1) !== 0x50) return null;       // 'GP'
+  const flags = dv.getUint8(3);
+  const envCode = (flags >> 1) & 0x07;
+  const envSizes = { 0:0, 1:32, 2:48, 3:48, 4:64 };
+  const ref = { p: 8 + (envSizes[envCode] || 0) };
+  return parseWKB(dv, ref, reproj);
+}
+async function loadGpkg(file){
+  let SQL;
+  try { SQL = await getSql(); }
+  catch(e){ status('GeoPackage support needs to load sql.js (internet required).', { warn:true, sticky:true }); return; }
+  status(`Reading ${file.name} …`, { busy:true });
+  let db;
+  try { db = new SQL.Database(new Uint8Array(await file.arrayBuffer())); }
+  catch(e){ console.error(e); status(`Could not open ${file.name}`, { warn:true, sticky:true }); return; }
+  try {
+    const ct = db.exec("SELECT table_name FROM gpkg_contents WHERE data_type='features'");
+    if (!ct.length || !ct[0].values.length){ status(`No feature tables in ${file.name}`, { warn:true, sticky:true }); return; }
+    let added = 0;
+    for (const [tbl] of ct[0].values){
+      const gcq = db.exec(`SELECT column_name, srs_id FROM gpkg_geometry_columns WHERE table_name='${tbl}'`);
+      if (!gcq.length || !gcq[0].values.length) continue;
+      const geomCol = gcq[0].values[0][0], srs = gcq[0].values[0][1];
+
+      let reproj = (x,y) => [x,y];
+      if (srs && srs !== 4326 && srs !== 0 && srs !== -1){
+        if (!proj4.defs('EPSG:' + srs)){
+          try { const d = db.exec(`SELECT definition FROM gpkg_spatial_ref_sys WHERE srs_id=${srs}`);
+                if (d.length && d[0].values.length) proj4.defs('EPSG:' + srs, d[0].values[0][0]); } catch(_){}
+        }
+        if (proj4.defs('EPSG:' + srs)) reproj = (x,y) => proj4('EPSG:' + srs, 'EPSG:4326', [x,y]);
+        else status(`${tbl}: CRS EPSG:${srs} not recognised — drawing raw coordinates (may be misplaced).`, { warn:true, sticky:true });
+      }
+
+      const res = db.exec(`SELECT * FROM "${tbl}"`);
+      if (!res.length) continue;
+      const cols = res[0].columns, gi = cols.indexOf(geomCol);
+      const feats = [];
+      for (const row of res[0].values){
+        const blob = row[gi]; if (!blob) continue;
+        const u8 = blob instanceof Uint8Array ? blob : new Uint8Array(blob);
+        let geom; try { geom = gpkgGeomToGeoJSON(u8, reproj); } catch(_){ geom = null; }
+        if (!geom) continue;
+        const props = {}; cols.forEach((c, ci) => { if (ci !== gi) props[c] = row[ci]; });
+        feats.push({ type:'Feature', geometry:geom, properties:props });
+      }
+      if (feats.length){ addVector({ type:'FeatureCollection', features:feats }, `${tbl} · ${file.name}`); added++; }
+    }
+    if (!added) status(`No readable geometry in ${file.name}`, { warn:true, sticky:true });
+  } catch (err){ console.error(err); status(`Error reading ${file.name}`, { warn:true, sticky:true }); }
+  finally { try { db.close(); } catch(_){} }
+}
+
+/* ---- Add a parsed vector layer ---- */
+function addVector(gj, name){
+  if (!gj){ status(`Nothing to add from ${name}`, { warn:true, sticky:true }); return; }
+  const color = VEC_COLORS[vecColorIdx++ % VEC_COLORS.length];
+  const layer = L.geoJSON(gj, {
+    style: { color, weight:2, opacity:.95, fillColor:color, fillOpacity:.08 },
+    pointToLayer: (f, latlng) => L.circleMarker(latlng, { radius:5, color, fillColor:color, fillOpacity:.5, weight:2 }),
+    onEachFeature: (f, l) => {
+      const p = f.properties || {};
+      const nm = p.name || p.Name || p.NAME || p.id || '';
+      const rows = Object.entries(p).slice(0, 12)
+        .map(([k,v]) => `<div style="font:11px IBM Plex Mono,monospace;color:#8a97a2">${escapeHtml(k)}: <span style="color:#e9eef2">${escapeHtml(String(v))}</span></div>`).join('');
+      l.bindPopup(`<div style="font:600 12px IBM Plex Sans;color:${color};margin-bottom:4px">${escapeHtml(nm || 'Feature')}</div>${rows}`);
+    }
+  });
+  layer.addTo(map);
+  vectors.push({ name, layer, color, visible:true });
+  rebuildVecList();
+  let cnt = 0; try { cnt = layer.getLayers().length; } catch(_){}
+  if (!_preloadingVectors){ try { const b = layer.getBounds(); if (b.isValid()) map.fitBounds(b, { padding:[30,30] }); } catch(_){} }
+  status(`"${name}" added — ${cnt} feature${cnt !== 1 ? 's' : ''}`);
+}
+
+function toggleVector(i){
+  const v = vectors[i]; if (!v) return;
+  v.visible = !v.visible;
+  if (v.visible) v.layer.addTo(map); else map.removeLayer(v.layer);
+  rebuildVecList();
+}
+function removeVector(i){
+  const v = vectors[i]; if (!v) return;
+  try { map.removeLayer(v.layer); } catch(_){}
+  vectors.splice(i, 1);
+  rebuildVecList();
+}
+function zoomVector(i){
+  const v = vectors[i]; if (!v) return;
+  try { const b = v.layer.getBounds(); if (b.isValid()) map.fitBounds(b, { padding:[30,30] }); } catch(_){}
+}
+vecListEl.onclick = e => {
+  const eye = e.target.closest('.eye'), z = e.target.closest('.zoom'), x = e.target.closest('.x');
+  if (eye) toggleVector(+eye.dataset.i);
+  else if (z) zoomVector(+z.dataset.i);
+  else if (x) removeVector(+x.dataset.i);
+};
+$('clear-vectors').onclick = () => {
+  vectors.forEach(v => { try { map.removeLayer(v.layer); } catch(_){} });
+  vectors.length = 0; rebuildVecList(); status('Vectors cleared');
+};
+
+/* =========================================================================
+   LAYER LIST UI
+========================================================================= */
+function rebuildLayerList(){ rebuildRasterList(); rebuildVecList(); }
+function rebuildRasterList(){
+  const inStack = rasters.filter(r => r.stack === activeStack);
+  if (!inStack.length){
+    rasterListEl.innerHTML = rasters.length
+      ? `<div class="empty-hint">No ${activeStack.toUpperCase()} layers here. Switch tabs, or load your ${activeStack === 'ndvi' ? 'NDVI' : 'RGB'} COGs.</div>`
+      : '<div class="empty-hint">No COGs yet. Load 2+ of your 8-bit COGs to build the timeline — years are read from filenames.</div>';
+    return;
+  }
+  rasterListEl.innerHTML = rasters.map((r, i) => r.stack !== activeStack ? '' :
+    `<div class="lyr ${r.visible ? '' : 'off'}">
+       <button class="eye ${r.visible ? 'on' : ''}" data-i="${i}" title="show / hide" aria-label="show or hide">${eyeSvg(r.visible)}</button>
+       <span class="yr">${r.year ?? '—'}</span>
+       <span class="nm" title="${escapeHtml(r.name)}">${escapeHtml(r.name)}</span>
+       <button class="x" data-i="${i}" title="remove" aria-label="remove">${xSvg()}</button>
+     </div>`).join('');
+}
+function rebuildVecList(){
+  if (!vectors.length){ vecListEl.innerHTML = '<div class="empty-hint">No vector layers yet.</div>'; return; }
+  vecListEl.innerHTML = vectors.map((v, i) =>
+    `<div class="lyr vec ${v.visible ? '' : 'off'}">
+       <button class="eye ${v.visible ? 'on' : ''}" data-i="${i}" title="show / hide" aria-label="show or hide">${eyeSvg(v.visible)}</button>
+       <span class="dot" style="background:${v.color}"></span>
+       <span class="nm" title="${escapeHtml(v.name)}">${escapeHtml(v.name)}</span>
+       <button class="zoom" data-i="${i}" title="zoom to layer" aria-label="zoom to layer"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+       <button class="x" data-i="${i}" title="remove" aria-label="remove">${xSvg()}</button>
+     </div>`).join('');
+}
+
+/* =========================================================================
+   TIMELINE  (operates on the VISIBLE raster subset)
+========================================================================= */
+function visibleRasters(){ return rasters.filter(r => r.stack === activeStack && r.visible); }
+
+function buildTimeline(){
+  [...trackEl.querySelectorAll('.tick,.tick-label')].forEach(n => n.remove());
+  const vis = visibleRasters(), n = vis.length;
+  if (n === 0){ $('prev').disabled = $('next').disabled = $('play').disabled = true; return; }
+  vis.forEach((r, i) => {
+    const left = n === 1 ? 50 : (i / (n - 1)) * 100;
+    const tick = document.createElement('div');
+    tick.className = 'tick'; tick.style.left = left + '%';
+    trackEl.appendChild(tick);
+    const lbl = document.createElement('div');
+    lbl.className = 'tick-label'; lbl.style.left = left + '%';
+    lbl.textContent = r.year ?? ('#' + (i + 1));
+    trackEl.appendChild(lbl);
+  });
+  $('prev').disabled = $('next').disabled = $('play').disabled = (n < 2);
+}
+
+function applyVisual(p){
+  rasters.forEach(r => { if (r.stack !== activeStack || !r.visible){ try { r.layer.setOpacity(0); } catch(_){} } });
+  const vis = visibleRasters(), n = vis.length;
+  if (!n){ yearOut.textContent = '----'; blendOut.textContent = ''; return; }
+  const snap = snapCb.checked;
+
+  if (snap){
+    const idx = Math.max(0, Math.min(n - 1, Math.round(p)));
+    vis.forEach((r,i)=> r.layer.setOpacity(i === idx ? 1 : 0));
+    yearOut.textContent = vis[idx].year ?? ('#' + (idx + 1));
+    blendOut.textContent = '';
+  } else {
+    const lo = Math.max(0, Math.min(n - 1, Math.floor(p)));
+    const hi = Math.min(lo + 1, n - 1), f = p - lo;
+    vis.forEach((r,i)=>{ let op = 0; if (i === lo) op = 1 - f; if (i === hi && hi !== lo) op = f; r.layer.setOpacity(op); });
+    if (hi === lo || f < 0.001){ yearOut.textContent = vis[lo].year ?? ('#' + (lo + 1)); blendOut.textContent = ''; }
+    else {
+      const yLo = vis[lo].year ?? ('#'+(lo+1)), yHi = vis[hi].year ?? ('#'+(hi+1));
+      yearOut.textContent = f < 0.5 ? yLo : yHi;
+      blendOut.textContent = `${yLo} ⇄ ${yHi} · ${Math.round(f*100)}%`;
+    }
+  }
+
+  const pct = n === 1 ? 50 : (p / (n - 1)) * 100;
+  handleEl.style.left = pct + '%';
+  fillEl.style.width  = pct + '%';
+  const near = Math.round(p);
+  trackEl.querySelectorAll('.tick').forEach((t,i)=>t.classList.toggle('active', i === near));
+  trackEl.querySelectorAll('.tick-label').forEach((t,i)=>t.classList.toggle('active', i === near));
+}
+
+function setPos(p){
+  const n = visibleRasters().length;
+  pos = Math.max(0, Math.min(Math.max(0, n - 1), p));
+  applyVisual(pos);
+}
+snapCb.onchange = () => setPos(snapCb.checked ? Math.round(pos) : pos);
+
+/* ---- Drag ---- */
+let dragging = false;
+function posFromEvent(e){
+  const rect = trackEl.getBoundingClientRect();
+  const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+  const frac = Math.max(0, Math.min(1, x / rect.width));
+  return frac * (visibleRasters().length - 1);
+}
+function startDrag(e){ if (visibleRasters().length < 2) return; dragging = true; stopPlay(); handleEl.style.cursor = 'grabbing'; setPos(posFromEvent(e)); e.preventDefault(); }
+function moveDrag(e){ if (dragging) setPos(posFromEvent(e)); }
+function endDrag(){ if (!dragging) return; dragging = false; handleEl.style.cursor = 'grab'; if (snapCb.checked) setPos(Math.round(pos)); }
+trackEl.addEventListener('pointerdown', startDrag);
+window.addEventListener('pointermove', moveDrag);
+window.addEventListener('pointerup', endDrag);
+trackEl.addEventListener('touchstart', startDrag, { passive:false });
+window.addEventListener('touchmove', moveDrag, { passive:false });
+window.addEventListener('touchend', endDrag);
+
+/* ---- Prev / Next / Play ---- */
+$('prev').onclick = () => { stopPlay(); setPos(Math.round(pos) - 1); };
+$('next').onclick = () => { stopPlay(); setPos(Math.round(pos) + 1); };
+$('play').onclick = () => playing ? stopPlay() : startPlay();
+function startPlay(){
+  const n = visibleRasters().length;
+  if (n < 2) return;
+  playing = true;
+  $('play-icon').innerHTML = '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';
+  if (pos >= n - 1) pos = 0;
+  let last = performance.now();
+  const step = now => {
+    if (!playing) return;
+    const dt = (now - last) / 1000; last = now;
+    pos += dt * parseFloat(speedEl.value);
+    if (pos >= visibleRasters().length - 1) setPos(0);
+    else setPos(pos);
+    rafId = requestAnimationFrame(step);
+  };
+  rafId = requestAnimationFrame(step);
+}
+function stopPlay(){
+  playing = false;
+  if (rafId) cancelAnimationFrame(rafId);
+  $('play-icon').innerHTML = '<path d="M8 5v14l11-7z"/>';
+}
+
+/* ---- Keyboard ---- */
+window.addEventListener('keydown', e => {
+  if (/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) return;
+  if (visibleRasters().length < 2) return;
+  if (e.code === 'ArrowLeft'){ stopPlay(); setPos(Math.round(pos)-1); }
+  else if (e.code === 'ArrowRight'){ stopPlay(); setPos(Math.round(pos)+1); }
+  else if (e.code === 'Space'){ e.preventDefault(); playing ? stopPlay() : startPlay(); }
+});
+
+/* =========================================================================
+   MEASURE TOOLS — distance + area (right side, stacked under the zoom control)
+========================================================================= */
+let measureKind = null, measuring = false, measurePts = [], measureGroup = null;
+const _rulerSvg = '<svg viewBox="0 0 24 24"><path d="M3 17L17 3l4 4L7 21z"/><path d="M7.5 11.5l2 2M11 8l2 2M14.5 11.5l2 2"/></svg>';
+const _areaSvg  = '<svg viewBox="0 0 24 24"><path d="M5 7l7-3 7 3-1.5 13H6.5z"/></svg>';
+const _clrSvg   = '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+const _kmlSvg   = '<svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>';
+
+const _ToolsCtl = L.Control.extend({
+  options:{ position:'topright' },
+  onAdd(){
+    const d = L.DomUtil.create('div', 'leaflet-bar map-tools');
+    d.innerHTML = `<a href="#" id="tool-line" role="button" title="Measure distance">${_rulerSvg}</a>`
+                + `<a href="#" id="tool-area" role="button" title="Measure area">${_areaSvg}</a>`;
+    L.DomEvent.disableClickPropagation(d); L.DomEvent.disableScrollPropagation(d);
+    return d;
+  }
+});
+const _ReadCtl = L.Control.extend({
+  options:{ position:'topright' },
+  onAdd(){
+    const d = L.DomUtil.create('div', 'measure-readout'); d.id = 'measure-readout'; d.style.display = 'none';
+    d.innerHTML = `<span id="measure-text"></span>`
+                + `<a href="#" id="measure-kml" title="Download area as KML" style="display:none">${_kmlSvg}</a>`
+                + `<a href="#" id="measure-clear" title="Clear measurement">${_clrSvg}</a>`;
+    L.DomEvent.disableClickPropagation(d);
+    return d;
+  }
+});
+map.addControl(new _ToolsCtl());
+map.addControl(new _ReadCtl());
+
+function setMeasureUI(){
+  const a = $('tool-line'), b = $('tool-area');
+  if (a) a.classList.toggle('active', measuring && measureKind === 'line');
+  if (b) b.classList.toggle('active', measuring && measureKind === 'area');
+}
+function showReadout(html){
+  const box = $('measure-readout'), txt = $('measure-text'); if (!box) return;
+  if (html){ txt.innerHTML = html; box.style.display = 'flex'; } else { box.style.display = 'none'; txt.innerHTML = ''; }
+}
+const _fmtLen = m => m < 1000 ? `${m.toFixed(0)} m` : `${(m/1000).toFixed(2)} km`;
+function _fmtArea(m2){ const ha = m2/1e4, km2 = m2/1e6;
+  if (m2 < 1e4) return `${m2.toFixed(0)} m²`;
+  return km2 >= 1 ? `${ha.toFixed(1)} ha · ${km2.toFixed(2)} km²` : `${ha.toFixed(2)} ha`; }
+function _lineLen(pts){ let m = 0; for (let i = 1; i < pts.length; i++) m += map.distance(pts[i-1], pts[i]); return m; }
+function _geoArea(pts){ const R = 6378137, d2r = Math.PI/180, n = pts.length; if (n < 3) return 0;
+  let a = 0; for (let i = 0; i < n; i++){ const p1 = pts[i], p2 = pts[(i+1) % n];
+    a += (p2.lng - p1.lng) * d2r * (2 + Math.sin(p1.lat*d2r) + Math.sin(p2.lat*d2r)); }
+  return Math.abs(a * R * R / 2); }
+
+function exportPolygonKML(){
+  if (measureKind !== 'area' || measurePts.length < 3){
+    showReadout('<span class="sub">draw an area (3+ points) first</span>'); return;
+  }
+  let nm = prompt('Name for this area (optional):', 'Area of interest');
+  nm = (nm && nm.trim()) ? nm.trim() : 'Area of interest';
+  const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const ring   = measurePts.concat([measurePts[0]]);                      // close the ring
+  const coords = ring.map(p => `${p.lng.toFixed(7)},${p.lat.toFixed(7)},0`).join(' ');
+  const areaHa = (_geoArea(measurePts) / 1e4).toFixed(2);
+  const perim  = _fmtLen(_lineLen(ring));
+  const kml =
+`<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>${esc(nm)}</name>
+    <Style id="aoi">
+      <LineStyle><color>ff41f4b6</color><width>2</width></LineStyle>
+      <PolyStyle><color>3341f4b6</color></PolyStyle>
+    </Style>
+    <Placemark>
+      <name>${esc(nm)}</name>
+      <description>Area ${areaHa} ha \u00b7 perimeter ${perim}</description>
+      <styleUrl>#aoi</styleUrl>
+      <Polygon>
+        <tessellate>1</tessellate>
+        <outerBoundaryIs>
+          <LinearRing>
+            <coordinates>${coords}</coordinates>
+          </LinearRing>
+        </outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+  </Document>
+</kml>`;
+  const d = new Date(), pad = n => String(n).padStart(2,'0');
+  const stamp = `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}`;
+  const safe = nm.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'') || 'aoi';
+  const blob = new Blob([kml], { type:'application/vnd.google-earth.kml+xml' });
+  const url  = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `${safe}_${stamp}.kml`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  showReadout(`<b>${areaHa} ha</b><span class="sub">KML downloaded</span>`);
+}
+
+function drawMeasure(cursor){
+  if (!measureGroup) return;
+  measureGroup.clearLayers();
+  const live = (cursor && measuring) ? measurePts.concat([cursor]) : measurePts.slice();
+  const dash = measuring ? '5,6' : null;
+  if (measureKind === 'area' && live.length >= 3){
+    L.polygon(live, { color:'#b6f441', weight:2, fillColor:'#b6f441', fillOpacity:.12, dashArray:dash, interactive:false }).addTo(measureGroup);
+  } else if (live.length >= 2){
+    L.polyline(live, { color:'#b6f441', weight:2.5, dashArray:dash, interactive:false }).addTo(measureGroup);
+  }
+  measurePts.forEach(p => L.circleMarker(p, { radius:3.5, color:'#b6f441', weight:2, fillColor:'#0a0c0e', fillOpacity:1, interactive:false }).addTo(measureGroup));
+  if (measureKind === 'area'){
+    if (live.length >= 3) showReadout(`<b>${_fmtArea(_geoArea(live))}</b><span class="sub">perimeter ${_fmtLen(_lineLen(live.concat([live[0]])))}</span>`);
+    else showReadout('<span class="sub">click 3+ points · double-click to finish</span>');
+  } else {
+    if (live.length >= 2){ const s = live.length - 1; showReadout(`<b>${_fmtLen(_lineLen(live))}</b><span class="sub">${s} segment${s>1?'s':''}</span>`); }
+    else showReadout('<span class="sub">click points · double-click to finish</span>');
+  }
+  const _kb = $('measure-kml');
+  if (_kb) _kb.style.display = (measureKind === 'area' && measurePts.length >= 3) ? '' : 'none';
+}
+function _mClick(e){ if (!measuring) return; measurePts.push(e.latlng); drawMeasure(); }
+function _mMove(e){ if (measuring && measurePts.length) drawMeasure(e.latlng); }
+function _mFinish(e){
+  if (!measuring) return;
+  if (e && e.originalEvent) L.DomEvent.stop(e.originalEvent);
+  if (measurePts.length > 1) measurePts.pop();              // drop the double-click's duplicate vertex
+  measuring = false;
+  map.off('click', _mClick); map.off('mousemove', _mMove); map.off('dblclick', _mFinish);
+  map.getContainer().style.cursor = '';
+  setTimeout(() => map.doubleClickZoom.enable(), 10);
+  setMeasureUI(); drawMeasure();
+}
+function startMeasure(kind){
+  if (measuring && measureKind === kind){ cancelMeasure(); return; }   // toggle off
+  cancelMeasure();
+  measureKind = kind; measuring = true; measurePts = [];
+  measureGroup = L.layerGroup().addTo(map);
+  map.getContainer().style.cursor = 'crosshair';
+  map.doubleClickZoom.disable();
+  map.on('click', _mClick); map.on('mousemove', _mMove); map.on('dblclick', _mFinish);
+  setMeasureUI(); drawMeasure();
+}
+function cancelMeasure(){
+  measuring = false; measureKind = null; measurePts = [];
+  if (measureGroup){ map.removeLayer(measureGroup); measureGroup = null; }
+  map.off('click', _mClick); map.off('mousemove', _mMove); map.off('dblclick', _mFinish);
+  map.getContainer().style.cursor = ''; map.doubleClickZoom.enable();
+  setMeasureUI(); showReadout('');
+}
+$('tool-line').addEventListener('click', e => { e.preventDefault(); startMeasure('line'); });
+$('tool-area').addEventListener('click', e => { e.preventDefault(); startMeasure('area'); });
+$('measure-clear').addEventListener('click', e => { e.preventDefault(); cancelMeasure(); });
+$('measure-kml').addEventListener('click', e => { e.preventDefault(); exportPolygonKML(); });
+window.addEventListener('keydown', e => { if (e.key === 'Escape' && (measuring || measureGroup)) cancelMeasure(); });
+
+/* ---- Init ---- */
+window.addEventListener('load', () => {
+  paintNdviLegend(); setStackUI();
+  if (typeof parseGeoraster === 'undefined' || typeof GeoRasterLayer === 'undefined'){
+    status('Libraries failed to load — check your internet connection, then reopen.', { warn:true, sticky:true });
+  } else {
+    bootstrapData();
+  }
+});
+</script>
+</body>
+</html>

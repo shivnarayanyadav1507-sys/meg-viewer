@@ -1,0 +1,32 @@
+{
+  "layers": [
+    {
+      "url": "data/Meghalaya_L8_DrySeason_NDVI_2015_8bit_COG.tif",
+      "year": 2015
+    },
+    {
+      "url": "data/Meghalaya_L8_PanSharp_HSV_TrueColor_2015_15m_WEB_COG.tif",
+      "year": 2015
+    },
+    {
+      "url": "data/Meghalaya_S2_2016_RGBN_median_10m_RGB_8bit_COG.tif",
+      "year": 2016
+    },
+    {
+      "url": "data/Meghalaya_S2_2017_small_RGB_8bit_COG.tif",
+      "year": 2017
+    },
+    {
+      "url": "data/Meghalaya_S2_2018_small_RGB_8bit_COG.tif",
+      "year": 2018
+    },
+    {
+      "url": "data/Meghalaya_S2_2019_small_RGB_8bit_COG.tif",
+      "year": 2019
+    },
+    {
+      "url": "data/Meghalaya_S2_2020_small_RGB_8bit_COG.tif",
+      "year": 2020
+    }
+  ]
+}
