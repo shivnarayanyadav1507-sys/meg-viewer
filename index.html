@@ -234,7 +234,7 @@
   @keyframes introIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
   .intro-kicker{font:600 10.5px 'JetBrains Mono',monospace;letter-spacing:.28em;text-transform:uppercase;color:var(--accent)}
   .intro-h{font-size:26px;font-weight:700;letter-spacing:-.01em;line-height:1.2;margin:0}
-  .intro-step[data-step="forest"] .intro-h{font-family:'Bagel Fat One',ui-sans-serif,sans-serif;font-weight:400;font-size:25px;letter-spacing:0;line-height:1.18}
+  .intro-step[data-step="forest"] .intro-h{font-family:'Bagel Fat One',ui-sans-serif,sans-serif;font-weight:400;font-size:clamp(30px,6vw,54px);letter-spacing:0;line-height:1.12}
   .intro-p{font-size:14px;color:var(--muted);line-height:1.6;margin:0;max-width:440px}
   .intro-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:4px}
   .intro-btn{border:1px solid var(--accent);background:var(--accent);color:#0a0c0e;border-radius:10px;
@@ -253,44 +253,35 @@
   .q-reveal.on{display:flex}
   .q-fact{font-size:13px;color:var(--muted);line-height:1.6;max-width:430px;
     border-left:2px solid var(--accent);padding:2px 0 2px 14px;text-align:left}
-  .forest{position:relative;width:min(540px,90vw);height:232px;overflow:hidden;border-radius:14px;
-    background:linear-gradient(180deg,rgba(18,28,24,0) 42%,rgba(18,28,24,.4))}
-  .forest .hills{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0}
+  /* full-screen forest scene */
+  .forest-step{position:fixed;inset:0;width:100%;max-width:none;gap:0}
+  .forest{position:absolute;inset:0;width:100%;height:100%;overflow:hidden;background:none}
   .forest .dawn{position:absolute;inset:0;z-index:0;pointer-events:none;
-    background:radial-gradient(110% 78% at 50% 72%, rgba(255,142,76,.30), rgba(255,142,76,.07) 40%, transparent 66%)}
-  .cloud{position:absolute;z-index:1;display:flex;align-items:flex-end;filter:blur(3px)}
+    background:radial-gradient(110% 62% at 50% 60%, rgba(255,142,76,.30), rgba(255,142,76,.07) 42%, transparent 66%)}
+  .forest .hills{position:absolute;left:0;right:0;bottom:0;width:100%;height:42%;display:block;z-index:0}
+  .cloud{position:absolute;z-index:1;display:flex;align-items:flex-end;filter:blur(4px)}
   .cloud i{display:block;background:rgba(255,255,255,.9);border-radius:50%}
-  .cloud i:nth-child(1){width:24px;height:24px}
-  .cloud i:nth-child(2){width:40px;height:40px;margin:0 -10px}
-  .cloud i:nth-child(3){width:22px;height:22px}
-  .cloud.c1{top:24px;left:10%;animation:drift1 26s ease-in-out infinite}
-  .cloud.c2{top:52px;left:48%;animation:drift2 34s ease-in-out infinite}
-  .cloud.c3{top:14px;left:70%;animation:drift3 30s ease-in-out infinite}
-  @keyframes drift1{0%,100%{transform:translateX(-22px)}50%{transform:translateX(30px)}}
-  @keyframes drift2{0%,100%{transform:translateX(24px) scale(.82)}50%{transform:translateX(-24px) scale(.82)}}
-  @keyframes drift3{0%,100%{transform:translateX(-18px) scale(1.16)}50%{transform:translateX(26px) scale(1.16)}}
-  .forest .ground{position:absolute;z-index:2;left:6%;right:6%;bottom:24px;height:2px;
+  .cloud i:nth-child(1){width:34px;height:34px}
+  .cloud i:nth-child(2){width:56px;height:56px;margin:0 -14px}
+  .cloud i:nth-child(3){width:32px;height:32px}
+  .cloud.c1{top:13%;left:11%;animation:drift1 26s ease-in-out infinite}
+  .cloud.c2{top:25%;left:58%;animation:drift2 34s ease-in-out infinite}
+  .cloud.c3{top:8%;left:78%;animation:drift3 30s ease-in-out infinite}
+  @keyframes drift1{0%,100%{transform:translateX(-26px)}50%{transform:translateX(36px)}}
+  @keyframes drift2{0%,100%{transform:translateX(30px) scale(.82)}50%{transform:translateX(-30px) scale(.82)}}
+  @keyframes drift3{0%,100%{transform:translateX(-22px) scale(1.18)}50%{transform:translateX(32px) scale(1.18)}}
+  .forest .ground{position:absolute;z-index:2;left:0;right:0;bottom:7%;height:2px;
     background:linear-gradient(90deg,transparent,rgba(182,244,65,.4),transparent)}
-  .tree{position:absolute;z-index:2;bottom:24px;transform:scale(0);transform-origin:bottom center;opacity:0}
-  .forest.grow .tree{animation:treeGrow .85s cubic-bezier(.2,.85,.25,1) forwards;animation-delay:var(--d,0s)}
+  .tree{position:absolute;z-index:2;bottom:7%;transform:scale(0);transform-origin:bottom center;opacity:0}
+  .forest.grow .tree{animation:treeGrow .9s cubic-bezier(.2,.85,.25,1) forwards;animation-delay:var(--d,0s)}
   @keyframes treeGrow{0%{transform:scale(0);opacity:0}55%{opacity:1}100%{transform:scale(1);opacity:1}}
-  .tree i{display:block;width:var(--w,46px);height:var(--w,46px);background:var(--c,#2e7d32);
+  .tree i{display:block;width:calc(var(--w,46px) * 1.7);height:calc(var(--w,46px) * 1.7);background:var(--c,#2e7d32);
     border-radius:46% 46% 44% 44% / 62% 62% 40% 40%}
-  .tree b{display:block;width:6px;height:15px;margin:-5px auto 0;background:#5a3d2b;border-radius:0 0 2px 2px}
+  .tree b{display:block;width:9px;height:22px;margin:-7px auto 0;background:#5a3d2b;border-radius:0 0 2px 2px}
+  .forest-text{position:absolute;z-index:3;left:0;right:0;top:16%;display:flex;flex-direction:column;
+    align-items:center;gap:18px;padding:0 22px;text-align:center}
   .forest-next{display:none}
   .forest-next.on{display:inline-block;animation:introIn .4s ease}
-  .code-card{display:flex;flex-direction:column;gap:13px;align-items:center;width:100%;max-width:400px}
-  .code-card.shake{animation:shake .4s}
-  @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
-  .code-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
-  .code-chip{border:1px dashed var(--border-strong);background:none;color:var(--accent);border-radius:20px;
-    padding:6px 13px;font:600 11.5px 'JetBrains Mono',monospace;cursor:pointer;transition:.15s}
-  .code-chip:hover{border-color:var(--accent);background:var(--accent-dim);color:#fff}
-  #intro-code{width:100%;text-align:center;background:var(--panel-solid);color:var(--text);box-sizing:border-box;
-    border:1px solid var(--border-strong);border-radius:11px;padding:12px;font:600 14px 'JetBrains Mono',monospace;
-    letter-spacing:.14em;text-transform:uppercase}
-  #intro-code:focus{outline:none;border-color:var(--accent)}
-  .code-hint{font-size:11.5px;color:var(--muted-dim);min-height:14px}
 </style>
 </head>
 <body>
@@ -309,23 +300,16 @@
   </div>
 
   <div class="intro-step" data-step="quiz">
-    <div class="intro-kicker">First, a quick check-in</div>
-    <h2 class="intro-h">How is your mood today?</h2>
-    <div class="q-opts">
-      <button class="q-opt" data-msg="Love that — let's grow something good today.">Great</button>
-      <button class="q-opt" data-msg="Glad to hear it. A calm mind pairs well with a growing forest.">Pretty good</button>
-      <button class="q-opt" data-msg="That's alright. Even a slow-growing forest still reaches the sky.">So-so</button>
-      <button class="q-opt" data-msg="Take a breath — the trees have waited years, the map can wait a moment.">A bit tired</button>
-    </div>
+    <div class="intro-kicker">Did you know?</div>
+    <h2 class="intro-h"></h2>
+    <div class="q-opts"></div>
     <div class="q-reveal">
-      <p class="q-fact" id="mood-msg"></p>
+      <p class="q-fact" id="quiz-fact"></p>
       <button class="intro-btn" data-quiz-next>Continue</button>
     </div>
   </div>
 
-  <div class="intro-step" data-step="forest">
-    <div class="intro-kicker">Reforesting…</div>
-    <h2 class="intro-h">A future worth protecting</h2>
+  <div class="intro-step forest-step" data-step="forest">
     <div class="forest">
       <span class="dawn"></span>
       <svg class="hills" viewBox="0 0 540 232" preserveAspectRatio="none" aria-hidden="true">
@@ -347,24 +331,25 @@
       <span class="tree" style="left:90%;--w:44px;--c:#b6f441;--d:.34s"><i></i><b></b></span>
       <span class="ground"></span>
     </div>
-    <button class="intro-btn forest-next" data-forest-next>Continue</button>
+    <div class="forest-text">
+      <div class="intro-kicker">Reforesting…</div>
+      <h2 class="intro-h">A future worth protecting</h2>
+      <button class="intro-btn forest-next" data-forest-next>Continue</button>
+    </div>
   </div>
 
-  <div class="intro-step" data-step="code">
-    <div class="intro-kicker">Almost there</div>
-    <h2 class="intro-h">Enter an access code</h2>
-    <p class="intro-p">Tap one (it's just for fun):</p>
-    <div class="code-card">
-      <div class="code-chips">
-        <button class="code-chip">ABODE-OF-CLOUDS</button>
-        <button class="code-chip">ROOT-BRIDGE</button>
-        <button class="code-chip">TREE-MENDOUS</button>
-        <button class="code-chip">CLOUD-9</button>
-        <button class="code-chip">LEAF-IT-TO-ME</button>
-      </div>
-      <input id="intro-code" placeholder="type a code" autocomplete="off" spellcheck="false">
-      <button class="intro-btn" data-unlock>Unlock the map</button>
-      <div class="code-hint"></div>
+  <div class="intro-step" data-step="mood">
+    <div class="intro-kicker">Last thing</div>
+    <h2 class="intro-h">How is your mood today?</h2>
+    <div class="q-opts mood-opts">
+      <button class="q-opt" data-msg="Love that — let's grow something good today.">Great</button>
+      <button class="q-opt" data-msg="Glad to hear it. A calm mind pairs well with a growing forest.">Pretty good</button>
+      <button class="q-opt" data-msg="That's alright. Even a slow-growing forest still reaches the sky.">So-so</button>
+      <button class="q-opt" data-msg="Take a breath — the trees have waited years, the map can wait a moment.">A bit tired</button>
+    </div>
+    <div class="q-reveal">
+      <p class="q-fact" id="mood-msg"></p>
+      <button class="intro-btn" data-mood-next>Enter the map</button>
     </div>
   </div>
 </div>
@@ -451,7 +436,7 @@
         </div>
         <div class="empty-hint" style="margin-top:-3px">Mirrors QGIS "Stretch to MinMax" — copy its R/G/B Max here. Lower = brighter.</div>
 
-        <div class="empty-hint" style="text-align:center;opacity:.55;letter-spacing:.08em">build · rgb + ndvi · measure · kml · labels · intro</div>
+        <div class="empty-hint" style="text-align:center;opacity:.55;letter-spacing:.08em">build · rgb + ndvi · measure · kml · labels · intro · quiz+mood</div>
       </div>
     </div>
   </div>
@@ -925,7 +910,9 @@ function toggleRaster(i){
   r.visible = !r.visible;
   if (!r.visible){ try { r.layer.setOpacity(0); } catch(_){} }
   buildTimeline();
-  setPos(Math.min(pos, Math.max(0, visibleRasters().length - 1)));
+  const vis = visibleRasters();
+  if (vis.length){ timelineEl.classList.add('show'); setPos(Math.min(pos, vis.length - 1)); }
+  else { stopPlay(); timelineEl.classList.remove('show'); }
   rebuildRasterList();
 }
 function removeRaster(i){
@@ -1130,10 +1117,10 @@ async function loadGpkg(file){
 function addVector(gj, name){
   if (!gj){ status(`Nothing to add from ${name}`, { warn:true, sticky:true }); return; }
   const lname = (name || '').toLowerCase();
-  const isDistrict = /district/.test(lname) && !/sub/.test(lname);    // District = dark, hollow boundary
-  const color = isDistrict ? '#46566a' : VEC_COLORS[vecColorIdx++ % VEC_COLORS.length];
+  const isDistrict = /district/.test(lname) && !/sub/.test(lname);    // District = light, hollow boundary
+  const color = isDistrict ? '#b3d4f0' : VEC_COLORS[vecColorIdx++ % VEC_COLORS.length];
   const polyStyle = isDistrict
-    ? { color, weight:2.6, opacity:1, fill:false }
+    ? { color, weight:2.8, opacity:1, fill:false }
     : { color, weight:2, opacity:.95, fillColor:color, fillOpacity:.08 };
   const layer = L.geoJSON(gj, {
     style: polyStyle,
@@ -1149,9 +1136,9 @@ function addVector(gj, name){
   const _lf = pickLabelField(layer);
   let _fc = 0; try { _fc = layer.getLayers().length; } catch(_){}
   const _big = _fc > LABEL_AUTO_MAX;                       // many features (e.g. villages) -> labels off + zoom-gated
-  const startOn = isDistrict;                              // default ON for District only; Villages (and others) start OFF
+  const startOn = isDistrict || !_preloadingVectors;       // District on; preloaded Villages off; any uploaded vector on
   if (startOn) layer.addTo(map);
-  vectors.push({ name, layer, color, visible:startOn, labelField:_lf, labelsOn: startOn && !!_lf && !_big, labelMinZoom: _big ? LABEL_FAR_MINZOOM : 0 });
+  vectors.push({ name, layer, color, visible:startOn, preloaded:_preloadingVectors, labelField:_lf, labelsOn: startOn && !!_lf && !_big, labelMinZoom: _big ? LABEL_FAR_MINZOOM : 0 });
   rebuildVecList();
   scheduleLabels();
   let cnt = 0; try { cnt = layer.getLayers().length; } catch(_){}
@@ -1244,8 +1231,15 @@ vecListEl.onclick = e => {
   else if (x) removeVector(+x.dataset.i);
 };
 $('clear-vectors').onclick = () => {
-  vectors.forEach(v => { try { map.removeLayer(v.layer); } catch(_){} });
-  vectors.length = 0; rebuildVecList(); status('Vectors cleared');
+  let removed = 0;
+  for (let i = vectors.length - 1; i >= 0; i--){
+    const v = vectors[i];
+    if (v.preloaded) continue;                 // keep the base District + Village layers
+    try { map.removeLayer(v.layer); } catch(_){}
+    vectors.splice(i, 1); removed++;
+  }
+  rebuildVecList();
+  status(removed ? `Cleared ${removed} added vector${removed !== 1 ? 's' : ''} — District & Villages kept` : 'No added vectors to clear — District & Villages kept');
 };
 
 /* =========================================================================
@@ -1581,14 +1575,44 @@ window.addEventListener('load', () => {
   const begin = ov.querySelector('[data-begin]');
   if (begin) begin.addEventListener('click', function(){ show(1); });
 
-  ov.querySelectorAll('.q-opt').forEach(function(b){
-    b.addEventListener('click', function(){
-      ov.querySelectorAll('.q-opt').forEach(function(x){ x.disabled = true; x.classList.remove('right'); });
-      b.classList.add('right');
-      const msg = ov.querySelector('#mood-msg'); if (msg) msg.textContent = b.getAttribute('data-msg') || '';
-      const r = ov.querySelector('.q-reveal'); if (r) r.classList.add('on');
+  // Rotating Meghalaya quiz — a different question each visit
+  const QUIZ = [
+    { q:"What does \"Meghalaya\" mean?",
+      opts:["Land of a thousand hills","Abode of the clouds","Valley of the living bridges","Garden of the eastern sun"], a:1,
+      fact:"From Sanskrit megha (cloud) + alaya (abode). Mawsynram and Cherrapunji here are among the rainiest places on Earth — and those clouds are exactly what make a clear satellite image so valuable." },
+    { q:"Meghalaya's Khasi people are famous for building what across rivers?",
+      opts:["Bamboo rafts","Stone archways","Living root bridges","Floating gardens"], a:2,
+      fact:"They train the aerial roots of the rubber fig (Ficus elastica) across streams over many years, growing living bridges that only get stronger with age." },
+    { q:"In which year did Meghalaya become a full state of India?",
+      opts:["1947","1972","1985","1956"], a:1,
+      fact:"Meghalaya was carved out of Assam and attained full statehood on 21 January 1972." },
+    { q:"Meghalaya's major communities are unusually…",
+      opts:["Matrilineal","Patrilineal","Nomadic","Seafaring"], a:0,
+      fact:"Among the Khasi, Jaintia and Garo, lineage and inheritance pass through the mother — often the youngest daughter inherits the family home." },
+    { q:"Mawsynram in Meghalaya is renowned as one of the world's…",
+      opts:["Driest deserts","Highest peaks","Wettest places","Largest caves"], a:2,
+      fact:"It records among the highest annual rainfall on Earth — monsoon clouds pile against these hills and pour." }
+  ];
+  function pickQuiz(){
+    const step = ov.querySelector('.intro-step[data-step="quiz"]');
+    if (!step) return;
+    const item = QUIZ[Math.floor(Math.random() * QUIZ.length)];
+    const h = step.querySelector('.intro-h'); if (h) h.textContent = item.q;
+    const opts = step.querySelector('.q-opts'); if (!opts) return;
+    opts.innerHTML = '';
+    item.opts.forEach(function(text, idx){
+      const b = document.createElement('button');
+      b.className = 'q-opt'; b.textContent = text;
+      if (idx === item.a) b.setAttribute('data-correct', '1');
+      b.addEventListener('click', function(){
+        opts.querySelectorAll('.q-opt').forEach(function(x){ x.disabled = true; if (x.dataset.correct === '1') x.classList.add('right'); });
+        if (b.dataset.correct !== '1') b.classList.add('wrong');
+        const fact = step.querySelector('.q-fact'); if (fact) fact.textContent = item.fact;
+        const r = step.querySelector('.q-reveal'); if (r) r.classList.add('on');
+      });
+      opts.appendChild(b);
     });
-  });
+  }
   const qn = ov.querySelector('[data-quiz-next]');
   if (qn) qn.addEventListener('click', function(){ show(2); });
 
@@ -1601,22 +1625,22 @@ window.addEventListener('load', () => {
   const fn = ov.querySelector('[data-forest-next]');
   if (fn) fn.addEventListener('click', function(){ show(3); });
 
-  const CODES = ['ABODEOFCLOUDS','ROOTBRIDGE','TREEMENDOUS','CLOUD9','LEAFITTOME'];
-  const inp = document.getElementById('intro-code');
-  ov.querySelectorAll('.code-chip').forEach(function(c){
-    c.addEventListener('click', function(){ if (inp){ inp.value = c.textContent.trim(); inp.focus(); } });
-  });
-  function norm(s){ return (s || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
-  function tryCode(){
-    if (CODES.indexOf(norm(inp && inp.value)) !== -1){ finish(); return; }
-    const card = ov.querySelector('.code-card'), hint = ov.querySelector('.code-hint');
-    if (card){ card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake'); }
-    if (hint) hint.textContent = 'Not quite — tap one of the codes above.';
+  // Mood check-in — the last step before the map
+  const moodStep = ov.querySelector('.intro-step[data-step="mood"]');
+  if (moodStep){
+    moodStep.querySelectorAll('.q-opt').forEach(function(b){
+      b.addEventListener('click', function(){
+        moodStep.querySelectorAll('.q-opt').forEach(function(x){ x.disabled = true; x.classList.remove('right'); });
+        b.classList.add('right');
+        const msg = moodStep.querySelector('#mood-msg'); if (msg) msg.textContent = b.getAttribute('data-msg') || '';
+        const r = moodStep.querySelector('.q-reveal'); if (r) r.classList.add('on');
+      });
+    });
   }
-  const unlock = ov.querySelector('[data-unlock]');
-  if (unlock) unlock.addEventListener('click', tryCode);
-  if (inp) inp.addEventListener('keydown', function(e){ if (e.key === 'Enter') tryCode(); });
+  const mn = ov.querySelector('[data-mood-next]');
+  if (mn) mn.addEventListener('click', finish);
 
+  pickQuiz();
   show(0);
 })();
 </script>
