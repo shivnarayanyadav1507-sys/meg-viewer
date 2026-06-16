@@ -47,6 +47,9 @@
   .measure-readout a{display:flex;color:var(--muted-dim)}
   .measure-readout a:hover{color:var(--warn)}
   .measure-readout svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
+  /* while a measure/draw tool is active, clicks pass through layers straight to the map */
+  .measuring .leaflet-overlay-pane,
+  .measuring .leaflet-marker-pane{pointer-events:none}
   .lyr .zoom{background:none;border:none;cursor:pointer;padding:2px;display:flex;align-items:center;color:var(--muted-dim);flex:none}
   .lyr .zoom svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
   .lyr .zoom:hover{color:var(--accent)}
@@ -1527,6 +1530,7 @@ function _mFinish(e){
   measuring = false;
   map.off('click', _mClick); map.off('mousemove', _mMove); map.off('dblclick', _mFinish);
   map.getContainer().style.cursor = '';
+  map.getContainer().classList.remove('measuring');
   setTimeout(() => map.doubleClickZoom.enable(), 10);
   setMeasureUI(); drawMeasure();
 }
@@ -1536,6 +1540,7 @@ function startMeasure(kind){
   measureKind = kind; measuring = true; measurePts = [];
   measureGroup = L.layerGroup().addTo(map);
   map.getContainer().style.cursor = 'crosshair';
+  map.getContainer().classList.add('measuring');   // let clicks pass through layers to the map
   map.doubleClickZoom.disable();
   map.on('click', _mClick); map.on('mousemove', _mMove); map.on('dblclick', _mFinish);
   setMeasureUI(); drawMeasure();
@@ -1544,7 +1549,7 @@ function cancelMeasure(){
   measuring = false; measureKind = null; measurePts = [];
   if (measureGroup){ map.removeLayer(measureGroup); measureGroup = null; }
   map.off('click', _mClick); map.off('mousemove', _mMove); map.off('dblclick', _mFinish);
-  map.getContainer().style.cursor = ''; map.doubleClickZoom.enable();
+  map.getContainer().style.cursor = ''; map.getContainer().classList.remove('measuring'); map.doubleClickZoom.enable();
   setMeasureUI(); showReadout('');
 }
 $('tool-line').addEventListener('click', e => { e.preventDefault(); startMeasure('line'); });
