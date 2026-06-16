@@ -118,6 +118,15 @@
 
   /* layer lists */
   .layers{display:flex;flex-direction:column;gap:6px;max-height:168px;overflow:auto}
+  /* dark, slim scrollbars to match the panels (Chromium/Brave + Firefox) */
+  .layers, .left-stack{scrollbar-width:thin;scrollbar-color:#33404b transparent}
+  .layers::-webkit-scrollbar, .left-stack::-webkit-scrollbar{width:9px;height:9px}
+  .layers::-webkit-scrollbar-track, .left-stack::-webkit-scrollbar-track{background:transparent;margin:4px 0}
+  .layers::-webkit-scrollbar-thumb, .left-stack::-webkit-scrollbar-thumb{
+    background:#33404b;border:2px solid transparent;background-clip:padding-box;border-radius:8px}
+  .layers::-webkit-scrollbar-thumb:hover, .left-stack::-webkit-scrollbar-thumb:hover{
+    background:#485866;border:2px solid transparent;background-clip:padding-box}
+  .layers::-webkit-scrollbar-corner, .left-stack::-webkit-scrollbar-corner{background:transparent}
   .lyr{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:8px;
     background:rgba(255,255,255,.03);border:1px solid var(--border);font-size:11.5px}
   .lyr.off{opacity:.5}
