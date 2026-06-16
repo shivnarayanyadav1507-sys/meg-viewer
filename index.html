@@ -682,7 +682,7 @@ function makeLayer(georaster, opts = {}){
   const forceByte = opts.byte;
   const userBands = opts.bands ? opts.bands.map(b => b - 1) : null;
   return new GeoRasterLayer({
-    georaster, resolution: 256, opacity: 0,
+    georaster, resolution: 256, opacity: 0, updateWhenZooming: false,
     pixelValuesToColorFn: v => {
       if (!v) return null;
 
@@ -1136,6 +1136,7 @@ function addVector(gj, name){
     : { color, weight:2, opacity:.95, fillColor:color, fillOpacity:.08 };
   const layer = L.geoJSON(gj, {
     style: polyStyle,
+    smoothFactor: 1.5,                                       // fewer points drawn per frame -> faster zoom/pan
     pointToLayer: (f, latlng) => L.circleMarker(latlng, { radius:5, color, fillColor:color, fillOpacity:.5, weight:2 }),
     onEachFeature: (f, l) => {
       const p = f.properties || {};
