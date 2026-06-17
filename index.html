@@ -717,7 +717,7 @@ function makeLayer(georaster, opts = {}){
   const forceByte = opts.byte;
   const userBands = opts.bands ? opts.bands.map(b => b - 1) : null;
   return new GeoRasterLayer({
-    georaster, resolution: 256, opacity: 0, updateWhenZooming: false,
+    georaster, resolution: 128, opacity: 0, updateWhenZooming: true, keepBuffer: 4,
     pixelValuesToColorFn: v => {
       if (!v) return null;
 
