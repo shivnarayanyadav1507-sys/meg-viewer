@@ -10,7 +10,7 @@ Therefore, the methodology is as follows.
 
 - [2015 Mosaic (Landsat 8)](#2015-mosaic-landsat-8)
 - [2016–2020 and 2025 Mosaic (Sentinel-2)](#20162020-and-2025-mosaic-sentinel-2)
-  - [Year-specific notes](#year-specific-notes)
+- [Year-specific notes](#year-specific-notes)
 - [NDVI (2015–2020)](#ndvi-20152020)
 - [Summary table](#summary-table)
 - [Processing flow at a glance](#processing-flow-at-a-glance)
