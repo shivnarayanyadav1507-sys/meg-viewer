@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>Meghalaya Imagery — MapLibre</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3QgeD0iMC41IiB5PSIwLjUiIHdpZHRoPSIzMSIgaGVpZ2h0PSIzMSIgcng9IjciIGZpbGw9IiMwZjEzMTciIHN0cm9rZT0iIzI3MmYzNyIgc3Ryb2tlLXdpZHRoPSIxIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMSAxKSBzY2FsZSgxLjI1KSIgZmlsbD0ibm9uZSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2UtbGluZWNhcD0icm91bmQiPjxwYXRoIGQ9Ik0xMiAzIEwyMSA3LjUgTDEyIDEyIEwzIDcuNSBaIiBzdHJva2U9IiNmZjhhNGMiLz48cGF0aCBkPSJNMyAxMiBMMTIgMTYuNSBMMjEgMTIiIHN0cm9rZT0iI2I2ZjQ0MSIvPjxwYXRoIGQ9Ik0zIDE2LjUgTDEyIDIxIEwyMSAxNi41IiBzdHJva2U9IiNmZjhhNGMiLz48L2c+PC9zdmc+">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+
+<style>
+  :root{
+    --bg:#0a0c0e; --panel-solid:#0f1317; --panel:rgba(15,19,23,.86);
+    --accent:#b6f441; --accent-dim:rgba(182,244,65,.12); --warn:#ff8a4c;
+    --text:#e9eef2; --muted:#8a97a2; --muted-dim:#5d6873;
+    --border:#222a31; --border-strong:#2e3942; --shadow:0 10px 30px rgba(0,0,0,.5);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
+    font-family:'Space Grotesk',ui-sans-serif,system-ui,sans-serif}
+  #map{position:absolute;inset:0}
+
+  .left-stack{position:absolute;top:14px;left:14px;z-index:1000;width:290px;
+    display:flex;flex-direction:column;gap:12px;overflow:visible}
+
+  .app-title{display:flex;align-self:flex-start;width:max-content;align-items:center;gap:11px;
+    background:var(--panel-solid);border:1px solid var(--border);border-radius:12px;
+    box-shadow:var(--shadow);padding:10px 15px}
+  .app-title-mark{flex:none}
+  .app-title-main{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;
+    letter-spacing:-.01em;line-height:1;color:var(--text);white-space:nowrap}
+  .app-title-div{width:1px;height:15px;background:var(--border-strong);flex:none}
+  .app-title-sub{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;
+    white-space:nowrap;flex:none}
+  .app-title-sub .yl{color:var(--accent)} .app-title-sub .yd{color:var(--warn)}
+
+  .panel{width:290px;background:var(--panel);backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);border:1px solid var(--border);
+    border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+  .panel-head{display:flex;align-items:center;gap:10px;padding:13px 15px;border-bottom:1px solid #1c242b}
+  .logo{width:3px;height:13px;border-radius:2px;background:var(--warn);flex:none}
+  .panel-head h1{margin:0;font-family:'JetBrains Mono',monospace;font-size:12.5px;
+    font-weight:600;letter-spacing:.13em;text-transform:uppercase}
+  .pbody{padding:13px 14px;display:flex;flex-direction:column;gap:12px}
+
+  .lyr{display:flex;align-items:center;gap:10px;background:#141a1f;border:1px solid #1f2730;
+    border-radius:9px;padding:8px 10px}
+  .eye{flex:none;width:26px;height:26px;display:flex;align-items:center;justify-content:center;
+    background:transparent;border:none;color:var(--accent);cursor:pointer;padding:0}
+  .eye.off{color:var(--muted-dim)}
+  .eye svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;
+    stroke-linecap:round;stroke-linejoin:round}
+  .yr{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;color:var(--accent);flex:none}
+  .fn{font-size:12px;color:var(--muted)}
+
+  .ctl{display:flex;flex-direction:column;gap:7px;font-size:12px;color:var(--muted);
+    font-family:'JetBrains Mono',monospace;letter-spacing:.04em}
+  .ctl input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
+
+  .status{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.05em;
+    color:var(--muted-dim);padding-top:2px}
+  .status.load{color:var(--warn)} .status.ok{color:var(--accent)} .status.err{color:#ff6b6b}
+
+  .hint{position:absolute;bottom:12px;left:14px;z-index:1000;font-family:'JetBrains Mono',monospace;
+    font-size:10.5px;letter-spacing:.06em;color:var(--muted-dim);
+    background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:6px 10px}
+
+  .maplibregl-ctrl-group{background:var(--panel-solid)!important;border:1px solid var(--border)!important}
+  .maplibregl-ctrl-group button+button{border-top:1px solid var(--border)!important}
+</style>
+</head>
+<body>
+
+<div class="left-stack">
+  <div class="app-title">
+    <svg class="app-title-mark" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-linejoin="round" aria-hidden="true">
+      <path d="M12 3 L21 7.5 L12 12 L3 7.5 Z" stroke="#ff8a4c" stroke-width="1.5"/>
+      <path d="M3 12 L12 16.5 L21 12" stroke="#b6f441" stroke-width="1.5"/>
+      <path d="M3 16.5 L12 21 L21 16.5" stroke="#ff8a4c" stroke-width="1.5"/>
+    </svg>
+    <span class="app-title-main">Meghalaya Historical Imagery Visualizer</span>
+    <span class="app-title-div"></span>
+    <span class="app-title-sub"><span class="yl">2015</span><span class="yd">–</span><span class="yl">2025</span></span>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><span class="logo"></span><h1>Imagery · COG</h1></div>
+    <div class="pbody">
+      <div class="lyr">
+        <button class="eye" id="toggle-2018" aria-label="Toggle 2018 layer">
+          <svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+        <span class="yr">2018</span>
+        <span class="fn">Sentinel-2 true colour</span>
+      </div>
+      <label class="ctl">Brightness
+        <input type="range" id="bright" min="0" max="35" value="12" />
+      </label>
+      <div class="status" id="status">Starting…</div>
+    </div>
+  </div>
+</div>
+
+<div class="hint">GPU render · MapLibre GL · drag to pan · right-drag to tilt</div>
+<div id="map"></div>
+
+<script type="importmap">
+{
+  "imports": {
+    "maplibre-gl": "https://esm.sh/maplibre-gl@4.7.1"
+  }
+}
+</script>
+<script type="module">
+import maplibregl from 'maplibre-gl';
+import { cogProtocol } from 'https://esm.sh/@geomatico/maplibre-cog-protocol@0.4.0?external=maplibre-gl';
+
+maplibregl.addProtocol('cog', cogProtocol);
+
+const COG_2018 = 'cog://https://shivnarayanyadav1507-sys.github.io/meg-viewer/data/Meghalaya_S2_2018_COG.tif';
+
+const statusEl = document.getElementById('status');
+const setStatus = (t, cls = '') => { statusEl.textContent = t; statusEl.className = 'status ' + cls; };
+
+const map = new maplibregl.Map({
+  container: 'map',
+  style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+  center: [91.3, 25.55],
+  zoom: 7.2,
+  maxZoom: 16
+});
+map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
+map.addControl(new maplibregl.ScaleControl({ maxWidth: 120, unit: 'metric' }), 'bottom-right');
+
+setStatus('Loading basemap…', 'load');
+
+map.on('load', () => {
+  let firstSymbol;
+  for (const l of map.getStyle().layers) { if (l.type === 'symbol') { firstSymbol = l.id; break; } }
+
+  map.addSource('s2-2018', { type: 'raster', url: COG_2018, tileSize: 256 });
+  map.addLayer({
+    id: 's2-2018',
+    type: 'raster',
+    source: 's2-2018',
+    paint: {
+      'raster-opacity': 1,
+      'raster-brightness-min': 0.12,
+      'raster-saturation': 0.15,
+      'raster-resampling': 'linear'
+    }
+  }, firstSymbol);
+
+  setStatus('Loading 2018 imagery…', 'load');
+});
+
+map.on('sourcedata', (e) => {
+  if (e.sourceId === 's2-2018' && e.isSourceLoaded) setStatus('2018 · loaded', 'ok');
+});
+map.on('error', (e) => {
+  console.error('MapLibre error:', e && e.error);
+  setStatus('Error — check the browser console', 'err');
+});
+
+let visible = true;
+const eyeBtn = document.getElementById('toggle-2018');
+eyeBtn.addEventListener('click', () => {
+  if (!map.getLayer('s2-2018')) return;
+  visible = !visible;
+  map.setLayoutProperty('s2-2018', 'visibility', visible ? 'visible' : 'none');
+  eyeBtn.classList.toggle('off', !visible);
+});
+
+document.getElementById('bright').addEventListener('input', (ev) => {
+  if (!map.getLayer('s2-2018')) return;
+  map.setPaintProperty('s2-2018', 'raster-brightness-min', (+ev.target.value) / 100);
+});
+</script>
+</body>
+</html>
