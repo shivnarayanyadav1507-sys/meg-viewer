@@ -148,11 +148,36 @@ map.on('load', () => {
     source: 's2-2018',
     paint: {
       'raster-opacity': 1,
+      'raster-brightness-min': 0.12,
       'raster-saturation': 0.15,
       'raster-resampling': 'nearest',
       'raster-fade-duration': 0
     }
   }, firstSymbol);
+
+  // --- Spotlight mask: flat dark everywhere except inside the Meghalaya boundary ---
+  fetch('data/vectors/Meghalaya_Districts.geojson')
+    .then(r => r.json())
+    .then(gj => {
+      const holes = [];
+      (gj.features || []).forEach(f => {
+        const g = f.geometry; if (!g) return;
+        if (g.type === 'Polygon') holes.push(g.coordinates[0]);
+        else if (g.type === 'MultiPolygon') g.coordinates.forEach(p => holes.push(p[0]));
+      });
+      const world = [[-180, -85], [180, -85], [180, 85], [-180, 85], [-180, -85]];
+      map.addSource('meg-mask', {
+        type: 'geojson',
+        data: { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [world, ...holes] } }
+      });
+      map.addLayer({
+        id: 'meg-mask',
+        type: 'fill',
+        source: 'meg-mask',
+        paint: { 'fill-color': '#0a0c0e', 'fill-opacity': 1, 'fill-antialias': false }
+      }, firstSymbol);
+    })
+    .catch(err => console.error('Boundary mask failed to load:', err));
 
   setStatus('Loading 2018 imagery…', 'load');
 });
