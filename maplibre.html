@@ -97,7 +97,7 @@
         <span class="fn">Sentinel-2 true colour</span>
       </div>
       <label class="ctl">Brightness
-        <input type="range" id="bright" min="0" max="35" value="12" />
+        <input type="range" id="bright" min="0" max="35" value="0" />
       </label>
       <div class="status" id="status">Starting…</div>
     </div>
@@ -148,9 +148,9 @@ map.on('load', () => {
     source: 's2-2018',
     paint: {
       'raster-opacity': 1,
-      'raster-brightness-min': 0.12,
       'raster-saturation': 0.15,
-      'raster-resampling': 'linear'
+      'raster-resampling': 'nearest',
+      'raster-fade-duration': 0
     }
   }, firstSymbol);
 
