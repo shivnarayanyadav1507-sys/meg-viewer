@@ -290,6 +290,7 @@ let playing = false, playTimer = null, rafId = null, lastT = 0;
 let shown = new Set();
 // swipe-compare state
 let compareOn = false, cmpA = 2015, cmpB = 2025, swipeX = 0.5, mapB = null, mapBReady = false, shownB = new Set();
+let maskGeoJSON = null;
 
 const PLAY_SVG  = '<svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z"/></svg>';
 const PAUSE_SVG = '<svg viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>';
@@ -348,9 +349,11 @@ map.on('load', () => {
       if (g.type === 'Polygon') holes.push(g.coordinates[0]);
       else if (g.type === 'MultiPolygon') g.coordinates.forEach(p => holes.push(p[0])); });
     const world = [[-180, -85], [180, -85], [180, 85], [-180, 85], [-180, -85]];
-    map.addSource('meg-mask', { type: 'geojson', data: { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [world, ...holes] } } });
+    maskGeoJSON = { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [world, ...holes] } };
+    map.addSource('meg-mask', { type: 'geojson', data: maskGeoJSON });
     map.addLayer({ id: 'meg-mask', type: 'fill', source: 'meg-mask',
       paint: { 'fill-color': '#0a0c0e', 'fill-antialias': false, 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 3.5, 0, 6, 1] } }, firstSymbol);
+    if (mapBReady) applyMaskToB();
   }).catch(err => console.error('Boundary mask failed:', err));
 
   addVectors();
@@ -701,6 +704,13 @@ async function loadRasterFiles(files) {
 
 // ---------- swipe compare (year A vs year B) ----------
 let cmpSyncBound = false;
+function applyMaskToB() {
+  if (!mapB || !mapBReady || !maskGeoJSON) return;
+  if (mapB.getLayer('meg-mask-b')) return;
+  if (!mapB.getSource('meg-mask-b')) mapB.addSource('meg-mask-b', { type: 'geojson', data: maskGeoJSON });
+  mapB.addLayer({ id: 'meg-mask-b', type: 'fill', source: 'meg-mask-b',
+    paint: { 'fill-color': '#0a0c0e', 'fill-antialias': false, 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 3.5, 0, 6, 1] } }, mapB.__firstSymbol);
+}
 function syncMapB() {
   if (!mapB) return;
   mapB.jumpTo({ center: map.getCenter(), zoom: map.getZoom(), bearing: map.getBearing(), pitch: map.getPitch() });
@@ -717,6 +727,7 @@ function ensureMapB() {
   mapB.on('load', () => {
     let firstSymbol;
     for (const l of mapB.getStyle().layers) { if (l.type === 'symbol') { firstSymbol = l.id; break; } }
+    mapB.__firstSymbol = firstSymbol;
     YEARS.forEach(y => ['sat', 'ndvi'].forEach(m => {
       const id = lid(y, m);
       mapB.addSource(id, { type: 'raster', url: urlFor(y, m), tileSize: 256 });
@@ -724,6 +735,7 @@ function ensureMapB() {
         paint: { 'raster-opacity': 1, 'raster-resampling': 'nearest', 'raster-fade-duration': 0 } }, firstSymbol);
     }));
     mapBReady = true;
+    applyMaskToB();
     syncMapB();
     renderCompare();
   });
