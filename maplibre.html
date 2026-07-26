@@ -317,9 +317,31 @@ const statusEl = $('status');
 const setStatus = (t, cls = '') => { statusEl.textContent = t; statusEl.className = 'status ' + cls; };
 const setVec = (t, cls = '') => { $('vec-status').textContent = t; $('vec-status').className = 'vec-status ' + cls; };
 
+// CARTO dark_all raster basemap (matches the old viewer)
+const DARK_BASEMAP = {
+  version: 8,
+  glyphs: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/{fontstack}/{range}.pbf',
+  sources: {
+    'carto-dark': {
+      type: 'raster', tileSize: 256,
+      tiles: [
+        'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
+        'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
+        'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
+        'https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png'
+      ],
+      attribution: '© CARTO © OpenStreetMap contributors'
+    }
+  },
+  layers: [
+    { id: 'bg', type: 'background', paint: { 'background-color': '#0a0c0e' } },
+    { id: 'carto-dark', type: 'raster', source: 'carto-dark' }
+  ]
+};
+
 const map = new maplibregl.Map({
   container: 'map',
-  style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+  style: DARK_BASEMAP,
   center: [91.3, 25.55], zoom: 7.2, maxZoom: 16
 });
 map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
@@ -719,7 +741,7 @@ function ensureMapB() {
   if (mapB) { syncMapB(); return; }
   mapB = new maplibregl.Map({
     container: 'map-b',
-    style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+    style: DARK_BASEMAP,
     center: map.getCenter(), zoom: map.getZoom(), bearing: map.getBearing(), pitch: map.getPitch(),
     maxZoom: 16, interactive: false, attributionControl: false, fadeDuration: 0
   });
