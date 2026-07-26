@@ -14,7 +14,7 @@
 <style>
   :root{
     --bg:#0a0c0e; --panel-solid:#0f1317; --panel:rgba(15,19,23,.9);
-    --accent:#b6f441; --accent-dim:rgba(182,244,65,.12); --warn:#ff8a4c;
+    --accent:#b6f441; --accent-dim:rgba(182,244,65,.12); --warn:#ff8a4c; --blue:#b3d4f0;
     --text:#e9eef2; --muted:#8a97a2; --muted-dim:#5d6873;
     --border:#222a31; --border-strong:#2e3942; --shadow:0 10px 30px rgba(0,0,0,.5);
   }
@@ -24,7 +24,7 @@
   #map{position:absolute;inset:0}
 
   .left-stack{position:absolute;top:14px;left:14px;z-index:1000;width:290px;
-    display:flex;flex-direction:column;gap:12px;overflow:visible}
+    display:flex;flex-direction:column;gap:12px;overflow:visible;max-height:calc(100vh - 28px)}
   .app-title{display:flex;align-self:flex-start;width:max-content;align-items:center;gap:11px;
     background:var(--panel-solid);border:1px solid var(--border);border-radius:12px;
     box-shadow:var(--shadow);padding:10px 15px;max-width:calc(100vw - 28px)}
@@ -32,78 +32,89 @@
   .app-title-main{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;
     letter-spacing:-.01em;line-height:1;color:var(--text);white-space:nowrap}
   .app-title-div{width:1px;height:15px;background:var(--border-strong);flex:none}
-  .app-title-sub{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;
-    white-space:nowrap;flex:none}
+  .app-title-sub{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;white-space:nowrap;flex:none}
   .app-title-sub .yl{color:var(--accent)} .app-title-sub .yd{color:var(--warn)}
 
+  .stack-scroll{display:flex;flex-direction:column;gap:12px;overflow-y:auto;padding-right:2px}
   .panel{width:290px;background:var(--panel);backdrop-filter:blur(14px);
-    -webkit-backdrop-filter:blur(14px);border:1px solid var(--border);
-    border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+    -webkit-backdrop-filter:blur(14px);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;flex:none}
   .panel-head{display:flex;align-items:center;gap:10px;padding:13px 15px;border-bottom:1px solid #1c242b}
   .logo{width:3px;height:13px;border-radius:2px;background:var(--warn);flex:none}
-  .panel-head h1{margin:0;font-family:'JetBrains Mono',monospace;font-size:12.5px;
-    font-weight:600;letter-spacing:.13em;text-transform:uppercase}
+  .logo.vec{background:var(--blue)}
+  .panel-head h1{margin:0;font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase}
   .pbody{padding:14px;display:flex;flex-direction:column;gap:13px}
 
   .seg{display:flex;gap:4px;background:#141a1f;border:1px solid #1f2730;border-radius:11px;padding:3px}
-  .seg-btn{flex:1;text-align:center;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;
-    letter-spacing:.08em;color:var(--muted);padding:8px;border-radius:8px;background:transparent;border:none;cursor:pointer}
+  .seg-btn{flex:1;text-align:center;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--muted);padding:8px;border-radius:8px;background:transparent;border:none;cursor:pointer}
   .seg-btn.on{background:var(--accent);color:#0a0c0e}
 
-  .ctl{display:flex;flex-direction:column;gap:7px;font-family:'JetBrains Mono',monospace;
-    font-size:11px;letter-spacing:.05em;color:var(--muted)}
+  .ctl{display:flex;flex-direction:column;gap:7px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.05em;color:var(--muted)}
   .ctl .row{display:flex;justify-content:space-between;align-items:center}
   .ctl #op-val{color:var(--accent)}
-  input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer;margin:0}
+  input[type=range]{accent-color:var(--accent);cursor:pointer;margin:0}
 
   .legend{display:flex;flex-direction:column;gap:6px}
-  .legend-cap{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;
-    text-transform:uppercase;color:var(--muted-dim)}
-  .legend-bar{height:10px;border-radius:5px;
-    background:linear-gradient(90deg,#0b3d0b,#2f7a30,#8fbf4f,#e6efb0)}
-  .legend-labels{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;
-    font-size:10px;color:var(--muted);letter-spacing:.03em}
+  .legend-cap{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-dim)}
+  .legend-bar{height:10px;border-radius:5px;background:linear-gradient(90deg,#0b3d0b,#2f7a30,#8fbf4f,#e6efb0)}
+  .legend-labels{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.03em}
 
   .status{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.05em;color:var(--muted-dim)}
   .status.load{color:var(--warn)} .status.ok{color:var(--accent)} .status.err{color:#ff6b6b}
 
-  /* ---- timeline (old-viewer style: big year + crossfade + snap + speed) ---- */
+  /* vectors panel */
+  .vrow{display:flex;align-items:center;gap:9px;font-family:'Space Grotesk',sans-serif;font-size:13px;color:var(--text);cursor:pointer;user-select:none}
+  .vrow input{display:none}
+  .vrow .sw{width:34px;height:19px;border-radius:10px;background:#222a31;border:1px solid #2e3942;position:relative;transition:.15s;flex:none}
+  .vrow .sw::after{content:'';position:absolute;top:1.5px;left:2px;width:13px;height:13px;border-radius:50%;background:#5d6873;transition:.15s}
+  .vrow input:checked + .sw{background:var(--accent-dim);border-color:var(--accent)}
+  .vrow input:checked + .sw::after{background:var(--accent);left:16px}
+  .vrow .cnt{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted-dim)}
+  .vdiv{height:1px;background:#1a2127}
+  .upload{border:1.5px dashed #2e3942;border-radius:10px;padding:14px 12px;text-align:center;
+    font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted-dim);cursor:pointer;line-height:1.5;transition:.15s}
+  .upload:hover,.upload.over{border-color:var(--accent);color:var(--muted);background:var(--accent-dim)}
+  .upload b{color:var(--muted);display:block;margin-bottom:3px;font-weight:600}
+  .btn-clear{font-family:'Space Grotesk',sans-serif;font-size:11.5px;color:var(--muted);background:#161c22;border:1px solid #2a333b;border-radius:8px;padding:7px;cursor:pointer}
+  .vec-status{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--muted-dim)}
+  .vec-status.ok{color:var(--accent)} .vec-status.err{color:#ff6b6b}
+
+  /* popups */
+  .maplibregl-popup-content{background:#0f1317!important;border:1px solid #2a333b!important;color:#e9eef2!important;border-radius:10px!important;padding:10px 12px!important;box-shadow:0 8px 24px rgba(0,0,0,.55)!important;font-family:'Space Grotesk',sans-serif}
+  .maplibregl-popup-tip{border-top-color:#2a333b!important;border-bottom-color:#2a333b!important}
+  .maplibregl-popup-close-button{color:#8a97a2!important;font-size:17px!important;padding:2px 6px!important}
+  .mp-name{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--accent);font-size:13px;letter-spacing:.02em}
+  .mp-sub{color:var(--muted);font-size:12px;margin-top:3px}
+
+  /* ---- timeline (old-viewer style) ---- */
   .timeline{position:absolute;left:50%;transform:translateX(-50%);bottom:22px;z-index:1000;
     width:min(620px,calc(100vw - 28px));background:var(--panel);backdrop-filter:blur(16px);
-    -webkit-backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:16px;
-    box-shadow:var(--shadow);padding:16px 20px 14px;display:flex;flex-direction:column;gap:11px}
-  .tl-top{display:flex;align-items:center;justify-content:space-between}
-  .tl-head{display:flex;align-items:center;gap:11px}
-  .tl-year{font-family:'JetBrains Mono',monospace;font-size:30px;font-weight:700;
-    line-height:1;color:var(--accent);letter-spacing:.02em}
-  .tl-badge{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.08em;
-    background:var(--accent);color:#0a0c0e;padding:3px 9px;border-radius:20px}
-  .tl-ctrls{display:flex;gap:8px}
-  .tl-btn{flex:none;width:38px;height:38px;border-radius:10px;background:#141a1f;border:1px solid #2a333b;
-    color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+    -webkit-backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:16px 20px 14px;display:flex;flex-direction:column;gap:11px}
+  .tl-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .tl-head{display:flex;align-items:baseline;gap:11px;min-width:0;flex-wrap:wrap}
+  .tl-year{font-family:'JetBrains Mono',monospace;font-size:30px;font-weight:700;line-height:1;color:var(--accent);letter-spacing:.02em}
+  .tl-badge{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.08em;background:var(--accent);color:#0a0c0e;padding:3px 9px;border-radius:20px}
+  .tl-fade{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.04em}
+  .tl-fade b{color:var(--warn);font-weight:600}
+  .tl-ctrls{display:flex;gap:8px;flex:none}
+  .tl-btn{flex:none;width:38px;height:38px;border-radius:10px;background:#141a1f;border:1px solid #2a333b;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
   .tl-btn:hover{border-color:var(--accent)}
   .tl-btn.play-on{background:var(--warn);border-color:var(--warn);color:#0a0c0e}
   .tl-btn svg{width:16px;height:16px;fill:currentColor}
-  #scrub{flex:1}
+  #scrub{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:3px;background:#2e3942;outline:none}
+  #scrub::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:var(--accent);border:3px solid var(--warn);box-shadow:0 0 0 4px rgba(255,138,76,.22);cursor:pointer;margin-top:-7px}
+  #scrub::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--accent);border:3px solid var(--warn);box-shadow:0 0 0 4px rgba(255,138,76,.22);cursor:pointer}
   .tl-years{display:flex;justify-content:space-between}
-  .tl-years button{background:none;border:none;font-family:'JetBrains Mono',monospace;font-size:11px;
-    color:var(--muted-dim);cursor:pointer;padding:2px 3px;letter-spacing:.02em}
+  .tl-years button{background:none;border:none;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted-dim);cursor:pointer;padding:2px 3px;letter-spacing:.02em}
   .tl-years button.on{color:var(--accent);font-weight:700}
-  .tl-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;
-    padding-top:3px;border-top:1px solid #1a2127}
-  .tl-snap{display:flex;align-items:center;gap:8px;font-family:'Space Grotesk',sans-serif;
-    font-size:12px;color:var(--muted);cursor:pointer;user-select:none}
+  .tl-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:3px;border-top:1px solid #1a2127}
+  .tl-snap{display:flex;align-items:center;gap:8px;font-family:'Space Grotesk',sans-serif;font-size:12px;color:var(--muted);cursor:pointer;user-select:none}
   .tl-snap input{display:none}
-  .tl-snap .sw{width:34px;height:19px;border-radius:10px;background:#222a31;border:1px solid #2e3942;
-    position:relative;transition:.15s;flex:none}
-  .tl-snap .sw::after{content:'';position:absolute;top:1.5px;left:2px;width:13px;height:13px;
-    border-radius:50%;background:#5d6873;transition:.15s}
+  .tl-snap .sw{width:34px;height:19px;border-radius:10px;background:#222a31;border:1px solid #2e3942;position:relative;transition:.15s;flex:none}
+  .tl-snap .sw::after{content:'';position:absolute;top:1.5px;left:2px;width:13px;height:13px;border-radius:50%;background:#5d6873;transition:.15s}
   .tl-snap input:checked + .sw{background:var(--accent-dim);border-color:var(--accent)}
   .tl-snap input:checked + .sw::after{background:var(--accent);left:16px}
-  .tl-hint{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted-dim);
-    letter-spacing:.03em;flex:1;text-align:center}
-  .tl-speed{display:flex;align-items:center;gap:8px;font-family:'Space Grotesk',sans-serif;
-    font-size:12px;color:var(--muted)}
+  .tl-hint{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted-dim);letter-spacing:.03em;flex:1;text-align:center}
+  .tl-speed{display:flex;align-items:center;gap:8px;font-family:'Space Grotesk',sans-serif;font-size:12px;color:var(--muted)}
   .tl-speed input{width:80px}
 
   .maplibregl-ctrl-group{background:var(--panel-solid)!important;border:1px solid var(--border)!important}
@@ -135,23 +146,41 @@
     <span class="app-title-sub"><span class="yl">2015</span><span class="yd">–</span><span class="yl">2025</span></span>
   </div>
 
-  <div class="panel">
-    <div class="panel-head"><span class="logo"></span><h1>Imagery · COG</h1></div>
-    <div class="pbody">
-      <div class="seg" id="mode-seg">
-        <button class="seg-btn on" data-mode="sat">Satellite</button>
-        <button class="seg-btn" data-mode="ndvi">NDVI</button>
+  <div class="stack-scroll">
+    <div class="panel">
+      <div class="panel-head"><span class="logo"></span><h1>Imagery · COG</h1></div>
+      <div class="pbody">
+        <div class="seg" id="mode-seg">
+          <button class="seg-btn on" data-mode="sat">Satellite</button>
+          <button class="seg-btn" data-mode="ndvi">NDVI</button>
+        </div>
+        <label class="ctl">
+          <span class="row"><span>Opacity</span><span id="op-val">100%</span></span>
+          <input type="range" id="opacity" min="0" max="100" value="100" style="width:100%" />
+        </label>
+        <div class="legend" id="legend" hidden>
+          <div class="legend-cap">NDVI · vegetation</div>
+          <div class="legend-bar"></div>
+          <div class="legend-labels"><span>Dense</span><span>Sparse / bare</span></div>
+        </div>
+        <div class="status" id="status">Starting…</div>
       </div>
-      <label class="ctl">
-        <span class="row"><span>Opacity</span><span id="op-val">100%</span></span>
-        <input type="range" id="opacity" min="0" max="100" value="100" />
-      </label>
-      <div class="legend" id="legend" hidden>
-        <div class="legend-cap">NDVI · vegetation</div>
-        <div class="legend-bar"></div>
-        <div class="legend-labels"><span>Dense</span><span>Sparse / bare</span></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><span class="logo vec"></span><h1>Vectors</h1></div>
+      <div class="pbody">
+        <label class="vrow"><input type="checkbox" id="tg-districts" checked /><span class="sw"></span> Districts</label>
+        <label class="vrow"><input type="checkbox" id="tg-villages" /><span class="sw"></span> Villages <span class="cnt">6,060</span></label>
+        <div class="vdiv"></div>
+        <div class="upload" id="drop">
+          <b>Add a parcel</b>
+          drag &amp; drop or click<br>.zip · .kml · .kmz · .geojson
+          <input type="file" id="file" accept=".zip,.kml,.kmz,.geojson,.json" hidden />
+        </div>
+        <button class="btn-clear" id="clear-parcel" hidden>Clear parcel</button>
+        <div class="vec-status" id="vec-status"></div>
       </div>
-      <div class="status" id="status">Starting…</div>
     </div>
   </div>
 </div>
@@ -162,6 +191,7 @@
     <div class="tl-head">
       <span class="tl-year" id="ro-year">2018</span>
       <span class="tl-badge" id="ro-mode">RGB</span>
+      <span class="tl-fade" id="ro-fade"></span>
     </div>
     <div class="tl-ctrls">
       <button class="tl-btn" id="prev" aria-label="Previous year"><svg viewBox="0 0 24 24"><path d="M15 5l-8 7 8 7z"/></svg></button>
@@ -193,11 +223,7 @@ maplibregl.addProtocol('cog', cogProtocol);
 const BASE = new URL('data/', location.href).href;
 const YEARS = [2015, 2016, 2017, 2018, 2019, 2020, 2025];
 const N = YEARS.length;
-let pos = 3;          // continuous position 0..N-1 (default 2018)
-let mode = 'sat';     // 'sat' | 'ndvi'
-let opacity = 1;      // global opacity 0..1
-let snap = false;     // snap to whole years
-let speed = 50;       // 0..100
+let pos = 3, mode = 'sat', opacity = 1, snap = false, speed = 50;
 let playing = false, playTimer = null, rafId = null, lastT = 0;
 let shown = new Set();
 
@@ -212,173 +238,237 @@ const modeLabel = () => (mode === 'sat' ? 'RGB' : 'NDVI');
 const $ = id => document.getElementById(id);
 const statusEl = $('status');
 const setStatus = (t, cls = '') => { statusEl.textContent = t; statusEl.className = 'status ' + cls; };
+const setVec = (t, cls = '') => { $('vec-status').textContent = t; $('vec-status').className = 'vec-status ' + cls; };
 
 const map = new maplibregl.Map({
   container: 'map',
   style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
-  center: [91.3, 25.55],
-  zoom: 7.2,
-  maxZoom: 16
+  center: [91.3, 25.55], zoom: 7.2, maxZoom: 16
 });
 map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
 map.addControl(new maplibregl.ScaleControl({ maxWidth: 120, unit: 'metric' }), 'bottom-right');
-
 setStatus('Loading basemap…', 'load');
 
 map.on('load', () => {
-  // 3D globe when zoomed out, auto-flattens to Mercator as you zoom in
   try { map.setProjection({ type: 'globe' }); } catch (e) { console.warn('globe unsupported', e); }
 
   let firstSymbol;
   for (const l of map.getStyle().layers) { if (l.type === 'symbol') { firstSymbol = l.id; break; } }
 
-  // add all 14 layers hidden (tiles fetched lazily for visible ones only)
+  // imagery (14 hidden layers, below labels)
   YEARS.forEach(y => ['sat', 'ndvi'].forEach(m => {
     const id = lid(y, m);
     map.addSource(id, { type: 'raster', url: urlFor(y, m), tileSize: 256 });
     map.addLayer({
-      id, type: 'raster', source: id,
-      layout: { visibility: 'none' },
-      paint: {
-        'raster-opacity': 1,
-        'raster-opacity-transition': { duration: 0 },
-        'raster-resampling': 'nearest',
-        'raster-fade-duration': 120
-      }
+      id, type: 'raster', source: id, layout: { visibility: 'none' },
+      paint: { 'raster-opacity': 1, 'raster-opacity-transition': { duration: 0 }, 'raster-resampling': 'nearest', 'raster-fade-duration': 120 }
     }, firstSymbol);
   }));
 
-  // spotlight mask: dark outside the boundary; fades out on the globe so the full Earth shows
-  fetch('data/vectors/Meghalaya_Districts.geojson')
-    .then(r => r.json())
-    .then(gj => {
-      const holes = [];
-      (gj.features || []).forEach(f => {
-        const g = f.geometry; if (!g) return;
-        if (g.type === 'Polygon') holes.push(g.coordinates[0]);
-        else if (g.type === 'MultiPolygon') g.coordinates.forEach(p => holes.push(p[0]));
-      });
-      const world = [[-180, -85], [180, -85], [180, 85], [-180, 85], [-180, -85]];
-      map.addSource('meg-mask', { type: 'geojson', data: { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [world, ...holes] } } });
-      map.addLayer({
-        id: 'meg-mask', type: 'fill', source: 'meg-mask',
-        paint: {
-          'fill-color': '#0a0c0e',
-          'fill-antialias': false,
-          'fill-opacity': ['interpolate', ['linear'], ['zoom'], 3.5, 0, 6, 1]
-        }
-      }, firstSymbol);
-    })
-    .catch(err => console.error('Boundary mask failed to load:', err));
+  // spotlight mask (below labels), fades away on globe
+  fetch('data/vectors/Meghalaya_Districts.geojson').then(r => r.json()).then(gj => {
+    const holes = [];
+    (gj.features || []).forEach(f => { const g = f.geometry; if (!g) return;
+      if (g.type === 'Polygon') holes.push(g.coordinates[0]);
+      else if (g.type === 'MultiPolygon') g.coordinates.forEach(p => holes.push(p[0])); });
+    const world = [[-180, -85], [180, -85], [180, 85], [-180, 85], [-180, -85]];
+    map.addSource('meg-mask', { type: 'geojson', data: { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [world, ...holes] } } });
+    map.addLayer({ id: 'meg-mask', type: 'fill', source: 'meg-mask',
+      paint: { 'fill-color': '#0a0c0e', 'fill-antialias': false, 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 3.5, 0, 6, 1] } }, firstSymbol);
+  }).catch(err => console.error('Boundary mask failed:', err));
 
+  addVectors();
   wireControls();
   render();
 });
 
 map.on('sourcedata', (e) => {
-  const lo = YEARS[Math.round(pos)];
-  if (e.sourceId === lid(lo, mode) && e.isSourceLoaded) setStatus(lo + ' · ' + modeLabel(), 'ok');
+  const y = YEARS[Math.round(pos)];
+  if (e.sourceId === lid(y, mode) && e.isSourceLoaded) setStatus(y + ' · ' + modeLabel(), 'ok');
 });
-map.on('error', (e) => { console.error('MapLibre error:', e && e.error); });
+map.on('error', (e) => console.error('MapLibre error:', e && e.error));
 
-// ---- core render: crossfade between the two adjacent years ----
+// ---------- vectors: districts + clustered villages ----------
+function addVectors() {
+  // districts (line + invisible fill for clicks)
+  map.addSource('districts', { type: 'geojson', data: 'data/vectors/Meghalaya_Districts_named.geojson' });
+  map.addLayer({ id: 'dist-fill', type: 'fill', source: 'districts', paint: { 'fill-color': '#000000', 'fill-opacity': 0 } });
+  map.addLayer({ id: 'dist-line', type: 'line', source: 'districts', paint: { 'line-color': '#b3d4f0', 'line-width': 1.6, 'line-opacity': 0.85 } });
+
+  // villages (clustered points)
+  map.addSource('villages', { type: 'geojson', data: 'data/vectors/Meghalaya_Villages.geojson', cluster: true, clusterRadius: 46, clusterMaxZoom: 12 });
+  map.addLayer({ id: 'vil-clusters', type: 'circle', source: 'villages', filter: ['has', 'point_count'], layout: { visibility: 'none' },
+    paint: { 'circle-color': '#ff8a4c', 'circle-opacity': 0.9, 'circle-stroke-width': 2, 'circle-stroke-color': '#0a0c0e',
+      'circle-radius': ['step', ['get', 'point_count'], 13, 50, 18, 200, 24] } });
+  map.addLayer({ id: 'vil-count', type: 'symbol', source: 'villages', filter: ['has', 'point_count'], layout: { visibility: 'none',
+    'text-field': ['get', 'point_count_abbreviated'], 'text-font': ['Open Sans Semibold'], 'text-size': 11 }, paint: { 'text-color': '#0a0c0e' } });
+  map.addLayer({ id: 'vil-point', type: 'circle', source: 'villages', filter: ['!', ['has', 'point_count']], layout: { visibility: 'none' },
+    paint: { 'circle-color': '#ffb27a', 'circle-radius': 4, 'circle-stroke-width': 1.4, 'circle-stroke-color': '#0a0c0e' } });
+  map.addLayer({ id: 'vil-label', type: 'symbol', source: 'villages', filter: ['!', ['has', 'point_count']], minzoom: 11, layout: { visibility: 'none',
+    'text-field': ['get', 'HAB_NAME'], 'text-font': ['Open Sans Regular'], 'text-size': 10, 'text-offset': [0, 0.9], 'text-anchor': 'top' },
+    paint: { 'text-color': '#e9eef2', 'text-halo-color': '#0a0c0e', 'text-halo-width': 1.2 } });
+
+  // interactions
+  map.on('click', 'dist-fill', e => {
+    const p = e.features[0].properties;
+    new maplibregl.Popup({ closeButton: true }).setLngLat(e.lngLat)
+      .setHTML('<div class="mp-name">' + (p.distname || 'District') + '</div>').addTo(map);
+  });
+  map.on('click', 'vil-point', e => {
+    const p = e.features[0].properties;
+    new maplibregl.Popup({ closeButton: true }).setLngLat(e.features[0].geometry.coordinates)
+      .setHTML('<div class="mp-name">' + (p.HAB_NAME || 'Village') + '</div><div class="mp-sub">Population: ' + (p.TOT_POPULA != null ? p.TOT_POPULA.toLocaleString() : 'n/a') + '</div>').addTo(map);
+  });
+  map.on('click', 'vil-clusters', e => {
+    const f = map.queryRenderedFeatures(e.point, { layers: ['vil-clusters'] })[0];
+    map.getSource('villages').getClusterExpansionZoom(f.properties.cluster_id).then(z =>
+      map.easeTo({ center: f.geometry.coordinates, zoom: z })).catch(() => {});
+  });
+  ['dist-fill', 'vil-point', 'vil-clusters'].forEach(l => {
+    map.on('mouseenter', l, () => map.getCanvas().style.cursor = 'pointer');
+    map.on('mouseleave', l, () => map.getCanvas().style.cursor = '');
+  });
+}
+
+// ---------- core render (crossfade + timeline UI) ----------
 function render() {
   const lo = Math.floor(pos);
   let hi = Math.min(lo + 1, N - 1);
   let frac = pos - lo;
   if (snap) { frac = 0; hi = lo; }
 
-  const loId = lid(YEARS[lo], mode);
-  const hiId = lid(YEARS[hi], mode);
+  const loId = lid(YEARS[lo], mode), hiId = lid(YEARS[hi], mode);
   const want = new Map();
   want.set(loId, opacity);
   if (frac > 0.001 && hiId !== loId) want.set(hiId, opacity * frac);
-
   shown.forEach(id => { if (!want.has(id) && map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'none'); });
-  want.forEach((op, id) => {
-    if (!map.getLayer(id)) return;
-    map.setLayoutProperty(id, 'visibility', 'visible');
-    map.setPaintProperty(id, 'raster-opacity', op);
-  });
+  want.forEach((op, id) => { if (!map.getLayer(id)) return; map.setLayoutProperty(id, 'visibility', 'visible'); map.setPaintProperty(id, 'raster-opacity', op); });
   shown = new Set(want.keys());
 
-  const near = YEARS[Math.round(pos)];
-  $('ro-year').textContent = near;
+  const near = Math.round(pos);
+  $('ro-year').textContent = YEARS[near];
   $('ro-mode').textContent = modeLabel();
-  document.querySelectorAll('#tl-years button').forEach(b => b.classList.toggle('on', +b.dataset.i === Math.round(pos)));
+  $('ro-fade').innerHTML = (frac > 0.02 && frac < 0.98 && hi !== lo)
+    ? (YEARS[lo] + ' <b>⇄</b> ' + YEARS[hi] + ' · ' + Math.round(frac * 100) + '%') : '';
+  document.querySelectorAll('#tl-years button').forEach(b => b.classList.toggle('on', +b.dataset.i === near));
   $('legend').hidden = (mode !== 'ndvi');
-  if (!map.isSourceLoaded || !map.isSourceLoaded(loId)) setStatus('Loading ' + near + '…', 'load');
-  else setStatus(near + ' · ' + modeLabel(), 'ok');
+  const pct = (pos / (N - 1)) * 100;
+  $('scrub').style.background = 'linear-gradient(90deg, var(--accent) ' + pct + '%, #2e3942 ' + pct + '%)';
+  if (map.isSourceLoaded && map.isSourceLoaded(loId)) setStatus(YEARS[near] + ' · ' + modeLabel(), 'ok');
+  else setStatus('Loading ' + YEARS[near] + '…', 'load');
 }
 
 function setPos(p) { pos = Math.max(0, Math.min(N - 1, p)); $('scrub').value = pos; render(); }
 function step(d) { setPos(Math.round(pos) + d); }
 
-function intervalMs() { return 2600 - speed * 21; }        // per-year time for stepping (snap ON)
-function secPerYear() { return (2600 - speed * 21) / 1000; } // per-year time for gliding (snap OFF)
-
-// snap ON: hop to the next whole year on a timer
+function intervalMs() { return 2600 - speed * 21; }
+function secPerYear() { return (2600 - speed * 21) / 1000; }
 function stepPlay() {
   clearTimeout(playTimer);
-  playTimer = setTimeout(() => {
-    let n = Math.round(pos) + 1; if (n >= N) n = 0;
-    setPos(n);
-    if (playing) stepPlay();
-  }, intervalMs());
+  playTimer = setTimeout(() => { let n = Math.round(pos) + 1; if (n >= N) n = 0; setPos(n); if (playing) stepPlay(); }, intervalMs());
 }
-
-// snap OFF: glide pos continuously so the years crossfade during playback
 function frame(t) {
   if (!playing) return;
   if (!lastT) lastT = t;
   const dt = (t - lastT) / 1000; lastT = t;
-  let p = pos + dt / secPerYear();
-  if (p >= N - 1) p = 0;   // loop back to the first year
-  pos = p;
-  $('scrub').value = pos;
-  render();
+  let p = pos + dt / secPerYear(); if (p >= N - 1) p = 0;
+  pos = p; $('scrub').value = pos; render();
   rafId = requestAnimationFrame(frame);
 }
-
-function startPlay() {
-  if (snap) stepPlay();
-  else { lastT = 0; rafId = requestAnimationFrame(frame); }
-}
-function stopPlay() {
-  clearTimeout(playTimer); playTimer = null;
-  if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-}
+function startPlay() { if (snap) stepPlay(); else { lastT = 0; rafId = requestAnimationFrame(frame); } }
+function stopPlay() { clearTimeout(playTimer); playTimer = null; if (rafId) { cancelAnimationFrame(rafId); rafId = null; } }
 function togglePlay() {
   playing = !playing;
-  const b = $('play');
-  b.classList.toggle('play-on', playing);
-  b.innerHTML = playing ? PAUSE_SVG : PLAY_SVG;
+  const b = $('play'); b.classList.toggle('play-on', playing); b.innerHTML = playing ? PAUSE_SVG : PLAY_SVG;
   if (playing) startPlay(); else stopPlay();
+}
+
+// ---------- parcel upload (zip-shp / kml / kmz / geojson) ----------
+async function parseFile(file) {
+  const name = file.name.toLowerCase();
+  if (name.endsWith('.geojson') || name.endsWith('.json')) return JSON.parse(await file.text());
+  if (name.endsWith('.kml')) {
+    const { kml } = await import('https://esm.sh/@tmcw/togeojson@5');
+    return kml(new DOMParser().parseFromString(await file.text(), 'text/xml'));
+  }
+  if (name.endsWith('.kmz')) {
+    const JSZip = (await import('https://esm.sh/jszip@3')).default;
+    const { kml } = await import('https://esm.sh/@tmcw/togeojson@5');
+    const zip = await JSZip.loadAsync(await file.arrayBuffer());
+    const key = Object.keys(zip.files).find(f => f.toLowerCase().endsWith('.kml'));
+    if (!key) throw new Error('no kml in kmz');
+    return kml(new DOMParser().parseFromString(await zip.files[key].async('text'), 'text/xml'));
+  }
+  if (name.endsWith('.zip')) {
+    const shp = (await import('https://esm.sh/shpjs@6')).default;
+    let gj = await shp(await file.arrayBuffer());
+    if (Array.isArray(gj)) gj = { type: 'FeatureCollection', features: gj.flatMap(x => x.features || []) };
+    return gj;
+  }
+  throw new Error('unsupported');
+}
+function bboxOf(gj) {
+  let mnx = 180, mny = 90, mxx = -180, mxy = -90, any = false;
+  const eat = c => { if (typeof c[0] === 'number') { any = true; mnx = Math.min(mnx, c[0]); mxx = Math.max(mxx, c[0]); mny = Math.min(mny, c[1]); mxy = Math.max(mxy, c[1]); } else c.forEach(eat); };
+  const feats = gj.type === 'FeatureCollection' ? gj.features : [gj];
+  feats.forEach(f => f && f.geometry && eat(f.geometry.coordinates));
+  return any ? [[mnx, mny], [mxx, mxy]] : null;
+}
+function addParcel(gj) {
+  ['parcel-line', 'parcel-fill', 'parcel-pt'].forEach(l => { if (map.getLayer(l)) map.removeLayer(l); });
+  if (map.getSource('parcel')) map.removeSource('parcel');
+  map.addSource('parcel', { type: 'geojson', data: gj });
+  map.addLayer({ id: 'parcel-fill', type: 'fill', source: 'parcel', paint: { 'fill-color': '#ffffff', 'fill-opacity': 0.08 } });
+  map.addLayer({ id: 'parcel-line', type: 'line', source: 'parcel', paint: { 'line-color': '#ffffff', 'line-width': 2.5 } });
+  map.addLayer({ id: 'parcel-pt', type: 'circle', source: 'parcel', filter: ['==', ['geometry-type'], 'Point'], paint: { 'circle-color': '#ffffff', 'circle-radius': 6, 'circle-stroke-color': '#0a0c0e', 'circle-stroke-width': 2 } });
+  const b = bboxOf(gj);
+  if (b) map.fitBounds(b, { padding: 90, maxZoom: 15, duration: 900 });
+  $('clear-parcel').hidden = false;
+}
+async function loadParcel(file) {
+  setVec('Reading ' + file.name + '…');
+  try { const gj = await parseFile(file); addParcel(gj); setVec('Loaded ' + file.name, 'ok'); }
+  catch (err) { console.error(err); setVec('Could not read that file', 'err'); }
 }
 
 function wireControls() {
   $('scrub').addEventListener('input', e => { pos = +e.target.value; if (snap) pos = Math.round(pos); render(); });
-  $('scrub').addEventListener('change', e => { if (snap) setPos(Math.round(+e.target.value)); });
   $('prev').addEventListener('click', () => step(-1));
   $('next').addEventListener('click', () => step(1));
   $('play').addEventListener('click', togglePlay);
-  document.querySelectorAll('#tl-years button').forEach(b =>
-    b.addEventListener('click', () => setPos(+b.dataset.i)));
-  document.querySelectorAll('.seg-btn').forEach(b =>
-    b.addEventListener('click', () => {
-      mode = b.dataset.mode;
-      document.querySelectorAll('.seg-btn').forEach(x => x.classList.toggle('on', x === b));
-      render();
-    }));
+  document.querySelectorAll('#tl-years button').forEach(b => b.addEventListener('click', () => setPos(+b.dataset.i)));
+  document.querySelectorAll('.seg-btn').forEach(b => b.addEventListener('click', () => {
+    mode = b.dataset.mode;
+    document.querySelectorAll('.seg-btn').forEach(x => x.classList.toggle('on', x === b));
+    render();
+  }));
   $('snap').addEventListener('change', e => { snap = e.target.checked; if (snap) setPos(Math.round(pos)); if (playing) { stopPlay(); startPlay(); } });
   $('speed').addEventListener('input', e => { speed = +e.target.value; if (playing && snap) stepPlay(); });
-  const op = $('opacity');
-  op.addEventListener('input', e => {
-    opacity = +e.target.value / 100;
-    $('op-val').textContent = e.target.value + '%';
-    render();
+  $('opacity').addEventListener('input', e => { opacity = +e.target.value / 100; $('op-val').textContent = e.target.value + '%'; render(); });
+
+  $('tg-districts').addEventListener('change', e => {
+    const v = e.target.checked ? 'visible' : 'none';
+    ['dist-fill', 'dist-line'].forEach(l => map.getLayer(l) && map.setLayoutProperty(l, 'visibility', v));
   });
+  $('tg-villages').addEventListener('change', e => {
+    const v = e.target.checked ? 'visible' : 'none';
+    ['vil-clusters', 'vil-count', 'vil-point', 'vil-label'].forEach(l => map.getLayer(l) && map.setLayoutProperty(l, 'visibility', v));
+  });
+
+  const drop = $('drop'), fileInput = $('file');
+  drop.addEventListener('click', () => fileInput.click());
+  drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+  drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('over'); if (e.dataTransfer.files[0]) loadParcel(e.dataTransfer.files[0]); });
+  fileInput.addEventListener('change', e => { if (e.target.files[0]) loadParcel(e.target.files[0]); });
+  $('clear-parcel').addEventListener('click', () => {
+    ['parcel-line', 'parcel-fill', 'parcel-pt'].forEach(l => map.getLayer(l) && map.removeLayer(l));
+    if (map.getSource('parcel')) map.removeSource('parcel');
+    $('clear-parcel').hidden = true; setVec('');
+  });
+
   window.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT') return;
     if (e.key === 'ArrowLeft') step(-1);
     else if (e.key === 'ArrowRight') step(1);
     else if (e.key === ' ') { e.preventDefault(); togglePlay(); }
