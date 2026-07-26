@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/maplibre-gl@5/dist/maplibre-gl.css" rel="stylesheet" />
 
 <style>
   :root{
-    --bg:#0a0c0e; --panel-solid:#0f1317; --panel:rgba(15,19,23,.88);
+    --bg:#0a0c0e; --panel-solid:#0f1317; --panel:rgba(15,19,23,.9);
     --accent:#b6f441; --accent-dim:rgba(182,244,65,.12); --warn:#ff8a4c;
     --text:#e9eef2; --muted:#8a97a2; --muted-dim:#5d6873;
     --border:#222a31; --border-strong:#2e3942; --shadow:0 10px 30px rgba(0,0,0,.5);
@@ -23,7 +23,6 @@
     font-family:'Space Grotesk',ui-sans-serif,system-ui,sans-serif}
   #map{position:absolute;inset:0}
 
-  /* ---- left stack: title + imagery panel ---- */
   .left-stack{position:absolute;top:14px;left:14px;z-index:1000;width:290px;
     display:flex;flex-direction:column;gap:12px;overflow:visible}
   .app-title{display:flex;align-self:flex-start;width:max-content;align-items:center;gap:11px;
@@ -46,7 +45,6 @@
     font-weight:600;letter-spacing:.13em;text-transform:uppercase}
   .pbody{padding:14px;display:flex;flex-direction:column;gap:13px}
 
-  /* segmented Sat / NDVI toggle */
   .seg{display:flex;gap:4px;background:#141a1f;border:1px solid #1f2730;border-radius:11px;padding:3px}
   .seg-btn{flex:1;text-align:center;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;
     letter-spacing:.08em;color:var(--muted);padding:8px;border-radius:8px;background:transparent;border:none;cursor:pointer}
@@ -69,25 +67,44 @@
   .status{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.05em;color:var(--muted-dim)}
   .status.load{color:var(--warn)} .status.ok{color:var(--accent)} .status.err{color:#ff6b6b}
 
-  /* ---- timeline ---- */
+  /* ---- timeline (old-viewer style: big year + crossfade + snap + speed) ---- */
   .timeline{position:absolute;left:50%;transform:translateX(-50%);bottom:22px;z-index:1000;
-    width:min(560px,calc(100vw - 28px));background:var(--panel);backdrop-filter:blur(14px);
-    -webkit-backdrop-filter:blur(14px);border:1px solid var(--border);border-radius:14px;
-    box-shadow:var(--shadow);padding:12px 16px 11px;display:flex;flex-direction:column;gap:9px}
-  .tl-readout{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.12em;text-align:center}
-  .tl-readout #ro-year{color:var(--accent);font-weight:700}
-  .tl-readout #ro-mode{color:var(--warn)}
-  .tl-row{display:flex;align-items:center;gap:10px}
-  .tl-btn{flex:none;width:32px;height:32px;border-radius:8px;background:#141a1f;border:1px solid #2a333b;
+    width:min(620px,calc(100vw - 28px));background:var(--panel);backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:16px;
+    box-shadow:var(--shadow);padding:16px 20px 14px;display:flex;flex-direction:column;gap:11px}
+  .tl-top{display:flex;align-items:center;justify-content:space-between}
+  .tl-head{display:flex;align-items:center;gap:11px}
+  .tl-year{font-family:'JetBrains Mono',monospace;font-size:30px;font-weight:700;
+    line-height:1;color:var(--accent);letter-spacing:.02em}
+  .tl-badge{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.08em;
+    background:var(--accent);color:#0a0c0e;padding:3px 9px;border-radius:20px}
+  .tl-ctrls{display:flex;gap:8px}
+  .tl-btn{flex:none;width:38px;height:38px;border-radius:10px;background:#141a1f;border:1px solid #2a333b;
     color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
   .tl-btn:hover{border-color:var(--accent)}
   .tl-btn.play-on{background:var(--warn);border-color:var(--warn);color:#0a0c0e}
-  .tl-btn svg{width:15px;height:15px;fill:currentColor}
+  .tl-btn svg{width:16px;height:16px;fill:currentColor}
   #scrub{flex:1}
   .tl-years{display:flex;justify-content:space-between}
   .tl-years button{background:none;border:none;font-family:'JetBrains Mono',monospace;font-size:11px;
     color:var(--muted-dim);cursor:pointer;padding:2px 3px;letter-spacing:.02em}
   .tl-years button.on{color:var(--accent);font-weight:700}
+  .tl-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding-top:3px;border-top:1px solid #1a2127}
+  .tl-snap{display:flex;align-items:center;gap:8px;font-family:'Space Grotesk',sans-serif;
+    font-size:12px;color:var(--muted);cursor:pointer;user-select:none}
+  .tl-snap input{display:none}
+  .tl-snap .sw{width:34px;height:19px;border-radius:10px;background:#222a31;border:1px solid #2e3942;
+    position:relative;transition:.15s;flex:none}
+  .tl-snap .sw::after{content:'';position:absolute;top:1.5px;left:2px;width:13px;height:13px;
+    border-radius:50%;background:#5d6873;transition:.15s}
+  .tl-snap input:checked + .sw{background:var(--accent-dim);border-color:var(--accent)}
+  .tl-snap input:checked + .sw::after{background:var(--accent);left:16px}
+  .tl-hint{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted-dim);
+    letter-spacing:.03em;flex:1;text-align:center}
+  .tl-speed{display:flex;align-items:center;gap:8px;font-family:'Space Grotesk',sans-serif;
+    font-size:12px;color:var(--muted)}
+  .tl-speed input{width:80px}
 
   .maplibregl-ctrl-group{background:var(--panel-solid)!important;border:1px solid var(--border)!important}
   .maplibregl-ctrl-group button+button{border-top:1px solid var(--border)!important}
@@ -97,7 +114,10 @@
     .panel{width:100%}
     .app-title{width:auto;max-width:100%;flex-wrap:wrap}
     .app-title-main{white-space:normal;font-size:13px}
-    .timeline{bottom:14px}
+    .timeline{bottom:14px;padding:13px 15px 11px}
+    .tl-year{font-size:24px}
+    .tl-hint{display:none}
+    .tl-speed input{width:56px}
   }
 </style>
 </head>
@@ -138,34 +158,48 @@
 
 <!-- ================= Timeline ================= -->
 <div class="timeline" id="timeline">
-  <div class="tl-readout"><span id="ro-year">2018</span> · <span id="ro-mode">Satellite</span></div>
-  <div class="tl-row">
-    <button class="tl-btn" id="play" aria-label="Play"><svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z"/></svg></button>
-    <button class="tl-btn" id="prev" aria-label="Previous year"><svg viewBox="0 0 24 24"><path d="M15 5l-8 7 8 7z"/></svg></button>
-    <input type="range" id="scrub" min="0" max="6" step="1" value="3" />
-    <button class="tl-btn" id="next" aria-label="Next year"><svg viewBox="0 0 24 24"><path d="M9 5l8 7-8 7z"/></svg></button>
+  <div class="tl-top">
+    <div class="tl-head">
+      <span class="tl-year" id="ro-year">2018</span>
+      <span class="tl-badge" id="ro-mode">RGB</span>
+    </div>
+    <div class="tl-ctrls">
+      <button class="tl-btn" id="prev" aria-label="Previous year"><svg viewBox="0 0 24 24"><path d="M15 5l-8 7 8 7z"/></svg></button>
+      <button class="tl-btn" id="play" aria-label="Play"><svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z"/></svg></button>
+      <button class="tl-btn" id="next" aria-label="Next year"><svg viewBox="0 0 24 24"><path d="M9 5l8 7-8 7z"/></svg></button>
+    </div>
   </div>
+  <input type="range" id="scrub" min="0" max="6" step="0.01" value="3" />
   <div class="tl-years" id="tl-years">
     <button data-i="0">2015</button><button data-i="1">2016</button><button data-i="2">2017</button><button data-i="3">2018</button><button data-i="4">2019</button><button data-i="5">2020</button><button data-i="6">2025</button>
+  </div>
+  <div class="tl-bottom">
+    <label class="tl-snap"><input type="checkbox" id="snap" /><span class="sw"></span> Snap to year</label>
+    <span class="tl-hint">drag to fade between years</span>
+    <label class="tl-speed">speed <input type="range" id="speed" min="0" max="100" value="50" /></label>
   </div>
 </div>
 
 <div id="map"></div>
 
 <script type="importmap">
-{ "imports": { "maplibre-gl": "https://esm.sh/maplibre-gl@4.7.1" } }
+{ "imports": { "maplibre-gl": "https://esm.sh/maplibre-gl@5" } }
 </script>
 <script type="module">
 import maplibregl from 'maplibre-gl';
-import { cogProtocol } from 'https://esm.sh/@geomatico/maplibre-cog-protocol@0.4.0?external=maplibre-gl';
+import { cogProtocol } from 'https://esm.sh/@geomatico/maplibre-cog-protocol@0.9.0?external=maplibre-gl';
 maplibregl.addProtocol('cog', cogProtocol);
 
 const BASE = new URL('data/', location.href).href;
 const YEARS = [2015, 2016, 2017, 2018, 2019, 2020, 2025];
-let idx = 3;          // default 2018
+const N = YEARS.length;
+let pos = 3;          // continuous position 0..N-1 (default 2018)
 let mode = 'sat';     // 'sat' | 'ndvi'
-let opacity = 1;
+let opacity = 1;      // global opacity 0..1
+let snap = false;     // snap to whole years
+let speed = 50;       // 0..100
 let playing = false, playTimer = null;
+let shown = new Set();
 
 const PLAY_SVG  = '<svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z"/></svg>';
 const PAUSE_SVG = '<svg viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>';
@@ -173,10 +207,10 @@ const PAUSE_SVG = '<svg viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z"
 const fileFor = (y, m) => (m === 'sat' ? 'Meghalaya_S2_' + y + '_COG.tif' : 'NDVI_' + y + '_COG.tif');
 const urlFor  = (y, m) => 'cog://' + BASE + fileFor(y, m);
 const lid     = (y, m) => (m === 'sat' ? 's2-' : 'ndvi-') + y;
-const activeLid = () => lid(YEARS[idx], mode);
-const modeLabel = () => (mode === 'sat' ? 'Satellite' : 'NDVI');
+const modeLabel = () => (mode === 'sat' ? 'RGB' : 'NDVI');
 
-const statusEl = document.getElementById('status');
+const $ = id => document.getElementById(id);
+const statusEl = $('status');
 const setStatus = (t, cls = '') => { statusEl.textContent = t; statusEl.className = 'status ' + cls; };
 
 const map = new maplibregl.Map({
@@ -192,21 +226,29 @@ map.addControl(new maplibregl.ScaleControl({ maxWidth: 120, unit: 'metric' }), '
 setStatus('Loading basemap…', 'load');
 
 map.on('load', () => {
+  // 3D globe when zoomed out, auto-flattens to Mercator as you zoom in
+  try { map.setProjection({ type: 'globe' }); } catch (e) { console.warn('globe unsupported', e); }
+
   let firstSymbol;
   for (const l of map.getStyle().layers) { if (l.type === 'symbol') { firstSymbol = l.id; break; } }
 
-  // add all 14 layers (hidden); MapLibre only fetches tiles for the visible one
+  // add all 14 layers hidden (tiles fetched lazily for visible ones only)
   YEARS.forEach(y => ['sat', 'ndvi'].forEach(m => {
     const id = lid(y, m);
     map.addSource(id, { type: 'raster', url: urlFor(y, m), tileSize: 256 });
     map.addLayer({
       id, type: 'raster', source: id,
       layout: { visibility: 'none' },
-      paint: { 'raster-opacity': 1, 'raster-resampling': 'nearest', 'raster-fade-duration': 150 }
+      paint: {
+        'raster-opacity': 1,
+        'raster-opacity-transition': { duration: 0 },
+        'raster-resampling': 'nearest',
+        'raster-fade-duration': 120
+      }
     }, firstSymbol);
   }));
 
-  // spotlight mask: flat dark everywhere outside the Meghalaya boundary, above imagery / below labels
+  // spotlight mask: dark outside the boundary; fades out on the globe so the full Earth shows
   fetch('data/vectors/Meghalaya_Districts.geojson')
     .then(r => r.json())
     .then(gj => {
@@ -218,66 +260,98 @@ map.on('load', () => {
       });
       const world = [[-180, -85], [180, -85], [180, 85], [-180, 85], [-180, -85]];
       map.addSource('meg-mask', { type: 'geojson', data: { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [world, ...holes] } } });
-      map.addLayer({ id: 'meg-mask', type: 'fill', source: 'meg-mask', paint: { 'fill-color': '#0a0c0e', 'fill-opacity': 1, 'fill-antialias': false } }, firstSymbol);
+      map.addLayer({
+        id: 'meg-mask', type: 'fill', source: 'meg-mask',
+        paint: {
+          'fill-color': '#0a0c0e',
+          'fill-antialias': false,
+          'fill-opacity': ['interpolate', ['linear'], ['zoom'], 3.5, 0, 6, 1]
+        }
+      }, firstSymbol);
     })
     .catch(err => console.error('Boundary mask failed to load:', err));
 
   wireControls();
-  showActive();
+  render();
 });
 
 map.on('sourcedata', (e) => {
-  if (e.sourceId === activeLid() && e.isSourceLoaded) setStatus(YEARS[idx] + ' · ' + modeLabel(), 'ok');
+  const lo = YEARS[Math.round(pos)];
+  if (e.sourceId === lid(lo, mode) && e.isSourceLoaded) setStatus(lo + ' · ' + modeLabel(), 'ok');
 });
 map.on('error', (e) => { console.error('MapLibre error:', e && e.error); });
 
-function showActive() {
-  const target = activeLid();
-  if (map.getLayer(target)) {
-    map.setLayoutProperty(target, 'visibility', 'visible');
-    map.setPaintProperty(target, 'raster-opacity', opacity);
-  }
-  YEARS.forEach(y => ['sat', 'ndvi'].forEach(m => {
-    const id = lid(y, m);
-    if (id !== target && map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'none');
-  }));
-  document.getElementById('ro-year').textContent = YEARS[idx];
-  document.getElementById('ro-mode').textContent = modeLabel();
-  document.querySelectorAll('#tl-years button').forEach(b => b.classList.toggle('on', +b.dataset.i === idx));
-  document.getElementById('scrub').value = idx;
-  document.getElementById('legend').hidden = (mode !== 'ndvi');
-  setStatus('Loading ' + YEARS[idx] + '…', 'load');
+// ---- core render: crossfade between the two adjacent years ----
+function render() {
+  const lo = Math.floor(pos);
+  let hi = Math.min(lo + 1, N - 1);
+  let frac = pos - lo;
+  if (snap) { frac = 0; hi = lo; }
+
+  const loId = lid(YEARS[lo], mode);
+  const hiId = lid(YEARS[hi], mode);
+  const want = new Map();
+  want.set(loId, opacity);
+  if (frac > 0.001 && hiId !== loId) want.set(hiId, opacity * frac);
+
+  shown.forEach(id => { if (!want.has(id) && map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'none'); });
+  want.forEach((op, id) => {
+    if (!map.getLayer(id)) return;
+    map.setLayoutProperty(id, 'visibility', 'visible');
+    map.setPaintProperty(id, 'raster-opacity', op);
+  });
+  shown = new Set(want.keys());
+
+  const near = YEARS[Math.round(pos)];
+  $('ro-year').textContent = near;
+  $('ro-mode').textContent = modeLabel();
+  document.querySelectorAll('#tl-years button').forEach(b => b.classList.toggle('on', +b.dataset.i === Math.round(pos)));
+  $('legend').hidden = (mode !== 'ndvi');
+  if (!map.isSourceLoaded || !map.isSourceLoaded(loId)) setStatus('Loading ' + near + '…', 'load');
+  else setStatus(near + ' · ' + modeLabel(), 'ok');
 }
 
-function step(d) { idx = Math.max(0, Math.min(YEARS.length - 1, idx + d)); showActive(); }
+function setPos(p) { pos = Math.max(0, Math.min(N - 1, p)); $('scrub').value = pos; render(); }
+function step(d) { setPos(Math.round(pos) + d); }
 
+function intervalMs() { return 2600 - speed * 21; }  // speed 0->2600ms, 100->500ms
+function schedule() {
+  clearTimeout(playTimer);
+  playTimer = setTimeout(() => {
+    let n = Math.round(pos) + 1; if (n >= N) n = 0;
+    setPos(n);
+    if (playing) schedule();
+  }, intervalMs());
+}
 function togglePlay() {
   playing = !playing;
-  const btn = document.getElementById('play');
-  btn.classList.toggle('play-on', playing);
-  btn.innerHTML = playing ? PAUSE_SVG : PLAY_SVG;
-  if (playing) playTimer = setInterval(() => { idx = (idx + 1) % YEARS.length; showActive(); }, 1300);
-  else { clearInterval(playTimer); playTimer = null; }
+  const b = $('play');
+  b.classList.toggle('play-on', playing);
+  b.innerHTML = playing ? PAUSE_SVG : PLAY_SVG;
+  if (playing) schedule(); else clearTimeout(playTimer);
 }
 
 function wireControls() {
-  document.getElementById('scrub').addEventListener('input', e => { idx = +e.target.value; showActive(); });
-  document.getElementById('prev').addEventListener('click', () => step(-1));
-  document.getElementById('next').addEventListener('click', () => step(1));
-  document.getElementById('play').addEventListener('click', togglePlay);
+  $('scrub').addEventListener('input', e => { pos = +e.target.value; if (snap) pos = Math.round(pos); render(); });
+  $('scrub').addEventListener('change', e => { if (snap) setPos(Math.round(+e.target.value)); });
+  $('prev').addEventListener('click', () => step(-1));
+  $('next').addEventListener('click', () => step(1));
+  $('play').addEventListener('click', togglePlay);
   document.querySelectorAll('#tl-years button').forEach(b =>
-    b.addEventListener('click', () => { idx = +b.dataset.i; showActive(); }));
+    b.addEventListener('click', () => setPos(+b.dataset.i)));
   document.querySelectorAll('.seg-btn').forEach(b =>
     b.addEventListener('click', () => {
       mode = b.dataset.mode;
       document.querySelectorAll('.seg-btn').forEach(x => x.classList.toggle('on', x === b));
-      showActive();
+      render();
     }));
-  const op = document.getElementById('opacity');
+  $('snap').addEventListener('change', e => { snap = e.target.checked; if (snap) setPos(Math.round(pos)); });
+  $('speed').addEventListener('input', e => { speed = +e.target.value; if (playing) schedule(); });
+  const op = $('opacity');
   op.addEventListener('input', e => {
     opacity = +e.target.value / 100;
-    document.getElementById('op-val').textContent = e.target.value + '%';
-    if (map.getLayer(activeLid())) map.setPaintProperty(activeLid(), 'raster-opacity', opacity);
+    $('op-val').textContent = e.target.value + '%';
+    render();
   });
   window.addEventListener('keydown', e => {
     if (e.key === 'ArrowLeft') step(-1);
