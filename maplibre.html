@@ -22,6 +22,19 @@
   html,body{margin:0;height:100%;width:100%;overflow:hidden;background:var(--bg);color:var(--text);
     font-family:'Space Grotesk',ui-sans-serif,system-ui,sans-serif}
   #map{position:absolute;inset:0}
+  #map-b{position:absolute;inset:0;z-index:2;display:none;clip-path:inset(0 0 0 50%)}
+  #map-b.on{display:block}
+  .swipe-divider{position:absolute;top:0;bottom:0;left:50%;width:0;z-index:3;display:none;pointer-events:none}
+  .swipe-divider.on{display:block}
+  .swipe-line{position:absolute;top:0;bottom:0;left:-1.5px;width:3px;background:var(--accent);box-shadow:0 0 0 1px rgba(10,12,14,.55),0 0 14px rgba(182,244,65,.55)}
+  .swipe-handle{position:absolute;top:50%;left:0;transform:translate(-50%,-50%);width:42px;height:42px;border-radius:50%;
+    background:var(--panel-solid);border:2px solid var(--accent);box-shadow:0 4px 16px rgba(0,0,0,.5),0 0 14px rgba(182,244,65,.35);
+    display:flex;align-items:center;justify-content:center;cursor:ew-resize;pointer-events:auto;color:var(--accent)}
+  .swipe-handle svg{width:22px;height:22px}
+  .swipe-tag{position:absolute;top:16px;padding:5px 11px;border-radius:8px;background:var(--panel-solid);border:1px solid var(--border);
+    font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:.06em;white-space:nowrap;box-shadow:var(--shadow)}
+  .swipe-tag.a{right:calc(100% + 14px);color:var(--blue)}
+  .swipe-tag.b{left:calc(100% + 14px);color:var(--accent)}
 
   .left-stack{position:absolute;top:14px;left:14px;z-index:1000;width:290px;
     display:flex;flex-direction:column;gap:12px;overflow:visible;max-height:calc(100vh - 28px)}
@@ -113,6 +126,16 @@
   .tl-btn:hover{border-color:var(--accent)}
   .tl-btn.play-on{background:var(--warn);border-color:var(--warn);color:#0a0c0e}
   .tl-btn svg{width:16px;height:16px;fill:currentColor}
+  .tl-compare svg{fill:none}
+  .tl-btn.compare-on{background:var(--accent);border-color:var(--accent);color:#0a0c0e}
+  .tl-compare-row{display:flex;align-items:center;justify-content:center;gap:9px;padding:9px 0 2px;margin-top:8px;border-top:1px solid #1a2127}
+  .cmp-lbl{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.06em}
+  .cmp-lbl.a{color:var(--blue)} .cmp-lbl.b{color:var(--accent)}
+  #cmp-a,#cmp-b{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:var(--text);background:#141a1f;
+    border:1px solid #2a333b;border-radius:8px;padding:6px 9px;cursor:pointer;outline:none}
+  #cmp-a{color:var(--blue)} #cmp-b{color:var(--accent)}
+  #cmp-a:hover,#cmp-b:hover{border-color:var(--accent)}
+  .cmp-vs{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted-dim)}
   #scrub{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:3px;background:#2e3942;outline:none}
   #scrub::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:var(--accent);border:3px solid var(--warn);box-shadow:0 0 0 4px rgba(255,138,76,.22);cursor:pointer;margin-top:-7px}
   #scrub::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--accent);border:3px solid var(--warn);box-shadow:0 0 0 4px rgba(255,138,76,.22);cursor:pointer}
@@ -218,7 +241,15 @@
       <button class="tl-btn" id="prev" aria-label="Previous year"><svg viewBox="0 0 24 24"><path d="M15 5l-8 7 8 7z"/></svg></button>
       <button class="tl-btn" id="play" aria-label="Play"><svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z"/></svg></button>
       <button class="tl-btn" id="next" aria-label="Next year"><svg viewBox="0 0 24 24"><path d="M9 5l8 7-8 7z"/></svg></button>
+      <button class="tl-btn tl-compare" id="compare-toggle" aria-label="Compare two years" title="Compare two years"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 8l-3 4 3 4M19 8l3 4-3 4"/></svg></button>
     </div>
+  </div>
+  <div class="tl-compare-row" id="compare-row" hidden>
+    <span class="cmp-lbl a">A</span>
+    <select id="cmp-a"></select>
+    <span class="cmp-vs">vs</span>
+    <select id="cmp-b"></select>
+    <span class="cmp-lbl b">B</span>
   </div>
   <input type="range" id="scrub" min="0" max="6" step="0.01" value="3" />
   <div class="tl-years" id="tl-years">
@@ -232,6 +263,15 @@
 </div>
 
 <div id="map"></div>
+<div id="map-b"></div>
+<div class="swipe-divider" id="swipe-divider">
+  <div class="swipe-line"></div>
+  <div class="swipe-handle" id="swipe-handle">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5"/></svg>
+    <span class="swipe-tag a" id="swipe-tag-a">2015</span>
+    <span class="swipe-tag b" id="swipe-tag-b">2025</span>
+  </div>
+</div>
 
 <script type="importmap">
 { "imports": { "maplibre-gl": "https://esm.sh/maplibre-gl@5" } }
@@ -247,6 +287,8 @@ const N = YEARS.length;
 let pos = 3, mode = 'sat', opacity = 1, snap = false, speed = 50;
 let playing = false, playTimer = null, rafId = null, lastT = 0;
 let shown = new Set();
+// swipe-compare state
+let compareOn = false, cmpA = 2015, cmpB = 2025, swipeX = 0.5, mapB = null, mapBReady = false, shownB = new Set();
 
 const PLAY_SVG  = '<svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z"/></svg>';
 const PAUSE_SVG = '<svg viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>';
@@ -312,6 +354,7 @@ map.on('load', () => {
 
   addVectors();
   wireControls();
+  wireCompare();
   render();
 });
 
@@ -393,6 +436,7 @@ function addVectors() {
 
 // ---------- core render (crossfade + timeline UI) ----------
 function render() {
+  if (compareOn) { renderCompare(); return; }
   const lo = Math.floor(pos);
   let hi = Math.min(lo + 1, N - 1);
   let frac = pos - lo;
@@ -652,6 +696,118 @@ async function loadRasterFiles(files) {
     try { await addUploadedRaster(file); setStatus('Loaded ' + file.name, 'ok'); }
     catch (err) { console.error(err); setStatus(file.name + ': could not load', 'err'); }
   }
+}
+
+// ---------- swipe compare (year A vs year B) ----------
+function ensureMapB() {
+  if (mapB) return;
+  mapB = new maplibregl.Map({
+    container: 'map-b',
+    style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+    center: map.getCenter(), zoom: map.getZoom(), bearing: map.getBearing(), pitch: map.getPitch(),
+    maxZoom: 16, interactive: false, attributionControl: false
+  });
+  mapB.on('load', () => {
+    let firstSymbol;
+    for (const l of mapB.getStyle().layers) { if (l.type === 'symbol') { firstSymbol = l.id; break; } }
+    YEARS.forEach(y => ['sat', 'ndvi'].forEach(m => {
+      const id = lid(y, m);
+      mapB.addSource(id, { type: 'raster', url: urlFor(y, m), tileSize: 256 });
+      mapB.addLayer({ id, type: 'raster', source: id, layout: { visibility: 'none' },
+        paint: { 'raster-opacity': 1, 'raster-resampling': 'nearest', 'raster-fade-duration': 120 } }, firstSymbol);
+    }));
+    mapBReady = true;
+    renderCompare();
+  });
+  // keep B camera locked to A
+  const sync = () => { if (!mapB) return; mapB.jumpTo({ center: map.getCenter(), zoom: map.getZoom(), bearing: map.getBearing(), pitch: map.getPitch() }); };
+  map.on('move', sync);
+}
+
+function setSwipe(frac) {
+  swipeX = Math.max(0, Math.min(1, frac));
+  const pct = swipeX * 100;
+  $('map-b').style.clipPath = 'inset(0 0 0 ' + pct + '%)';
+  $('swipe-divider').style.left = pct + '%';
+}
+
+function renderCompare() {
+  // map A (base) shows year A across the whole map; map B (overlay, clipped right) shows year B
+  const aId = lid(cmpA, mode);
+  const wantA = new Map([[aId, 1]]);
+  shown.forEach(id => { if (!wantA.has(id) && map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'none'); });
+  wantA.forEach((op, id) => { if (!map.getLayer(id)) return; map.setLayoutProperty(id, 'visibility', 'visible'); map.setPaintProperty(id, 'raster-opacity', op); });
+  shown = new Set(wantA.keys());
+
+  if (mapBReady) {
+    const bId = lid(cmpB, mode);
+    shownB.forEach(id => { if (id !== bId && mapB.getLayer(id)) mapB.setLayoutProperty(id, 'visibility', 'none'); });
+    if (mapB.getLayer(bId)) { mapB.setLayoutProperty(bId, 'visibility', 'visible'); mapB.setPaintProperty(bId, 'raster-opacity', 1); }
+    shownB = new Set([bId]);
+  }
+
+  $('swipe-tag-a').textContent = cmpA + ' · ' + modeLabel();
+  $('swipe-tag-b').textContent = cmpB + ' · ' + modeLabel();
+  $('ro-year').textContent = cmpA + ' ⇔ ' + cmpB;
+  $('ro-mode').textContent = modeLabel();
+  $('ro-fade').innerHTML = '';
+  $('legend').hidden = (mode !== 'ndvi');
+  setStatus('Compare · ' + cmpA + ' vs ' + cmpB, 'ok');
+}
+
+function enterCompare() {
+  compareOn = true;
+  stopPlay();
+  ensureMapB();
+  $('map-b').classList.add('on');
+  $('swipe-divider').classList.add('on');
+  $('compare-toggle').classList.add('compare-on');
+  $('compare-row').hidden = false;
+  // disable the normal timeline scrub while comparing
+  $('scrub').disabled = true; $('prev').disabled = true; $('next').disabled = true; $('play').disabled = true;
+  setSwipe(0.5);
+  renderCompare();
+}
+function exitCompare() {
+  compareOn = false;
+  $('map-b').classList.remove('on');
+  $('swipe-divider').classList.remove('on');
+  $('compare-toggle').classList.remove('compare-on');
+  $('compare-row').hidden = true;
+  $('scrub').disabled = false; $('prev').disabled = false; $('next').disabled = false; $('play').disabled = false;
+  // hide all of map B's layers
+  if (mapBReady) { shownB.forEach(id => mapB.getLayer(id) && mapB.setLayoutProperty(id, 'visibility', 'none')); shownB = new Set(); }
+  render();
+}
+
+function wireCompare() {
+  // populate A/B year selects
+  const aSel = $('cmp-a'), bSel = $('cmp-b');
+  YEARS.forEach(y => {
+    aSel.insertAdjacentHTML('beforeend', '<option value="' + y + '">' + y + '</option>');
+    bSel.insertAdjacentHTML('beforeend', '<option value="' + y + '">' + y + '</option>');
+  });
+  aSel.value = cmpA; bSel.value = cmpB;
+  aSel.addEventListener('change', e => { cmpA = +e.target.value; renderCompare(); });
+  bSel.addEventListener('change', e => { cmpB = +e.target.value; renderCompare(); });
+  $('compare-toggle').addEventListener('click', () => compareOn ? exitCompare() : enterCompare());
+
+  // divider drag
+  const handle = $('swipe-handle');
+  const startDrag = () => {
+    const onMove = ev => {
+      const clientX = ev.touches ? ev.touches[0].clientX : ev.clientX;
+      setSwipe(clientX / window.innerWidth);
+    };
+    const onUp = () => {
+      window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp);
+      window.removeEventListener('touchmove', onMove); window.removeEventListener('touchend', onUp);
+    };
+    window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp);
+    window.addEventListener('touchmove', onMove, { passive: true }); window.addEventListener('touchend', onUp);
+  };
+  handle.addEventListener('mousedown', e => { e.preventDefault(); startDrag(); });
+  handle.addEventListener('touchstart', e => { startDrag(); }, { passive: true });
 }
 
 function wireControls() {
