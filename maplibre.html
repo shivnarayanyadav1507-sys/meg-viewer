@@ -25,17 +25,17 @@
 
   .left-stack{position:absolute;top:14px;left:14px;z-index:1000;width:290px;
     display:flex;flex-direction:column;gap:12px;overflow:visible;max-height:calc(100vh - 28px)}
-  .app-title{display:flex;align-self:flex-start;width:100%;max-width:290px;align-items:center;gap:11px;
+  .app-title{display:flex;align-self:flex-start;width:max-content;max-width:none;align-items:center;gap:11px;
     background:var(--panel-solid);border:1px solid var(--border);border-radius:12px;
     box-shadow:var(--shadow);padding:10px 15px}
   .app-title-mark{flex:none}
   .app-title-main{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;
-    letter-spacing:-.01em;line-height:1.15;color:var(--text);min-width:0}
+    letter-spacing:-.01em;line-height:1;color:var(--text);white-space:nowrap}
   .app-title-div{width:1px;height:15px;background:var(--border-strong);flex:none}
   .app-title-sub{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;white-space:nowrap;flex:none}
   .app-title-sub .yl{color:var(--accent)} .app-title-sub .yd{color:var(--warn)}
 
-  .stack-scroll{display:flex;flex-direction:column;gap:12px;overflow-y:auto;padding-right:2px}
+  .stack-scroll{display:flex;flex-direction:column;gap:12px;overflow-y:auto;overflow-x:hidden;padding-right:2px}
   .panel{width:290px;background:var(--panel);backdrop-filter:blur(14px);
     -webkit-backdrop-filter:blur(14px);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;flex:none}
   .panel-head{display:flex;align-items:center;gap:10px;padding:13px 15px;border-bottom:1px solid #1c242b}
