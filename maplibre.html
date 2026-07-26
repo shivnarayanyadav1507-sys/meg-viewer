@@ -333,16 +333,26 @@ function addVectors() {
 
   // villages (clustered points) — small solid green dot for single villages
   map.addSource('villages', { type: 'geojson', data: 'data/vectors/Meghalaya_Villages.geojson', cluster: true, clusterRadius: 46, clusterMaxZoom: 12 });
+  // cluster: soft translucent outer glow ring (modern layered look)
+  map.addLayer({ id: 'vil-cluster-glow', type: 'circle', source: 'villages', filter: ['has', 'point_count'], layout: { visibility: 'none' },
+    paint: { 'circle-color': '#b6f441', 'circle-opacity': 0.18, 'circle-blur': 0.35,
+      'circle-radius': ['step', ['get', 'point_count'], 20, 50, 26, 200, 34] } });
+  // cluster: solid inner core
   map.addLayer({ id: 'vil-clusters', type: 'circle', source: 'villages', filter: ['has', 'point_count'], layout: { visibility: 'none' },
-    paint: { 'circle-color': '#b6f441', 'circle-opacity': 0.85, 'circle-stroke-width': 1.5, 'circle-stroke-color': '#0a0c0e',
-      'circle-radius': ['step', ['get', 'point_count'], 11, 50, 15, 200, 20] } });
+    paint: { 'circle-color': '#c7f95a', 'circle-opacity': 0.95, 'circle-stroke-width': 2, 'circle-stroke-color': 'rgba(10,12,14,0.55)',
+      'circle-radius': ['step', ['get', 'point_count'], 12, 50, 16, 200, 21] } });
   map.addLayer({ id: 'vil-count', type: 'symbol', source: 'villages', filter: ['has', 'point_count'], layout: { visibility: 'none',
-    'text-field': ['get', 'point_count_abbreviated'], 'text-font': ['Open Sans Semibold'], 'text-size': 10 }, paint: { 'text-color': '#0a0c0e' } });
+    'text-field': ['get', 'point_count_abbreviated'], 'text-font': ['Open Sans Semibold'], 'text-size': 11 }, paint: { 'text-color': '#0a0c0e' } });
+  // individual village: bright white core + lime ring, grows with zoom for visibility on any basemap
   map.addLayer({ id: 'vil-point', type: 'circle', source: 'villages', filter: ['!', ['has', 'point_count']], layout: { visibility: 'none' },
-    paint: { 'circle-color': '#b6f441', 'circle-radius': 3, 'circle-opacity': 1, 'circle-stroke-width': 1, 'circle-stroke-color': '#0a0c0e' } });
+    paint: {
+      'circle-color': '#ffffff', 'circle-opacity': 0.95,
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 3, 11, 4.5, 14, 6.5, 17, 9],
+      'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 8, 1.5, 14, 2.5, 17, 3],
+      'circle-stroke-color': '#b6f441' } });
   map.addLayer({ id: 'vil-label', type: 'symbol', source: 'villages', filter: ['!', ['has', 'point_count']], minzoom: 11, layout: { visibility: 'none',
-    'text-field': ['get', 'HAB_NAME'], 'text-font': ['Open Sans Regular'], 'text-size': 10, 'text-offset': [0, 0.9], 'text-anchor': 'top' },
-    paint: { 'text-color': '#e9eef2', 'text-halo-color': '#0a0c0e', 'text-halo-width': 1.2 } });
+    'text-field': ['get', 'HAB_NAME'], 'text-font': ['Open Sans Regular'], 'text-size': 10, 'text-offset': [0, 1], 'text-anchor': 'top' },
+    paint: { 'text-color': '#e9eef2', 'text-halo-color': '#0a0c0e', 'text-halo-width': 1.4 } });
 
   // interactions
   map.on('click', 'dist-fill', e => {
@@ -370,7 +380,7 @@ function addVectors() {
     { id: 'districts', name: 'Districts', color: '#b3d4f0', visible: true, labelOn: true,
       labelLayerId: 'dist-label', layerIds: ['dist-fill', 'dist-line'], removable: false, bounds: null },
     { id: 'villages', name: 'Villages · 6,060', color: '#b6f441', visible: false, labelOn: true,
-      labelLayerId: 'vil-label', layerIds: ['vil-clusters', 'vil-count', 'vil-point'], removable: false, bounds: null }
+      labelLayerId: 'vil-label', layerIds: ['vil-cluster-glow', 'vil-clusters', 'vil-count', 'vil-point'], removable: false, bounds: null }
   );
   fetch('data/vectors/Meghalaya_Districts_named.geojson').then(r => r.json()).then(gj => {
     const e = vecLayers.find(x => x.id === 'districts'); if (e) e.bounds = bboxOf(gj); renderVecList();
