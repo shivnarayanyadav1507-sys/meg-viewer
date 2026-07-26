@@ -22,7 +22,8 @@
   html,body{margin:0;height:100%;width:100%;overflow:hidden;background:var(--bg);color:var(--text);
     font-family:'Space Grotesk',ui-sans-serif,system-ui,sans-serif}
   #map{position:absolute;inset:0}
-  #map-b{position:absolute;inset:0;z-index:2;display:none;clip-path:inset(0 0 0 50%)}
+  #map-b{position:absolute;inset:0;z-index:2;display:none;clip-path:inset(0 0 0 50%);background:transparent}
+  #map-b .maplibregl-canvas{background:transparent}
   #map-b.on{display:block}
   .swipe-divider{position:absolute;top:0;bottom:0;left:50%;width:0;z-index:3;display:none;pointer-events:none}
   .swipe-divider.on{display:block}
@@ -708,19 +709,17 @@ function ensureMapB() {
   if (mapB) { syncMapB(); return; }
   mapB = new maplibregl.Map({
     container: 'map-b',
-    style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+    style: { version: 8, sources: {}, layers: [], glyphs: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/{fontstack}/{range}.pbf' },
     center: map.getCenter(), zoom: map.getZoom(), bearing: map.getBearing(), pitch: map.getPitch(),
     maxZoom: 16, interactive: false, attributionControl: false, fadeDuration: 0
   });
   try { mapB.setProjection({ type: map.getProjection ? (map.getProjection().type || 'mercator') : 'mercator' }); } catch (e) {}
   mapB.on('load', () => {
-    let firstSymbol;
-    for (const l of mapB.getStyle().layers) { if (l.type === 'symbol') { firstSymbol = l.id; break; } }
     YEARS.forEach(y => ['sat', 'ndvi'].forEach(m => {
       const id = lid(y, m);
       mapB.addSource(id, { type: 'raster', url: urlFor(y, m), tileSize: 256 });
       mapB.addLayer({ id, type: 'raster', source: id, layout: { visibility: 'none' },
-        paint: { 'raster-opacity': 1, 'raster-resampling': 'nearest', 'raster-fade-duration': 0 } }, firstSymbol);
+        paint: { 'raster-opacity': 1, 'raster-resampling': 'nearest', 'raster-fade-duration': 0 } });
     }));
     mapBReady = true;
     syncMapB();
