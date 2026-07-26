@@ -19,7 +19,7 @@
     --border:#222a31; --border-strong:#2e3942; --shadow:0 10px 30px rgba(0,0,0,.5);
   }
   *{box-sizing:border-box}
-  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
+  html,body{margin:0;height:100%;width:100%;overflow:hidden;background:var(--bg);color:var(--text);
     font-family:'Space Grotesk',ui-sans-serif,system-ui,sans-serif}
   #map{position:absolute;inset:0}
 
@@ -41,7 +41,10 @@
   .panel-head{display:flex;align-items:center;gap:10px;padding:13px 15px;border-bottom:1px solid #1c242b}
   .logo{width:3px;height:13px;border-radius:2px;background:var(--warn);flex:none}
   .logo.vec{background:var(--blue)}
-  .panel-head h1{margin:0;font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase}
+  .panel-head h1{margin:0;flex:1;font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase}
+  .icbtn{flex:none;width:22px;height:22px;border-radius:6px;background:transparent;border:none;color:var(--muted-dim);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+  .icbtn:hover{color:var(--text);background:#1c242b}
+  .icbtn svg{width:13px;height:13px}
   .pbody{padding:14px;display:flex;flex-direction:column;gap:13px}
 
   .seg{display:flex;gap:4px;background:#141a1f;border:1px solid #1f2730;border-radius:11px;padding:3px}
@@ -61,20 +64,29 @@
   .status{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.05em;color:var(--muted-dim)}
   .status.load{color:var(--warn)} .status.ok{color:var(--accent)} .status.err{color:#ff6b6b}
 
-  /* vectors panel */
-  .vrow{display:flex;align-items:center;gap:9px;font-family:'Space Grotesk',sans-serif;font-size:13px;color:var(--text);cursor:pointer;user-select:none}
-  .vrow input{display:none}
-  .vrow .sw{width:34px;height:19px;border-radius:10px;background:#222a31;border:1px solid #2e3942;position:relative;transition:.15s;flex:none}
-  .vrow .sw::after{content:'';position:absolute;top:1.5px;left:2px;width:13px;height:13px;border-radius:50%;background:#5d6873;transition:.15s}
-  .vrow input:checked + .sw{background:var(--accent-dim);border-color:var(--accent)}
-  .vrow input:checked + .sw::after{background:var(--accent);left:16px}
-  .vrow .cnt{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted-dim)}
-  .vdiv{height:1px;background:#1a2127}
-  .upload{border:1.5px dashed #2e3942;border-radius:10px;padding:14px 12px;text-align:center;
-    font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted-dim);cursor:pointer;line-height:1.5;transition:.15s}
+  /* vectors / layers panel */
+  .upload{border:1.5px dashed #2e3942;border-radius:10px;padding:12px;display:flex;align-items:center;gap:9px;justify-content:center;
+    font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--muted-dim);cursor:pointer;line-height:1.5;transition:.15s;text-align:left}
   .upload:hover,.upload.over{border-color:var(--accent);color:var(--muted);background:var(--accent-dim)}
-  .upload b{color:var(--muted);display:block;margin-bottom:3px;font-weight:600}
-  .btn-clear{font-family:'Space Grotesk',sans-serif;font-size:11.5px;color:var(--muted);background:#161c22;border:1px solid #2a333b;border-radius:8px;padding:7px;cursor:pointer}
+  .upload .u-ic{flex:none;width:15px;height:15px;color:var(--muted)}
+  .upload b{color:var(--text);display:block;font-family:'Space Grotesk',sans-serif;font-size:12.5px;font-weight:600;margin-bottom:1px}
+  .upload .u-hint{opacity:.85}
+  .list{display:flex;flex-direction:column;gap:2px}
+  .lrow-switch{display:flex;align-items:center;gap:9px;padding:5px 2px}
+  .lrow-switch .vname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'Space Grotesk',sans-serif;font-size:13px;color:var(--text)}
+  .sw-btn{width:auto;height:auto;padding:0}
+  .sw{display:block;width:34px;height:19px;border-radius:10px;background:#222a31;border:1px solid #2e3942;position:relative;transition:.15s}
+  .sw::after{content:'';position:absolute;top:1.5px;left:2px;width:13px;height:13px;border-radius:50%;background:#5d6873;transition:.15s}
+  .sw.on{background:var(--accent-dim);border-color:var(--accent)}
+  .sw.on::after{background:var(--accent);left:16px}
+  .lrow{display:flex;align-items:center;gap:8px;padding:6px 2px;border-radius:8px;font-family:'Space Grotesk',sans-serif;font-size:12.5px;color:var(--text)}
+  .lrow:hover{background:#141a1f}
+  .lrow.muted{color:var(--muted-dim)}
+  .lrow.muted .dot{opacity:.35}
+  .lrow .dot{flex:none;width:9px;height:9px;border-radius:50%}
+  .lrow .lname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .lrow .icbtn.active{color:var(--accent)}
+  .btn-clear{font-family:'Space Grotesk',sans-serif;font-size:11.5px;color:var(--muted);background:#161c22;border:1px solid #2a333b;border-radius:8px;padding:7px;cursor:pointer;align-self:flex-end}
   .vec-status{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--muted-dim)}
   .vec-status.ok{color:var(--accent)} .vec-status.err{color:#ff6b6b}
 
@@ -148,8 +160,17 @@
 
   <div class="stack-scroll">
     <div class="panel">
-      <div class="panel-head"><span class="logo"></span><h1>Imagery · COG</h1></div>
+      <div class="panel-head"><span class="logo"></span><h1>Imagery · COG</h1>
+        <button class="icbtn" id="gear" title="Reset opacity" aria-label="Reset opacity">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+      </div>
       <div class="pbody">
+        <div class="upload" id="raster-drop">
+          <svg class="u-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          <span><b>Load raster files</b><span class="u-hint"> · GeoTIFF (COG) · PNG · JPEG</span></span>
+          <input type="file" id="raster-file" accept=".tif,.tiff,.png,.jpg,.jpeg" multiple hidden />
+        </div>
         <div class="seg" id="mode-seg">
           <button class="seg-btn on" data-mode="sat">Satellite</button>
           <button class="seg-btn" data-mode="ndvi">NDVI</button>
@@ -163,6 +184,7 @@
           <div class="legend-bar"></div>
           <div class="legend-labels"><span>Dense</span><span>Sparse / bare</span></div>
         </div>
+        <div class="list" id="img-list"></div>
         <div class="status" id="status">Starting…</div>
       </div>
     </div>
@@ -170,16 +192,14 @@
     <div class="panel">
       <div class="panel-head"><span class="logo vec"></span><h1>Vectors</h1></div>
       <div class="pbody">
-        <label class="vrow"><input type="checkbox" id="tg-districts" checked /><span class="sw"></span> Districts</label>
-        <label class="vrow"><input type="checkbox" id="tg-villages" /><span class="sw"></span> Villages <span class="cnt">6,060</span></label>
-        <div class="vdiv"></div>
         <div class="upload" id="drop">
-          <b>Add a parcel</b>
-          drag &amp; drop or click<br>.zip · .kml · .kmz · .geojson
-          <input type="file" id="file" accept=".zip,.kml,.kmz,.geojson,.json" hidden />
+          <svg class="u-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.9 17.4 12 21l-8.9-3.6a1 1 0 0 1-.6-.9V6.6a1 1 0 0 1 .6-.9L12 2l8.9 3.6a1 1 0 0 1 .6.9v10.9a1 1 0 0 1-.6.9Z"/><path d="M12 21V11"/><path d="M20.5 5.7 12 11 3.5 5.7"/></svg>
+          <span><b>Add vector</b><span class="u-hint"> · KML · GeoJSON · Shapefile (.zip) · GeoPackage</span></span>
+          <input type="file" id="file" accept=".zip,.kml,.kmz,.geojson,.json,.gpkg" multiple hidden />
         </div>
-        <button class="btn-clear" id="clear-parcel" hidden>Clear parcel</button>
+        <div class="list" id="vec-list"></div>
         <div class="vec-status" id="vec-status"></div>
+        <button class="btn-clear" id="clear-parcel">Clear vectors</button>
       </div>
     </div>
   </div>
@@ -229,6 +249,18 @@ let shown = new Set();
 
 const PLAY_SVG  = '<svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z"/></svg>';
 const PAUSE_SVG = '<svg viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>';
+
+// ---------- shared icons + palette for layer rows ----------
+const EYE_SVG    = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
+const EYE_OFF_SVG= '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a18.6 18.6 0 0 1 4.22-5.06M9.9 4.24A10.9 10.9 0 0 1 12 4c7 0 11 7 11 7a18.5 18.5 0 0 1-2.16 3.19m-6.3-1.13a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg>';
+const TAG_SVG    = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24L4 3a1 1 0 0 0-1 1l.24 5.59a2 2 0 0 0 .59 1.41l9.58 9.59a2 2 0 0 0 2.83 0l4.35-4.35a2 2 0 0 0 0-2.83Z"/><circle cx="7.5" cy="7.5" r="1.2" fill="currentColor" stroke="none"/></svg>';
+const EXPAND_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>';
+const X_SVG      = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>';
+const VEC_PALETTE = ['#ffd166', '#ef476f', '#06d6a0', '#c77dff', '#4cc9f0', '#f4a261'];
+let vecPaletteI = 0;
+let vecLayers = []; // {id,name,color,visible,labelOn,labelLayerId,layerIds:[],removable,bounds}
+let imgLayers = []; // {id,name,visible,removable,bounds}
+let vecUid = 0, imgUid = 0;
 
 const fileFor = (y, m) => (m === 'sat' ? 'Meghalaya_S2_' + y + '_COG.tif' : 'NDVI_' + y + '_COG.tif');
 const urlFor  = (y, m) => 'cog://' + BASE + fileFor(y, m);
@@ -290,20 +322,23 @@ map.on('error', (e) => console.error('MapLibre error:', e && e.error));
 
 // ---------- vectors: districts + clustered villages ----------
 function addVectors() {
-  // districts (line + invisible fill for clicks)
+  // districts (line + invisible fill for clicks + label)
   map.addSource('districts', { type: 'geojson', data: 'data/vectors/Meghalaya_Districts_named.geojson' });
   map.addLayer({ id: 'dist-fill', type: 'fill', source: 'districts', paint: { 'fill-color': '#000000', 'fill-opacity': 0 } });
   map.addLayer({ id: 'dist-line', type: 'line', source: 'districts', paint: { 'line-color': '#b3d4f0', 'line-width': 1.6, 'line-opacity': 0.85 } });
+  map.addLayer({ id: 'dist-label', type: 'symbol', source: 'districts', layout: {
+    'text-field': ['get', 'distname'], 'text-font': ['Open Sans Semibold'], 'text-size': 11, 'text-letter-spacing': .03 },
+    paint: { 'text-color': '#b3d4f0', 'text-halo-color': '#0a0c0e', 'text-halo-width': 1.3 } });
 
-  // villages (clustered points)
+  // villages (clustered points) — small solid green dot for single villages
   map.addSource('villages', { type: 'geojson', data: 'data/vectors/Meghalaya_Villages.geojson', cluster: true, clusterRadius: 46, clusterMaxZoom: 12 });
   map.addLayer({ id: 'vil-clusters', type: 'circle', source: 'villages', filter: ['has', 'point_count'], layout: { visibility: 'none' },
-    paint: { 'circle-color': '#ff8a4c', 'circle-opacity': 0.9, 'circle-stroke-width': 2, 'circle-stroke-color': '#0a0c0e',
-      'circle-radius': ['step', ['get', 'point_count'], 13, 50, 18, 200, 24] } });
+    paint: { 'circle-color': '#b6f441', 'circle-opacity': 0.85, 'circle-stroke-width': 1.5, 'circle-stroke-color': '#0a0c0e',
+      'circle-radius': ['step', ['get', 'point_count'], 11, 50, 15, 200, 20] } });
   map.addLayer({ id: 'vil-count', type: 'symbol', source: 'villages', filter: ['has', 'point_count'], layout: { visibility: 'none',
-    'text-field': ['get', 'point_count_abbreviated'], 'text-font': ['Open Sans Semibold'], 'text-size': 11 }, paint: { 'text-color': '#0a0c0e' } });
+    'text-field': ['get', 'point_count_abbreviated'], 'text-font': ['Open Sans Semibold'], 'text-size': 10 }, paint: { 'text-color': '#0a0c0e' } });
   map.addLayer({ id: 'vil-point', type: 'circle', source: 'villages', filter: ['!', ['has', 'point_count']], layout: { visibility: 'none' },
-    paint: { 'circle-color': '#ffb27a', 'circle-radius': 4, 'circle-stroke-width': 1.4, 'circle-stroke-color': '#0a0c0e' } });
+    paint: { 'circle-color': '#b6f441', 'circle-radius': 3, 'circle-opacity': 1, 'circle-stroke-width': 1, 'circle-stroke-color': '#0a0c0e' } });
   map.addLayer({ id: 'vil-label', type: 'symbol', source: 'villages', filter: ['!', ['has', 'point_count']], minzoom: 11, layout: { visibility: 'none',
     'text-field': ['get', 'HAB_NAME'], 'text-font': ['Open Sans Regular'], 'text-size': 10, 'text-offset': [0, 0.9], 'text-anchor': 'top' },
     paint: { 'text-color': '#e9eef2', 'text-halo-color': '#0a0c0e', 'text-halo-width': 1.2 } });
@@ -328,6 +363,21 @@ function addVectors() {
     map.on('mouseenter', l, () => map.getCanvas().style.cursor = 'pointer');
     map.on('mouseleave', l, () => map.getCanvas().style.cursor = '');
   });
+
+  // register built-ins in the layer list, then fetch bounds + build the list
+  vecLayers.push(
+    { id: 'districts', name: 'Districts', color: '#b3d4f0', visible: true, labelOn: true,
+      labelLayerId: 'dist-label', layerIds: ['dist-fill', 'dist-line'], removable: false, bounds: null },
+    { id: 'villages', name: 'Villages · 6,060', color: '#b6f441', visible: false, labelOn: true,
+      labelLayerId: 'vil-label', layerIds: ['vil-clusters', 'vil-count', 'vil-point'], removable: false, bounds: null }
+  );
+  fetch('data/vectors/Meghalaya_Districts_named.geojson').then(r => r.json()).then(gj => {
+    const e = vecLayers.find(x => x.id === 'districts'); if (e) e.bounds = bboxOf(gj); renderVecList();
+  }).catch(() => {});
+  fetch('data/vectors/Meghalaya_Villages.geojson').then(r => r.json()).then(gj => {
+    const e = vecLayers.find(x => x.id === 'villages'); if (e) e.bounds = bboxOf(gj); renderVecList();
+  }).catch(() => {});
+  renderVecList();
 }
 
 // ---------- core render (crossfade + timeline UI) ----------
@@ -383,7 +433,7 @@ function togglePlay() {
   if (playing) startPlay(); else stopPlay();
 }
 
-// ---------- parcel upload (zip-shp / kml / kmz / geojson) ----------
+// ---------- vector upload (zip-shp / kml / kmz / geojson / gpkg) ----------
 async function parseFile(file) {
   const name = file.name.toLowerCase();
   if (name.endsWith('.geojson') || name.endsWith('.json')) return JSON.parse(await file.text());
@@ -405,8 +455,59 @@ async function parseFile(file) {
     if (Array.isArray(gj)) gj = { type: 'FeatureCollection', features: gj.flatMap(x => x.features || []) };
     return gj;
   }
+  if (name.endsWith('.gpkg')) return await parseGeoPackage(file);
   throw new Error('unsupported');
 }
+
+// ---- minimal GeoPackage (sqlite + WKB) reader — best effort, EPSG:4326 assumed ----
+async function parseGeoPackage(file) {
+  const initSqlJs = (await import('https://esm.sh/sql.js@1.10.3')).default;
+  const SQL = await initSqlJs({ locateFile: f => 'https://esm.sh/sql.js@1.10.3/dist/' + f });
+  const db = new SQL.Database(new Uint8Array(await file.arrayBuffer()));
+  const contents = db.exec("SELECT table_name FROM gpkg_contents WHERE data_type='features'");
+  if (!contents.length) throw new Error('no feature tables in gpkg');
+  const table = contents[0].values[0][0];
+  const gc = db.exec('SELECT column_name FROM gpkg_geometry_columns WHERE table_name=\'' + table + '\'');
+  const geomCol = gc.length ? gc[0].values[0][0] : 'geom';
+  const res = db.exec('SELECT * FROM "' + table + '"');
+  if (!res.length) return { type: 'FeatureCollection', features: [] };
+  const cols = res[0].columns, gi = cols.indexOf(geomCol);
+  const features = res[0].values.map(row => {
+    const props = {}; cols.forEach((c, i) => { if (i !== gi) props[c] = row[i]; });
+    let geometry = null;
+    try { geometry = gpkgBlobToGeoJSON(row[gi]); } catch (e) { geometry = null; }
+    return geometry ? { type: 'Feature', properties: props, geometry } : null;
+  }).filter(Boolean);
+  return { type: 'FeatureCollection', features };
+}
+function gpkgBlobToGeoJSON(bytes) {
+  if (!bytes || bytes.length < 8 || bytes[0] !== 0x47 || bytes[1] !== 0x50) throw new Error('not a gpkg geometry');
+  const flags = bytes[3];
+  if (flags & 0x10) return null; // empty geometry
+  const envBytes = [0, 32, 48, 48, 64][(flags >> 1) & 0x07] || 0;
+  const off = bytes.byteOffset + 8 + envBytes;
+  return wkbToGeoJSON(new DataView(bytes.buffer, off, bytes.byteLength - 8 - envBytes));
+}
+function wkbToGeoJSON(dv) {
+  let o = 0;
+  const little = dv.getUint8(o) === 1; o += 1;
+  const type = dv.getUint32(o, little); o += 4;
+  const base = type % 1000;
+  const extraDims = type >= 3000 ? 2 : type >= 1000 ? 1 : 0;
+  const pt = () => { const x = dv.getFloat64(o, little); o += 8; const y = dv.getFloat64(o, little); o += 8; o += 8 * extraDims; return [x, y]; };
+  const line = () => { const n = dv.getUint32(o, little); o += 4; const a = []; for (let i = 0; i < n; i++) a.push(pt()); return a; };
+  const poly = () => { const n = dv.getUint32(o, little); o += 4; const a = []; for (let i = 0; i < n; i++) a.push(line()); return a; };
+  switch (base) {
+    case 1: return { type: 'Point', coordinates: pt() };
+    case 2: return { type: 'LineString', coordinates: line() };
+    case 3: return { type: 'Polygon', coordinates: poly() };
+    case 4: { const n = dv.getUint32(o, little); o += 4; const a = []; for (let i = 0; i < n; i++) { o += 5; a.push(pt()); } return { type: 'MultiPoint', coordinates: a }; }
+    case 5: { const n = dv.getUint32(o, little); o += 4; const a = []; for (let i = 0; i < n; i++) { o += 5; a.push(line()); } return { type: 'MultiLineString', coordinates: a }; }
+    case 6: { const n = dv.getUint32(o, little); o += 4; const a = []; for (let i = 0; i < n; i++) { o += 5; a.push(poly()); } return { type: 'MultiPolygon', coordinates: a }; }
+    default: throw new Error('unsupported wkb geometry type ' + type);
+  }
+}
+
 function bboxOf(gj) {
   let mnx = 180, mny = 90, mxx = -180, mxy = -90, any = false;
   const eat = c => { if (typeof c[0] === 'number') { any = true; mnx = Math.min(mnx, c[0]); mxx = Math.max(mxx, c[0]); mny = Math.min(mny, c[1]); mxy = Math.max(mxy, c[1]); } else c.forEach(eat); };
@@ -414,21 +515,132 @@ function bboxOf(gj) {
   feats.forEach(f => f && f.geometry && eat(f.geometry.coordinates));
   return any ? [[mnx, mny], [mxx, mxy]] : null;
 }
-function addParcel(gj) {
-  ['parcel-line', 'parcel-fill', 'parcel-pt'].forEach(l => { if (map.getLayer(l)) map.removeLayer(l); });
-  if (map.getSource('parcel')) map.removeSource('parcel');
-  map.addSource('parcel', { type: 'geojson', data: gj });
-  map.addLayer({ id: 'parcel-fill', type: 'fill', source: 'parcel', paint: { 'fill-color': '#ffffff', 'fill-opacity': 0.08 } });
-  map.addLayer({ id: 'parcel-line', type: 'line', source: 'parcel', paint: { 'line-color': '#ffffff', 'line-width': 2.5 } });
-  map.addLayer({ id: 'parcel-pt', type: 'circle', source: 'parcel', filter: ['==', ['geometry-type'], 'Point'], paint: { 'circle-color': '#ffffff', 'circle-radius': 6, 'circle-stroke-color': '#0a0c0e', 'circle-stroke-width': 2 } });
-  const b = bboxOf(gj);
-  if (b) map.fitBounds(b, { padding: 90, maxZoom: 15, duration: 900 });
-  $('clear-parcel').hidden = false;
+function pickLabelProp(gj) {
+  const feats = gj.type === 'FeatureCollection' ? gj.features : [gj];
+  const f = feats.find(x => x && x.properties && Object.keys(x.properties).length);
+  if (!f) return null;
+  const prefer = ['name', 'Name', 'NAME', 'distname', 'HAB_NAME', 'title', 'Title', 'label', 'Label'];
+  for (const k of prefer) if (k in f.properties) return k;
+  return Object.keys(f.properties).find(k => typeof f.properties[k] === 'string') || null;
 }
-async function loadParcel(file) {
-  setVec('Reading ' + file.name + '…');
-  try { const gj = await parseFile(file); addParcel(gj); setVec('Loaded ' + file.name, 'ok'); }
-  catch (err) { console.error(err); setVec('Could not read that file', 'err'); }
+
+// ---------- dynamic vector layer list ----------
+function rowBuiltin(e) {
+  return '<div class="lrow-switch" data-id="' + e.id + '">' +
+    '<button class="icbtn sw-btn" data-act="eye" title="Toggle visibility"><span class="sw' + (e.visible ? ' on' : '') + '"></span></button>' +
+    '<span class="vname">' + e.name + '</span>' +
+    (e.labelLayerId ? '<button class="icbtn' + (e.labelOn ? ' active' : '') + '" data-act="label" title="Toggle labels">' + TAG_SVG + '</button>' : '') +
+    (e.bounds ? '<button class="icbtn" data-act="zoom" title="Zoom to layer">' + EXPAND_SVG + '</button>' : '') +
+    '</div>';
+}
+function rowUpload(e) {
+  const eyeColor = e.visible ? e.color : 'var(--muted-dim)';
+  const rows = [
+    '<button class="icbtn" data-act="eye" title="Toggle visibility" style="color:' + eyeColor + '">' + (e.visible ? EYE_SVG : EYE_OFF_SVG) + '</button>',
+    '<span class="dot" style="background:' + e.color + '"></span>',
+    '<span class="lname" title="' + e.name.replace(/"/g, '&quot;') + '">' + e.name + '</span>',
+    e.labelLayerId ? '<button class="icbtn' + (e.labelOn ? ' active' : '') + '" data-act="label" title="Toggle labels">' + TAG_SVG + '</button>' : '',
+    e.bounds ? '<button class="icbtn" data-act="zoom" title="Zoom to layer">' + EXPAND_SVG + '</button>' : '',
+    '<button class="icbtn" data-act="remove" title="Remove">' + X_SVG + '</button>'
+  ].join('');
+  return '<div class="lrow' + (e.visible ? '' : ' muted') + '" data-id="' + e.id + '">' + rows + '</div>';
+}
+function renderVecList() {
+  $('vec-list').innerHTML = vecLayers.map(e => e.removable ? rowUpload(e) : rowBuiltin(e)).join('');
+}
+function toggleVecVisibility(e) {
+  e.visible = !e.visible;
+  const v = e.visible ? 'visible' : 'none';
+  e.layerIds.forEach(l => map.getLayer(l) && map.setLayoutProperty(l, 'visibility', v));
+  if (e.labelLayerId && map.getLayer(e.labelLayerId)) map.setLayoutProperty(e.labelLayerId, 'visibility', (e.visible && e.labelOn) ? 'visible' : 'none');
+  renderVecList();
+}
+function toggleVecLabel(e) {
+  e.labelOn = !e.labelOn;
+  if (e.labelLayerId && map.getLayer(e.labelLayerId)) map.setLayoutProperty(e.labelLayerId, 'visibility', (e.visible && e.labelOn) ? 'visible' : 'none');
+  renderVecList();
+}
+function zoomToVecBounds(e) { if (e.bounds) map.fitBounds(e.bounds, { padding: 90, maxZoom: 15, duration: 900 }); }
+function removeVecLayer(e) {
+  e.layerIds.forEach(l => map.getLayer(l) && map.removeLayer(l));
+  if (e.labelLayerId && map.getLayer(e.labelLayerId)) map.removeLayer(e.labelLayerId);
+  if (map.getSource(e.id)) map.removeSource(e.id);
+  vecLayers = vecLayers.filter(x => x !== e);
+  renderVecList();
+}
+function clearVectors() { vecLayers.filter(e => e.removable).forEach(removeVecLayer); setVec(''); }
+
+async function addUploadedVector(gj, filename) {
+  const uid = 'up' + (++vecUid);
+  const color = VEC_PALETTE[vecPaletteI++ % VEC_PALETTE.length];
+  const labelProp = pickLabelProp(gj);
+  const polyFilter = ['any', ['==', ['geometry-type'], 'Polygon'], ['==', ['geometry-type'], 'MultiPolygon']];
+  const lineFilter = ['any', ['==', ['geometry-type'], 'Polygon'], ['==', ['geometry-type'], 'MultiPolygon'], ['==', ['geometry-type'], 'LineString'], ['==', ['geometry-type'], 'MultiLineString']];
+  const ptFilter = ['any', ['==', ['geometry-type'], 'Point'], ['==', ['geometry-type'], 'MultiPoint']];
+  map.addSource(uid, { type: 'geojson', data: gj });
+  map.addLayer({ id: uid + '-fill', type: 'fill', source: uid, filter: polyFilter, paint: { 'fill-color': color, 'fill-opacity': 0.12 } });
+  map.addLayer({ id: uid + '-line', type: 'line', source: uid, filter: lineFilter, paint: { 'line-color': color, 'line-width': 2.2 } });
+  map.addLayer({ id: uid + '-pt', type: 'circle', source: uid, filter: ptFilter, paint: { 'circle-color': color, 'circle-radius': 5, 'circle-stroke-color': '#0a0c0e', 'circle-stroke-width': 1.5 } });
+  let labelLayerId = null;
+  if (labelProp) {
+    labelLayerId = uid + '-label';
+    map.addLayer({ id: labelLayerId, type: 'symbol', source: uid, layout: {
+      'text-field': ['get', labelProp], 'text-font': ['Open Sans Regular'], 'text-size': 10, 'text-offset': [0, 0.9], 'text-anchor': 'top' },
+      paint: { 'text-color': '#e9eef2', 'text-halo-color': '#0a0c0e', 'text-halo-width': 1.2 } });
+  }
+  const bounds = bboxOf(gj);
+  vecLayers.push({ id: uid, name: filename, color, visible: true, labelOn: true, labelLayerId,
+    layerIds: [uid + '-fill', uid + '-line', uid + '-pt'], removable: true, bounds });
+  renderVecList();
+  if (bounds) map.fitBounds(bounds, { padding: 90, maxZoom: 15, duration: 900 });
+}
+async function loadVectorFiles(files) {
+  for (const file of files) {
+    setVec('Reading ' + file.name + '…');
+    try { const gj = await parseFile(file); await addUploadedVector(gj, file.name); setVec('Loaded ' + file.name, 'ok'); }
+    catch (err) { console.error(err); setVec(file.name + ': could not read — try GeoJSON', 'err'); }
+  }
+}
+
+// ---------- raster upload (COG-style GeoTIFF, or PNG/JPEG over current view) ----------
+function fileToDataURL(file) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file); }); }
+function renderImgList() {
+  const list = $('img-list');
+  list.innerHTML = imgLayers.map(e => {
+    const rows = [
+      '<button class="icbtn" data-act="eye" title="Toggle visibility">' + (e.visible ? EYE_SVG : EYE_OFF_SVG) + '</button>',
+      '<span class="lname" title="' + e.name.replace(/"/g, '&quot;') + '">' + e.name + '</span>',
+      e.bounds ? '<button class="icbtn" data-act="zoom" title="Zoom to layer">' + EXPAND_SVG + '</button>' : '',
+      '<button class="icbtn" data-act="remove" title="Remove">' + X_SVG + '</button>'
+    ].join('');
+    return '<div class="lrow' + (e.visible ? '' : ' muted') + '" data-id="' + e.id + '">' + rows + '</div>';
+  }).join('');
+}
+async function addUploadedRaster(file) {
+  const name = file.name.toLowerCase();
+  const uid = 'ras' + (++imgUid);
+  let bounds = null;
+  if (name.endsWith('.tif') || name.endsWith('.tiff')) {
+    const url = URL.createObjectURL(file);
+    map.addSource(uid, { type: 'raster', url: 'cog://' + url, tileSize: 256 });
+    map.addLayer({ id: uid, type: 'raster', source: uid, paint: { 'raster-opacity': 0.9 } });
+  } else if (name.endsWith('.png') || name.endsWith('.jpg') || name.endsWith('.jpeg')) {
+    const dataUrl = await fileToDataURL(file);
+    const b = map.getBounds();
+    const coords = [[b.getWest(), b.getNorth()], [b.getEast(), b.getNorth()], [b.getEast(), b.getSouth()], [b.getWest(), b.getSouth()]];
+    map.addSource(uid, { type: 'image', url: dataUrl, coordinates: coords });
+    map.addLayer({ id: uid, type: 'raster', source: uid, paint: { 'raster-opacity': 0.9 } });
+    bounds = [[b.getWest(), b.getSouth()], [b.getEast(), b.getNorth()]];
+  } else throw new Error('unsupported raster format');
+  imgLayers.push({ id: uid, name: file.name, visible: true, removable: true, bounds });
+  renderImgList();
+}
+async function loadRasterFiles(files) {
+  for (const file of files) {
+    setStatus('Reading ' + file.name + '…', 'load');
+    try { await addUploadedRaster(file); setStatus('Loaded ' + file.name, 'ok'); }
+    catch (err) { console.error(err); setStatus(file.name + ': could not load', 'err'); }
+  }
 }
 
 function wireControls() {
@@ -445,27 +657,41 @@ function wireControls() {
   $('snap').addEventListener('change', e => { snap = e.target.checked; if (snap) setPos(Math.round(pos)); if (playing) { stopPlay(); startPlay(); } });
   $('speed').addEventListener('input', e => { speed = +e.target.value; if (playing && snap) stepPlay(); });
   $('opacity').addEventListener('input', e => { opacity = +e.target.value / 100; $('op-val').textContent = e.target.value + '%'; render(); });
+  $('gear').addEventListener('click', () => { opacity = 1; $('opacity').value = 100; $('op-val').textContent = '100%'; render(); });
 
-  $('tg-districts').addEventListener('change', e => {
-    const v = e.target.checked ? 'visible' : 'none';
-    ['dist-fill', 'dist-line'].forEach(l => map.getLayer(l) && map.setLayoutProperty(l, 'visibility', v));
+  // vector layer list (built-ins + uploads)
+  $('vec-list').addEventListener('click', e => {
+    const btn = e.target.closest('button[data-act]'); if (!btn) return;
+    const row = btn.closest('.lrow, .lrow-switch'); const entry = vecLayers.find(x => x.id === row.dataset.id); if (!entry) return;
+    const act = btn.dataset.act;
+    if (act === 'eye') toggleVecVisibility(entry);
+    else if (act === 'label') toggleVecLabel(entry);
+    else if (act === 'zoom') zoomToVecBounds(entry);
+    else if (act === 'remove') removeVecLayer(entry);
   });
-  $('tg-villages').addEventListener('change', e => {
-    const v = e.target.checked ? 'visible' : 'none';
-    ['vil-clusters', 'vil-count', 'vil-point', 'vil-label'].forEach(l => map.getLayer(l) && map.setLayoutProperty(l, 'visibility', v));
-  });
-
   const drop = $('drop'), fileInput = $('file');
   drop.addEventListener('click', () => fileInput.click());
   drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
   drop.addEventListener('dragleave', () => drop.classList.remove('over'));
-  drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('over'); if (e.dataTransfer.files[0]) loadParcel(e.dataTransfer.files[0]); });
-  fileInput.addEventListener('change', e => { if (e.target.files[0]) loadParcel(e.target.files[0]); });
-  $('clear-parcel').addEventListener('click', () => {
-    ['parcel-line', 'parcel-fill', 'parcel-pt'].forEach(l => map.getLayer(l) && map.removeLayer(l));
-    if (map.getSource('parcel')) map.removeSource('parcel');
-    $('clear-parcel').hidden = true; setVec('');
+  drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('over'); if (e.dataTransfer.files.length) loadVectorFiles(Array.from(e.dataTransfer.files)); });
+  fileInput.addEventListener('change', e => { if (e.target.files.length) loadVectorFiles(Array.from(e.target.files)); });
+  $('clear-parcel').addEventListener('click', clearVectors);
+
+  // uploaded raster list
+  $('img-list').addEventListener('click', e => {
+    const btn = e.target.closest('button[data-act]'); if (!btn) return;
+    const row = btn.closest('.lrow'); const entry = imgLayers.find(x => x.id === row.dataset.id); if (!entry) return;
+    const act = btn.dataset.act;
+    if (act === 'eye') { entry.visible = !entry.visible; if (map.getLayer(entry.id)) map.setLayoutProperty(entry.id, 'visibility', entry.visible ? 'visible' : 'none'); renderImgList(); }
+    else if (act === 'zoom') { if (entry.bounds) map.fitBounds(entry.bounds, { padding: 90, duration: 900 }); }
+    else if (act === 'remove') { if (map.getLayer(entry.id)) map.removeLayer(entry.id); if (map.getSource(entry.id)) map.removeSource(entry.id); imgLayers = imgLayers.filter(x => x !== entry); renderImgList(); }
   });
+  const rdrop = $('raster-drop'), rfile = $('raster-file');
+  rdrop.addEventListener('click', () => rfile.click());
+  rdrop.addEventListener('dragover', e => { e.preventDefault(); rdrop.classList.add('over'); });
+  rdrop.addEventListener('dragleave', () => rdrop.classList.remove('over'));
+  rdrop.addEventListener('drop', e => { e.preventDefault(); rdrop.classList.remove('over'); if (e.dataTransfer.files.length) loadRasterFiles(Array.from(e.dataTransfer.files)); });
+  rfile.addEventListener('change', e => { if (e.target.files.length) loadRasterFiles(Array.from(e.target.files)); });
 
   window.addEventListener('keydown', e => {
     if (e.target.tagName === 'INPUT') return;
