@@ -204,7 +204,7 @@ map.on('load', () => {
       layout: { visibility: 'none' },
       paint: { 'raster-opacity': 1, 'raster-resampling': 'nearest', 'raster-fade-duration': 150 }
     }, firstSymbol);
-  });
+  }));
 
   // spotlight mask: flat dark everywhere outside the Meghalaya boundary, above imagery / below labels
   fetch('data/vectors/Meghalaya_Districts.geojson')
