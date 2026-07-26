@@ -198,7 +198,7 @@ let mode = 'sat';     // 'sat' | 'ndvi'
 let opacity = 1;      // global opacity 0..1
 let snap = false;     // snap to whole years
 let speed = 50;       // 0..100
-let playing = false, playTimer = null;
+let playing = false, playTimer = null, rafId = null, lastT = 0;
 let shown = new Set();
 
 const PLAY_SVG  = '<svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z"/></svg>';
@@ -314,21 +314,46 @@ function render() {
 function setPos(p) { pos = Math.max(0, Math.min(N - 1, p)); $('scrub').value = pos; render(); }
 function step(d) { setPos(Math.round(pos) + d); }
 
-function intervalMs() { return 2600 - speed * 21; }  // speed 0->2600ms, 100->500ms
-function schedule() {
+function intervalMs() { return 2600 - speed * 21; }        // per-year time for stepping (snap ON)
+function secPerYear() { return (2600 - speed * 21) / 1000; } // per-year time for gliding (snap OFF)
+
+// snap ON: hop to the next whole year on a timer
+function stepPlay() {
   clearTimeout(playTimer);
   playTimer = setTimeout(() => {
     let n = Math.round(pos) + 1; if (n >= N) n = 0;
     setPos(n);
-    if (playing) schedule();
+    if (playing) stepPlay();
   }, intervalMs());
+}
+
+// snap OFF: glide pos continuously so the years crossfade during playback
+function frame(t) {
+  if (!playing) return;
+  if (!lastT) lastT = t;
+  const dt = (t - lastT) / 1000; lastT = t;
+  let p = pos + dt / secPerYear();
+  if (p >= N - 1) p = 0;   // loop back to the first year
+  pos = p;
+  $('scrub').value = pos;
+  render();
+  rafId = requestAnimationFrame(frame);
+}
+
+function startPlay() {
+  if (snap) stepPlay();
+  else { lastT = 0; rafId = requestAnimationFrame(frame); }
+}
+function stopPlay() {
+  clearTimeout(playTimer); playTimer = null;
+  if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
 }
 function togglePlay() {
   playing = !playing;
   const b = $('play');
   b.classList.toggle('play-on', playing);
   b.innerHTML = playing ? PAUSE_SVG : PLAY_SVG;
-  if (playing) schedule(); else clearTimeout(playTimer);
+  if (playing) startPlay(); else stopPlay();
 }
 
 function wireControls() {
@@ -345,8 +370,8 @@ function wireControls() {
       document.querySelectorAll('.seg-btn').forEach(x => x.classList.toggle('on', x === b));
       render();
     }));
-  $('snap').addEventListener('change', e => { snap = e.target.checked; if (snap) setPos(Math.round(pos)); });
-  $('speed').addEventListener('input', e => { speed = +e.target.value; if (playing) schedule(); });
+  $('snap').addEventListener('change', e => { snap = e.target.checked; if (snap) setPos(Math.round(pos)); if (playing) { stopPlay(); startPlay(); } });
+  $('speed').addEventListener('input', e => { speed = +e.target.value; if (playing && snap) stepPlay(); });
   const op = $('opacity');
   op.addEventListener('input', e => {
     opacity = +e.target.value / 100;
