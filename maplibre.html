@@ -709,17 +709,19 @@ function ensureMapB() {
   if (mapB) { syncMapB(); return; }
   mapB = new maplibregl.Map({
     container: 'map-b',
-    style: { version: 8, sources: {}, layers: [], glyphs: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/{fontstack}/{range}.pbf' },
+    style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
     center: map.getCenter(), zoom: map.getZoom(), bearing: map.getBearing(), pitch: map.getPitch(),
     maxZoom: 16, interactive: false, attributionControl: false, fadeDuration: 0
   });
   try { mapB.setProjection({ type: map.getProjection ? (map.getProjection().type || 'mercator') : 'mercator' }); } catch (e) {}
   mapB.on('load', () => {
+    let firstSymbol;
+    for (const l of mapB.getStyle().layers) { if (l.type === 'symbol') { firstSymbol = l.id; break; } }
     YEARS.forEach(y => ['sat', 'ndvi'].forEach(m => {
       const id = lid(y, m);
       mapB.addSource(id, { type: 'raster', url: urlFor(y, m), tileSize: 256 });
       mapB.addLayer({ id, type: 'raster', source: id, layout: { visibility: 'none' },
-        paint: { 'raster-opacity': 1, 'raster-resampling': 'nearest', 'raster-fade-duration': 0 } });
+        paint: { 'raster-opacity': 1, 'raster-resampling': 'nearest', 'raster-fade-duration': 0 } }, firstSymbol);
     }));
     mapBReady = true;
     syncMapB();
