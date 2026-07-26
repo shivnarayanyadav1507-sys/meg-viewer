@@ -374,7 +374,7 @@ map.on('load', () => {
     maskGeoJSON = { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [world, ...holes] } };
     map.addSource('meg-mask', { type: 'geojson', data: maskGeoJSON });
     map.addLayer({ id: 'meg-mask', type: 'fill', source: 'meg-mask',
-      paint: { 'fill-color': '#0a0c0e', 'fill-antialias': false, 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 3.5, 0, 6, 1] } }, firstSymbol);
+      paint: { 'fill-color': '#0a0c0e', 'fill-antialias': false, 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 3.5, 0, 6, 0.55] } }, firstSymbol);
     if (mapBReady) applyMaskToB();
   }).catch(err => console.error('Boundary mask failed:', err));
 
@@ -731,7 +731,7 @@ function applyMaskToB() {
   if (mapB.getLayer('meg-mask-b')) return;
   if (!mapB.getSource('meg-mask-b')) mapB.addSource('meg-mask-b', { type: 'geojson', data: maskGeoJSON });
   mapB.addLayer({ id: 'meg-mask-b', type: 'fill', source: 'meg-mask-b',
-    paint: { 'fill-color': '#0a0c0e', 'fill-antialias': false, 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 3.5, 0, 6, 1] } }, mapB.__firstSymbol);
+    paint: { 'fill-color': '#0a0c0e', 'fill-antialias': false, 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 3.5, 0, 6, 0.55] } }, mapB.__firstSymbol);
 }
 function syncMapB() {
   if (!mapB) return;
