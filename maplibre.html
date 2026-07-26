@@ -699,14 +699,20 @@ async function loadRasterFiles(files) {
 }
 
 // ---------- swipe compare (year A vs year B) ----------
+let cmpSyncBound = false;
+function syncMapB() {
+  if (!mapB) return;
+  mapB.jumpTo({ center: map.getCenter(), zoom: map.getZoom(), bearing: map.getBearing(), pitch: map.getPitch() });
+}
 function ensureMapB() {
-  if (mapB) return;
+  if (mapB) { syncMapB(); return; }
   mapB = new maplibregl.Map({
     container: 'map-b',
     style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
     center: map.getCenter(), zoom: map.getZoom(), bearing: map.getBearing(), pitch: map.getPitch(),
-    maxZoom: 16, interactive: false, attributionControl: false
+    maxZoom: 16, interactive: false, attributionControl: false, fadeDuration: 0
   });
+  try { mapB.setProjection({ type: map.getProjection ? (map.getProjection().type || 'mercator') : 'mercator' }); } catch (e) {}
   mapB.on('load', () => {
     let firstSymbol;
     for (const l of mapB.getStyle().layers) { if (l.type === 'symbol') { firstSymbol = l.id; break; } }
@@ -714,25 +720,28 @@ function ensureMapB() {
       const id = lid(y, m);
       mapB.addSource(id, { type: 'raster', url: urlFor(y, m), tileSize: 256 });
       mapB.addLayer({ id, type: 'raster', source: id, layout: { visibility: 'none' },
-        paint: { 'raster-opacity': 1, 'raster-resampling': 'nearest', 'raster-fade-duration': 120 } }, firstSymbol);
+        paint: { 'raster-opacity': 1, 'raster-resampling': 'nearest', 'raster-fade-duration': 0 } }, firstSymbol);
     }));
     mapBReady = true;
+    syncMapB();
     renderCompare();
   });
-  // keep B camera locked to A
-  const sync = () => { if (!mapB) return; mapB.jumpTo({ center: map.getCenter(), zoom: map.getZoom(), bearing: map.getBearing(), pitch: map.getPitch() }); };
-  map.on('move', sync);
+  // keep B camera locked to A across every camera-changing event
+  if (!cmpSyncBound) {
+    ['move', 'zoom', 'rotate', 'pitch', 'moveend', 'zoomend'].forEach(ev => map.on(ev, () => { if (compareOn) syncMapB(); }));
+    cmpSyncBound = true;
+  }
 }
 
 function setSwipe(frac) {
   swipeX = Math.max(0, Math.min(1, frac));
-  const pct = swipeX * 100;
+  const pct = (swipeX * 100).toFixed(2);
   $('map-b').style.clipPath = 'inset(0 0 0 ' + pct + '%)';
   $('swipe-divider').style.left = pct + '%';
 }
 
 function renderCompare() {
-  // map A (base) shows year A across the whole map; map B (overlay, clipped right) shows year B
+  // map A (base) shows year A; map B (overlay, clipped to right of divider) shows year B
   const aId = lid(cmpA, mode);
   const wantA = new Map([[aId, 1]]);
   shown.forEach(id => { if (!wantA.has(id) && map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'none'); });
@@ -741,9 +750,14 @@ function renderCompare() {
 
   if (mapBReady) {
     const bId = lid(cmpB, mode);
-    shownB.forEach(id => { if (id !== bId && mapB.getLayer(id)) mapB.setLayoutProperty(id, 'visibility', 'none'); });
+    // hide every B raster except the wanted one, then show it
+    YEARS.forEach(y => ['sat', 'ndvi'].forEach(m => {
+      const id = lid(y, m);
+      if (id !== bId && mapB.getLayer(id)) mapB.setLayoutProperty(id, 'visibility', 'none');
+    }));
     if (mapB.getLayer(bId)) { mapB.setLayoutProperty(bId, 'visibility', 'visible'); mapB.setPaintProperty(bId, 'raster-opacity', 1); }
     shownB = new Set([bId]);
+    syncMapB();
   }
 
   $('swipe-tag-a').textContent = cmpA + ' · ' + modeLabel();
@@ -758,14 +772,15 @@ function renderCompare() {
 function enterCompare() {
   compareOn = true;
   stopPlay();
-  ensureMapB();
   $('map-b').classList.add('on');
   $('swipe-divider').classList.add('on');
   $('compare-toggle').classList.add('compare-on');
   $('compare-row').hidden = false;
-  // disable the normal timeline scrub while comparing
   $('scrub').disabled = true; $('prev').disabled = true; $('next').disabled = true; $('play').disabled = true;
   setSwipe(0.5);
+  ensureMapB();
+  // resize B (its container was display:none until now, so it needs a resize to pick up dimensions)
+  requestAnimationFrame(() => { if (mapB) { mapB.resize(); syncMapB(); } });
   renderCompare();
 }
 function exitCompare() {
@@ -775,8 +790,7 @@ function exitCompare() {
   $('compare-toggle').classList.remove('compare-on');
   $('compare-row').hidden = true;
   $('scrub').disabled = false; $('prev').disabled = false; $('next').disabled = false; $('play').disabled = false;
-  // hide all of map B's layers
-  if (mapBReady) { shownB.forEach(id => mapB.getLayer(id) && mapB.setLayoutProperty(id, 'visibility', 'none')); shownB = new Set(); }
+  if (mapBReady) { YEARS.forEach(y => ['sat', 'ndvi'].forEach(m => { const id = lid(y, m); if (mapB.getLayer(id)) mapB.setLayoutProperty(id, 'visibility', 'none'); })); shownB = new Set(); }
   render();
 }
 
