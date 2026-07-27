@@ -188,8 +188,10 @@
   .tl-speed{display:flex;align-items:center;gap:8px;font-family:'Space Grotesk',sans-serif;font-size:12px;color:var(--muted)}
   .tl-speed input{width:80px}
 
-  .maplibregl-ctrl-group{background:var(--panel-solid)!important;border:1px solid var(--border)!important}
-  .maplibregl-ctrl-group button+button{border-top:1px solid var(--border)!important}
+  .maplibregl-ctrl-group{background:var(--md-surface)!important;border:1px solid var(--md-rule-strong)!important;border-radius:0!important;box-shadow:0 8px 24px rgba(0,0,0,.4)!important}
+  .maplibregl-ctrl-group button+button{border-top:1px solid var(--md-rule-strong)!important}
+  .maplibregl-ctrl-group button{border-radius:0!important}
+  .maplibregl-ctrl-group button:hover{background:var(--md-accent-100)!important}
 
   /* ---- Batch 5: view tools (collapsible menu) ---- */
   .tool-stack{position:absolute;top:120px;right:10px;z-index:900;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
@@ -214,13 +216,13 @@
   .tool-menu .basemap-opt.on{color:var(--accent)}
   .tool-menu .basemap-opt.on::before{content:'';position:absolute;left:14px;top:50%;transform:translateY(-50%);width:6px;height:6px;border-radius:50%;background:var(--accent)}
 
-  .coord-readout{position:absolute;left:10px;bottom:10px;z-index:900;background:var(--panel-solid);border:1px solid var(--border);
-    border-radius:8px;padding:5px 10px;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--muted);
-    box-shadow:var(--shadow);letter-spacing:.03em;pointer-events:none;display:flex;gap:10px}
-  .coord-readout .cr-lab{color:var(--muted-dim)}
+  .coord-readout{position:absolute;left:10px;bottom:10px;z-index:900;background:var(--md-surface);border:1px solid var(--md-rule-strong);
+    border-radius:0;padding:5px 10px;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--md-muted);
+    box-shadow:0 8px 24px rgba(0,0,0,.4);letter-spacing:.03em;pointer-events:none;display:flex;gap:10px}
+  .coord-readout .cr-lab{color:var(--md-dim)}
   .credit-line{position:absolute;right:10px;bottom:10px;z-index:850;font-family:'JetBrains Mono',monospace;font-size:9px;
-    color:var(--muted-dim);background:rgba(15,19,23,.7);border-radius:5px;padding:3px 7px;max-width:46vw;text-align:right;line-height:1.4}
-  .credit-line a{color:var(--muted);text-decoration:none}
+    color:var(--md-dim);background:rgba(15,19,23,.7);border-radius:0;padding:3px 7px;max-width:46vw;text-align:right;line-height:1.4}
+  .credit-line a{color:var(--md-muted);text-decoration:none}
 
   @media (max-width:760px){
     .left-stack{width:min(88vw,320px);top:10px;left:10px}
@@ -393,10 +395,10 @@
   @media (max-width:560px){ .intro-h{font-size:22px} }
 
   /* ===== Help walkthrough (guided tour) ===== */
-  .help-btn{position:absolute;top:14px;right:56px;z-index:1000;width:34px;height:34px;border-radius:9px;
-    background:var(--panel-solid);border:1px solid var(--border);color:var(--muted);cursor:pointer;
-    display:flex;align-items:center;justify-content:center;padding:0;box-shadow:var(--shadow);font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px}
-  .help-btn:hover{border-color:var(--accent);color:var(--accent)}
+  .help-btn{position:absolute;top:14px;right:56px;z-index:1000;width:34px;height:34px;border-radius:0;
+    background:var(--md-surface);border:1px solid var(--md-rule-strong);color:var(--md-muted);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 8px 24px rgba(0,0,0,.4);font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px}
+  .help-btn:hover{border-color:var(--md-accent);color:var(--md-accent);background:var(--md-accent-100)}
   @media (max-width:760px){ .help-btn{top:auto;bottom:auto;right:8px;top:52px} }
 
   #tour{position:fixed;inset:0;z-index:5500;display:none}
@@ -590,6 +592,27 @@
   #mdp .meas-readout{background:var(--md-surface);border:1px solid var(--md-rule-strong);border-left:3px solid var(--md-measure);border-radius:0;padding:14px;display:flex;flex-direction:column;gap:3px}
   #mdp .meas-big{font:700 24px 'JetBrains Mono',monospace;color:var(--md-measure);letter-spacing:.02em}
   #mdp .meas-sub{font:500 10.5px 'JetBrains Mono',monospace;color:var(--md-dim)}
+
+  /* ===== Stage 5: mobile bottom-sheet for the consolidated panel ===== */
+  @media (max-width:600px){
+    #mdp{top:auto;left:0;right:0;bottom:0;width:100%;max-height:64vh;border:0;border-top:2px solid var(--md-rule-strong);
+      box-shadow:0 -12px 40px rgba(0,0,0,.6)}
+    #mdp.collapsed{transform:translateY(calc(100% - 118px))}  /* peek: header + rail visible */
+    #mdp{transition:transform .3s ease}
+    /* rail becomes a horizontal strip under the header */
+    .mdp-body{flex-direction:column}
+    .mdp-rail{width:100%;flex-direction:row;border-right:0;border-bottom:2px solid var(--md-rule-strong);overflow-x:auto}
+    .mdp-rail-btn{height:auto;flex:1;min-width:64px;padding:9px 0;border-bottom:0;border-right:1px solid var(--md-rule)}
+    .mdp-rail-spacer{display:none}
+    .mdp-sections{max-height:38vh}
+    /* header collapse arrow points down on mobile (sheet slides down) */
+    .mdp-collapse svg{transform:rotate(-90deg)}
+    #mdp.collapsed .mdp-collapse svg{transform:rotate(90deg)}
+    /* timeline floats full-width just above the sheet */
+    .timeline{left:8px !important;right:8px !important;width:auto !important;bottom:calc(64vh + 8px)}
+    #mdp.collapsed ~ .timeline{bottom:126px}
+    .coord-readout,.credit-line{display:none}
+  }
 
   /* ---- floating timeline: Modernist-dark restyle ---- */
   #timeline{border-radius:0 !important;border:1px solid var(--md-rule-strong) !important;background:var(--md-surface) !important;backdrop-filter:none !important;-webkit-backdrop-filter:none !important}
@@ -828,25 +851,7 @@
   </div>
 </div>
 
-<div class="left-stack">
-  <div class="app-title">
-    <button class="panels-collapse" id="panels-collapse" aria-label="Hide panels" title="Hide panels">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-    </button>
-    <svg class="app-title-mark" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-linejoin="round" aria-hidden="true">
-      <path d="M12 3 L21 7.5 L12 12 L3 7.5 Z" stroke="#ff8a4c" stroke-width="1.5"/>
-      <path d="M3 12 L12 16.5 L21 12" stroke="#b6f441" stroke-width="1.5"/>
-      <path d="M3 16.5 L12 21 L21 16.5" stroke="#ff8a4c" stroke-width="1.5"/>
-    </svg>
-    <span class="app-title-main">Meghalaya Historical Imagery Visualizer</span>
-    <span class="app-title-div"></span>
-    <span class="app-title-sub"><span class="yl">2015</span><span class="yd">–</span><span class="yl">2025</span></span>
-    <span class="app-welcome" id="app-welcome"></span>
-  </div>
-
-  <div class="stack-scroll">
-  </div>
-</div>
+<!-- (old left-stack/app-title removed — consolidated into #mdp) -->
 
 <!-- ================= timeline: floating bottom-center of map ================= -->
 <div class="timeline" id="timeline">
@@ -1538,6 +1543,8 @@ function wireMdpPanel() {
       const c = mdp.classList.toggle('collapsed');
       collapse.setAttribute('title', c ? 'Show panel' : 'Hide panel');
     });
+    // on phones, start as a peeking bottom sheet so the map is visible first
+    if (window.matchMedia('(max-width:600px)').matches) mdp.classList.add('collapsed');
   }
 }
 
@@ -1880,6 +1887,10 @@ function wireControls() {
     var name = (raw || '').trim();
     if (name.length > 40) name = name.slice(0, 40);
     var display = name || 'Anonymous User';
+    // new consolidated panel welcome cell
+    var mdp = document.getElementById('mdp-welcome');
+    if (mdp){ mdp.innerHTML = 'Welcome, <b></b>'; mdp.querySelector('b').textContent = display; mdp.removeAttribute('hidden'); }
+    // legacy title bar (hidden, kept for safety)
     var el = document.getElementById('app-welcome');
     if (el){ el.innerHTML = 'Welcome, <b></b>'; el.querySelector('b').textContent = display; el.classList.add('on'); }
     nameSet = true;
