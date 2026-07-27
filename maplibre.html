@@ -322,25 +322,26 @@ const statusEl = $('status');
 const setStatus = (t, cls = '') => { statusEl.textContent = t; statusEl.className = 'status ' + cls; };
 const setVec = (t, cls = '') => { $('vec-status').textContent = t; $('vec-status').className = 'vec-status ' + cls; };
 
-// CARTO dark_all raster basemap (matches the old viewer)
+// Esri Dark Gray Canvas: a brighter charcoal dark theme with strong contrast.
+// Two layers: the base (land/water/roads) + a reference layer for crisp labels on top.
 const DARK_BASEMAP = {
   version: 8,
   glyphs: 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf',
   sources: {
-    'carto-dark': {
+    'esri-dark-base': {
       type: 'raster', tileSize: 256,
-      tiles: [
-        'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
-        'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
-        'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
-        'https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png'
-      ],
-      attribution: '© CARTO © OpenStreetMap contributors'
+      tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'],
+      attribution: 'Esri, HERE, Garmin, © OpenStreetMap contributors'
+    },
+    'esri-dark-ref': {
+      type: 'raster', tileSize: 256,
+      tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}']
     }
   },
   layers: [
-    { id: 'bg', type: 'background', paint: { 'background-color': '#0a0c0e' } },
-    { id: 'carto-dark', type: 'raster', source: 'carto-dark' }
+    { id: 'bg', type: 'background', paint: { 'background-color': '#1a1d21' } },
+    { id: 'esri-dark-base', type: 'raster', source: 'esri-dark-base' },
+    { id: 'esri-dark-ref', type: 'raster', source: 'esri-dark-ref' }
   ]
 };
 
