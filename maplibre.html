@@ -170,24 +170,28 @@
   .maplibregl-ctrl-group{background:var(--panel-solid)!important;border:1px solid var(--border)!important}
   .maplibregl-ctrl-group button+button{border-top:1px solid var(--border)!important}
 
-  /* ---- Batch 5: view tools ---- */
-  .tool-stack{position:absolute;top:120px;right:10px;z-index:900;display:flex;flex-direction:column;gap:8px}
-  .tool-btn{width:34px;height:34px;border-radius:9px;background:var(--panel-solid);border:1px solid var(--border);
-    color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:var(--shadow);position:relative}
-  .tool-btn:hover{border-color:var(--accent);color:var(--text)}
-  .tool-btn svg{width:17px;height:17px}
-  .tool-btn[data-tip]:hover::after{content:attr(data-tip);position:absolute;right:calc(100% + 8px);top:50%;transform:translateY(-50%);
-    background:var(--panel-solid);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-family:'JetBrains Mono',monospace;
-    font-size:10px;color:var(--text);white-space:nowrap;box-shadow:var(--shadow);pointer-events:none}
-  .tool-btn.active{border-color:var(--accent);color:var(--accent)}
-
-  .basemap-pop{position:absolute;right:calc(100% + 8px);top:0;background:var(--panel-solid);border:1px solid var(--border);
-    border-radius:10px;padding:6px;display:none;flex-direction:column;gap:3px;box-shadow:var(--shadow);min-width:120px}
-  .basemap-pop.on{display:flex}
-  .basemap-opt{font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;color:var(--muted);background:transparent;
-    border:none;border-radius:7px;padding:7px 10px;cursor:pointer;text-align:left;white-space:nowrap}
-  .basemap-opt:hover{background:#161c22;color:var(--text)}
-  .basemap-opt.on{background:var(--accent);color:#0a0c0e}
+  /* ---- Batch 5: view tools (collapsible menu) ---- */
+  .tool-stack{position:absolute;top:120px;right:10px;z-index:900;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+  .tool-toggle{width:34px;height:34px;border-radius:9px;background:var(--panel-solid);border:1px solid var(--border);
+    color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:var(--shadow)}
+  .tool-toggle:hover,.tool-toggle.on{border-color:var(--accent);color:var(--accent)}
+  .tool-toggle svg{width:18px;height:18px}
+  .tool-menu{display:none;flex-direction:column;gap:2px;background:var(--panel-solid);border:1px solid var(--border);
+    border-radius:11px;padding:6px;box-shadow:var(--shadow);min-width:150px}
+  .tool-menu.on{display:flex}
+  .tool-row{display:flex;align-items:center;gap:9px;font-family:'Space Grotesk',sans-serif;font-size:12.5px;font-weight:500;
+    color:var(--muted);background:transparent;border:none;border-radius:7px;padding:8px 10px;cursor:pointer;text-align:left;width:100%}
+  .tool-row:hover{background:#161c22;color:var(--text)}
+  .tool-row svg{width:15px;height:15px;flex:none}
+  .tool-row.active{color:var(--accent)}
+  .tool-sep{height:1px;background:var(--border);margin:4px 2px}
+  .tool-section-lab{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--muted-dim);padding:2px 10px 4px}
+  .tool-menu .basemap-opt{font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:500;color:var(--muted);background:transparent;
+    border:none;border-radius:7px;padding:7px 10px 7px 34px;cursor:pointer;text-align:left;position:relative}
+  .tool-menu .basemap-opt:hover{background:#161c22;color:var(--text)}
+  .tool-menu .basemap-opt.on{color:var(--accent)}
+  .tool-menu .basemap-opt.on::before{content:'';position:absolute;left:14px;top:50%;transform:translateY(-50%);width:6px;height:6px;border-radius:50%;background:var(--accent)}
 
   .coord-readout{position:absolute;left:10px;bottom:10px;z-index:900;background:var(--panel-solid);border:1px solid var(--border);
     border-radius:8px;padding:5px 10px;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--muted);
@@ -332,26 +336,32 @@
 
 <!-- ================= Batch 5: view tools ================= -->
 <div class="tool-stack" id="tool-stack">
-  <button class="tool-btn" id="tool-reset" data-tip="Reset view" aria-label="Reset view">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9 9 0 0 0-6.4 2.6L3 8"/><path d="M3 3v5h5"/></svg>
+  <button class="tool-toggle" id="tool-toggle" aria-label="Tools" title="Tools">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
   </button>
-  <button class="tool-btn" id="tool-boundary" data-tip="Toggle boundary" aria-label="Toggle district boundary">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg>
-  </button>
-  <button class="tool-btn" id="tool-basemap" data-tip="Basemap" aria-label="Switch basemap">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-    <div class="basemap-pop" id="basemap-pop">
-      <button class="basemap-opt on" data-base="dark">Dark Gray</button>
-      <button class="basemap-opt" data-base="satellite">Satellite</button>
-      <button class="basemap-opt" data-base="light">Light streets</button>
-    </div>
-  </button>
-  <button class="tool-btn" id="tool-shot" data-tip="Screenshot" aria-label="Download screenshot">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-  </button>
-  <button class="tool-btn" id="tool-fullscreen" data-tip="Fullscreen" aria-label="Toggle fullscreen">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M16 21h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-  </button>
+  <div class="tool-menu" id="tool-menu">
+    <button class="tool-row" id="tool-reset">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9 9 0 0 0-6.4 2.6L3 8"/><path d="M3 3v5h5"/></svg>
+      <span>Reset view</span>
+    </button>
+    <button class="tool-row" id="tool-boundary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg>
+      <span id="tool-boundary-label">Hide boundary</span>
+    </button>
+    <button class="tool-row" id="tool-shot">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      <span>Screenshot</span>
+    </button>
+    <button class="tool-row" id="tool-fullscreen">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M16 21h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+      <span id="tool-fs-label">Fullscreen</span>
+    </button>
+    <div class="tool-sep"></div>
+    <div class="tool-section-lab">Basemap</div>
+    <button class="basemap-opt on" data-base="dark">Dark Gray</button>
+    <button class="basemap-opt" data-base="satellite">Satellite</button>
+    <button class="basemap-opt" data-base="light">Light streets</button>
+  </div>
 </div>
 
 <div class="coord-readout" id="coord-readout">
@@ -363,6 +373,9 @@
 <div class="credit-line" id="credit-line">
   Imagery: Sentinel-2 &amp; Landsat (Google Earth Engine) · Basemap: <span id="credit-base">Esri</span> · © OpenStreetMap
 </div>
+
+<script type="importmap">
+{ "imports": { "maplibre-gl": "https://esm.sh/maplibre-gl@5" } }
 </script>
 <script type="module">
 import maplibregl from 'maplibre-gl';
@@ -944,53 +957,47 @@ const DEFAULT_VIEW = { center: [91.3, 25.55], zoom: 7.2, bearing: 0, pitch: 0 };
 let boundaryHidden = false;
 
 function wireViewTools() {
+  // menu open/close
+  const toggle = $('tool-toggle'), menu = $('tool-menu');
+  toggle.addEventListener('click', e => { e.stopPropagation(); menu.classList.toggle('on'); toggle.classList.toggle('on'); });
+  document.addEventListener('click', () => { menu.classList.remove('on'); toggle.classList.remove('on'); });
+  menu.addEventListener('click', e => e.stopPropagation());
+
   // 1. Reset view
   $('tool-reset').addEventListener('click', () => {
     map.flyTo({ ...DEFAULT_VIEW, duration: 900, essential: true });
   });
 
-  // 2. Boundary toggle (district outline on/off — independent quick toggle)
+  // 2. Boundary toggle (label swaps)
   $('tool-boundary').addEventListener('click', () => {
     boundaryHidden = !boundaryHidden;
     const vis = boundaryHidden ? 'none' : 'visible';
     ['dist-line', 'dist-label'].forEach(id => { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', vis); });
     $('tool-boundary').classList.toggle('active', boundaryHidden);
+    $('tool-boundary-label').textContent = boundaryHidden ? 'Show boundary' : 'Hide boundary';
   });
 
-  // 3. Basemap switch
-  const bmBtn = $('tool-basemap'), bmPop = $('basemap-pop');
-  bmBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    bmPop.classList.toggle('on');
-  });
-  document.addEventListener('click', () => bmPop.classList.remove('on'));
-  bmPop.addEventListener('click', e => e.stopPropagation());
+  // 3. Basemap options (inline in menu)
   document.querySelectorAll('.basemap-opt').forEach(opt => opt.addEventListener('click', () => {
     const choice = opt.dataset.base;
-    // toggle visibility of basemap layer groups
     Object.entries(BASEMAP_LAYERS).forEach(([key, ids]) => {
       const vis = key === choice ? 'visible' : 'none';
       ids.forEach(id => { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', vis); });
     });
     document.querySelectorAll('.basemap-opt').forEach(o => o.classList.toggle('on', o === opt));
     $('credit-base').textContent = BASEMAP_LABEL[choice] || 'Esri';
-    bmPop.classList.remove('on');
   }));
 
   // 4. Screenshot (map canvas only)
   $('tool-shot').addEventListener('click', () => {
-    // force a synchronous render so the canvas has current pixels
-    map.once('render', () => {});
     map.triggerRepaint();
     requestAnimationFrame(() => {
       try {
-        const canvas = map.getCanvas();
-        const url = canvas.toDataURL('image/png');
+        const url = map.getCanvas().toDataURL('image/png');
         const a = document.createElement('a');
         const yr = compareOn ? (cmpA + '-vs-' + cmpB) : YEARS[Math.round(pos)];
         a.download = 'meghalaya_' + modeLabel().toLowerCase() + '_' + yr + '.png';
-        a.href = url;
-        a.click();
+        a.href = url; a.click();
       } catch (err) {
         console.error('Screenshot failed:', err);
         setStatus('Screenshot failed (try again)', 'err');
@@ -998,28 +1005,23 @@ function wireViewTools() {
     });
   });
 
-  // 5. Fullscreen
+  // 5. Fullscreen (label swaps)
   $('tool-fullscreen').addEventListener('click', () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen?.().catch(() => {});
-    } else {
-      document.exitFullscreen?.();
-    }
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(() => {});
+    else document.exitFullscreen?.();
   });
   document.addEventListener('fullscreenchange', () => {
-    $('tool-fullscreen').classList.toggle('active', !!document.fullscreenElement);
+    const fs = !!document.fullscreenElement;
+    $('tool-fullscreen').classList.toggle('active', fs);
+    $('tool-fs-label').textContent = fs ? 'Exit fullscreen' : 'Fullscreen';
     setTimeout(() => map.resize(), 100);
   });
 
   // 6. Coordinate + zoom readout
   const crLat = $('cr-lat'), crLng = $('cr-lng'), crZoom = $('cr-zoom');
-  map.on('mousemove', e => {
-    crLat.textContent = e.lngLat.lat.toFixed(4);
-    crLng.textContent = e.lngLat.lng.toFixed(4);
-  });
+  map.on('mousemove', e => { crLat.textContent = e.lngLat.lat.toFixed(4); crLng.textContent = e.lngLat.lng.toFixed(4); });
   const updZoom = () => { crZoom.textContent = map.getZoom().toFixed(1); };
-  map.on('zoom', updZoom);
-  updZoom();
+  map.on('zoom', updZoom); updZoom();
 }
 
 // ---------- measure tool (distance / area, metric) ----------
