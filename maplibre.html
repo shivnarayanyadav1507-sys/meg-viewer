@@ -49,7 +49,12 @@
   .app-title-sub{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;white-space:nowrap;flex:none}
   .app-title-sub .yl{color:var(--accent)} .app-title-sub .yd{color:var(--warn)}
 
-  .stack-scroll{display:flex;flex-direction:column;gap:12px;overflow-y:auto;overflow-x:hidden;padding-right:2px}
+  .stack-scroll{display:flex;flex-direction:column;gap:12px;overflow-y:auto;overflow-x:hidden;padding-right:2px;
+    scrollbar-width:thin;scrollbar-color:#2a333b transparent}
+  .stack-scroll::-webkit-scrollbar{width:8px}
+  .stack-scroll::-webkit-scrollbar-track{background:transparent}
+  .stack-scroll::-webkit-scrollbar-thumb{background:#2a333b;border-radius:8px;border:2px solid transparent;background-clip:padding-box}
+  .stack-scroll::-webkit-scrollbar-thumb:hover{background:#3a4550;background-clip:padding-box}
   .panel{width:290px;background:var(--panel);backdrop-filter:blur(14px);
     -webkit-backdrop-filter:blur(14px);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;flex:none}
   .panel-head{display:flex;align-items:center;gap:10px;padding:13px 15px;border-bottom:1px solid #1c242b}
@@ -1034,9 +1039,9 @@ function wireControls() {
   $('next').addEventListener('click', () => step(1));
   $('play').addEventListener('click', togglePlay);
   document.querySelectorAll('#tl-years button').forEach(b => b.addEventListener('click', () => setPos(+b.dataset.i)));
-  document.querySelectorAll('.seg-btn').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('#mode-seg .seg-btn').forEach(b => b.addEventListener('click', () => {
     mode = b.dataset.mode;
-    document.querySelectorAll('.seg-btn').forEach(x => x.classList.toggle('on', x === b));
+    document.querySelectorAll('#mode-seg .seg-btn').forEach(x => x.classList.toggle('on', x === b));
     render();
   }));
   $('snap').addEventListener('change', e => { snap = e.target.checked; if (snap) setPos(Math.round(pos)); if (playing) { stopPlay(); startPlay(); } });
