@@ -437,16 +437,19 @@
   .mdp-head{display:flex;align-items:center;gap:var(--md-s2);padding:var(--md-s3) var(--md-s4);
     border-bottom:2px solid var(--md-rule-strong)}
   .mdp-mark{width:24px;height:24px;flex:none}
-  .mdp-brand{line-height:1;min-width:0}
+  .mdp-brand{line-height:1;min-width:0;margin-right:auto}
   .mdp-brand b{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;letter-spacing:.01em;color:var(--md-ink);text-transform:uppercase;display:block}
   .mdp-brand small{font:600 8.5px 'JetBrains Mono',monospace;letter-spacing:.2em;color:var(--md-dim);text-transform:uppercase;display:block;margin-top:4px}
-  .mdp-collapse{margin-left:auto;width:27px;height:27px;flex:none;border:1px solid var(--md-rule-strong);background:transparent;
+  .mdp-collapse{width:27px;height:27px;flex:none;border:1px solid var(--md-rule-strong);background:transparent;
     color:var(--md-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
   .mdp-collapse:hover{border-color:var(--md-accent);color:var(--md-accent)}
   .mdp-collapse svg{width:15px;height:15px}
 
-  .mdp-welcome{padding:var(--md-s2) var(--md-s4);border-bottom:2px solid var(--md-rule-strong);font-size:12px;color:var(--md-ink)}
+  .mdp-welcome{padding:var(--md-s2) var(--md-s3);border-left:2px solid var(--md-rule-strong);
+    font-size:11.5px;color:var(--md-ink);white-space:nowrap}
   .mdp-welcome b{color:var(--md-accent);font-weight:700}
+  .mdp-welcome[hidden]{display:none}
+  .mdp-head .mdp-collapse{margin-left:var(--md-s2)}
 
   .mdp-body{flex:1;display:flex;min-height:0}
   .mdp-rail{width:var(--md-rail);flex:none;display:flex;flex-direction:column;
@@ -470,9 +473,8 @@
 
   .mdp-timeline{flex:none;border-top:2px solid var(--md-rule-strong);padding:var(--md-s3) var(--md-s4);background:var(--md-surface-2)}
 
-  /* Stage 1: shell is present but hidden until we wire content in Stage 2.
-     Remove this line in Stage 2 to reveal it. */
-  #mdp{display:none}
+  /* Stage 2: new panel revealed; old left-stack hidden. */
+  .left-stack{display:none !important}
 </style>
 </head>
 <body>
@@ -482,24 +484,62 @@
   <div class="mdp-head">
     <svg class="mdp-mark" viewBox="0 0 24 24" fill="none" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 L21 7.5 L12 12 L3 7.5 Z" stroke="#ff8a4c" stroke-width="1.5"/><path d="M3 12 L12 16.5 L21 12" stroke="#b6f441" stroke-width="1.5"/><path d="M3 16.5 L12 21 L21 16.5" stroke="#ff8a4c" stroke-width="1.5"/></svg>
     <div class="mdp-brand"><b>Meghalaya</b><small>Historical Imagery · Eligibility</small></div>
+    <div class="mdp-welcome" id="mdp-welcome" hidden>Welcome, <b>Anonymous User</b></div>
     <button class="mdp-collapse" id="mdp-collapse" title="Hide panel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
   </div>
-  <div class="mdp-welcome" id="mdp-welcome" hidden>Welcome, <b>Anonymous User</b></div>
   <div class="mdp-body">
     <div class="mdp-rail" id="mdp-rail">
       <button class="mdp-rail-btn on" data-tab="imagery"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18"/><path d="M3 15l5-4 4 3 4-5 5 6"/><circle cx="8.5" cy="8.5" r="1.5"/></svg><span>Image</span></button>
       <button class="mdp-rail-btn" data-tab="vectors"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg><span>Vector</span></button>
       <button class="mdp-rail-btn" data-tab="measure"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v6H3zM3 15h18v6H3z"/></svg><span>Measure</span></button>
       <button class="mdp-rail-btn" data-tab="view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg><span>View</span></button>
-      <div class="mdp-rail-spacer"></div>
-      <button class="mdp-rail-btn" data-tab="help"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 4 1.5c0 1.5-2 2-2 3"/><path d="M12 17h.01"/></svg><span>Help</span></button>
     </div>
     <div class="mdp-sections" id="mdp-sections">
-      <div class="mdp-section on" data-tab="imagery"><!-- Stage 2: Imagery --></div>
-      <div class="mdp-section" data-tab="vectors"><!-- Stage 2: Vectors --></div>
-      <div class="mdp-section" data-tab="measure"><!-- Stage 2: Measure --></div>
+      <div class="mdp-section on" data-tab="imagery">
+        <div class="upload" id="raster-drop">
+          <svg class="u-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          <span><b>Load raster files</b><span class="u-hint"> · GeoTIFF (COG) · PNG · JPEG</span></span>
+          <input type="file" id="raster-file" accept=".tif,.tiff,.png,.jpg,.jpeg" multiple hidden />
+        </div>
+        <div class="seg" id="mode-seg">
+          <button class="seg-btn on" data-mode="sat">Satellite</button>
+          <button class="seg-btn" data-mode="ndvi">NDVI</button>
+        </div>
+        <label class="ctl">
+          <span class="row"><span>Opacity</span><span id="op-val">100%</span></span>
+          <input type="range" id="opacity" min="0" max="100" value="100" style="width:100%" />
+        </label>
+        <div class="legend" id="legend" hidden>
+          <div class="legend-cap">NDVI · vegetation</div>
+          <div class="legend-bar"></div>
+          <div class="legend-labels"><span>Dense</span><span>Sparse / bare</span></div>
+        </div>
+        <div class="list" id="img-list"></div>
+        <div class="status" id="status">Starting…</div>
+      </div>
+      <div class="mdp-section" data-tab="vectors">
+        <div class="upload" id="drop">
+          <svg class="u-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.9 17.4 12 21l-8.9-3.6a1 1 0 0 1-.6-.9V6.6a1 1 0 0 1 .6-.9L12 2l8.9 3.6a1 1 0 0 1 .6.9v10.9a1 1 0 0 1-.6.9Z"/><path d="M12 21V11"/><path d="M20.5 5.7 12 11 3.5 5.7"/></svg>
+          <span><b>Add vector</b><span class="u-hint"> · KML · GeoJSON · Shapefile (.zip) · GeoPackage</span></span>
+          <input type="file" id="file" accept=".zip,.kml,.kmz,.geojson,.json,.gpkg" multiple hidden />
+        </div>
+        <div class="list" id="vec-list"></div>
+        <div class="vec-status" id="vec-status"></div>
+        <button class="btn-clear" id="clear-parcel">Clear vectors</button>
+      </div>
+      <div class="mdp-section" data-tab="measure">
+        <div class="seg" id="measure-seg">
+          <button class="seg-btn" data-measure="distance">Distance</button>
+          <button class="seg-btn" data-measure="area">Area</button>
+        </div>
+        <div class="meas-hint" id="meas-hint">Pick a mode, then click on the map to add points. Double-click to finish.</div>
+        <div class="meas-readout" id="meas-readout" hidden>
+          <div class="meas-big" id="meas-value">—</div>
+          <div class="meas-sub" id="meas-sub"></div>
+        </div>
+        <button class="btn-clear" id="clear-measure" hidden>Clear measurement</button>
+      </div>
       <div class="mdp-section" data-tab="view"><!-- Stage 3: View --></div>
-      <div class="mdp-section" data-tab="help"><!-- Stage 3: Help --></div>
     </div>
   </div>
   <div class="mdp-timeline" id="mdp-timeline"><!-- Stage 3: Timeline --></div>
@@ -621,65 +661,6 @@
   </div>
 
   <div class="stack-scroll">
-    <div class="panel">
-      <div class="panel-head"><span class="logo"></span><h1>Imagery · COG</h1>
-        <button class="icbtn" id="gear" title="Reset opacity" aria-label="Reset opacity">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        </button>
-      </div>
-      <div class="pbody">
-        <div class="upload" id="raster-drop">
-          <svg class="u-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-          <span><b>Load raster files</b><span class="u-hint"> · GeoTIFF (COG) · PNG · JPEG</span></span>
-          <input type="file" id="raster-file" accept=".tif,.tiff,.png,.jpg,.jpeg" multiple hidden />
-        </div>
-        <div class="seg" id="mode-seg">
-          <button class="seg-btn on" data-mode="sat">Satellite</button>
-          <button class="seg-btn" data-mode="ndvi">NDVI</button>
-        </div>
-        <label class="ctl">
-          <span class="row"><span>Opacity</span><span id="op-val">100%</span></span>
-          <input type="range" id="opacity" min="0" max="100" value="100" style="width:100%" />
-        </label>
-        <div class="legend" id="legend" hidden>
-          <div class="legend-cap">NDVI · vegetation</div>
-          <div class="legend-bar"></div>
-          <div class="legend-labels"><span>Dense</span><span>Sparse / bare</span></div>
-        </div>
-        <div class="list" id="img-list"></div>
-        <div class="status" id="status">Starting…</div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-head"><span class="logo vec"></span><h1>Vectors</h1></div>
-      <div class="pbody">
-        <div class="upload" id="drop">
-          <svg class="u-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.9 17.4 12 21l-8.9-3.6a1 1 0 0 1-.6-.9V6.6a1 1 0 0 1 .6-.9L12 2l8.9 3.6a1 1 0 0 1 .6.9v10.9a1 1 0 0 1-.6.9Z"/><path d="M12 21V11"/><path d="M20.5 5.7 12 11 3.5 5.7"/></svg>
-          <span><b>Add vector</b><span class="u-hint"> · KML · GeoJSON · Shapefile (.zip) · GeoPackage</span></span>
-          <input type="file" id="file" accept=".zip,.kml,.kmz,.geojson,.json,.gpkg" multiple hidden />
-        </div>
-        <div class="list" id="vec-list"></div>
-        <div class="vec-status" id="vec-status"></div>
-        <button class="btn-clear" id="clear-parcel">Clear vectors</button>
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-head"><span class="logo meas"></span><h1>Measure</h1></div>
-      <div class="pbody">
-        <div class="seg" id="measure-seg">
-          <button class="seg-btn" data-measure="distance">Distance</button>
-          <button class="seg-btn" data-measure="area">Area</button>
-        </div>
-        <div class="meas-hint" id="meas-hint">Pick a mode, then click on the map to add points. Double-click to finish.</div>
-        <div class="meas-readout" id="meas-readout" hidden>
-          <div class="meas-big" id="meas-value">—</div>
-          <div class="meas-sub" id="meas-sub"></div>
-        </div>
-        <button class="btn-clear" id="clear-measure" hidden>Clear measurement</button>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -924,6 +905,7 @@ map.on('load', () => {
   setupMeasure();
   wireViewTools();
   wirePanelCollapse();
+  wireMdpPanel();
   render();
 });
 
@@ -1381,6 +1363,28 @@ const DEFAULT_VIEW = { center: [91.3, 25.55], zoom: 7.2, bearing: 0, pitch: 0 };
 let boundaryHidden = false;
 
 // ---------- panel collapse (hide/show the left panels) ----------
+// ---------- consolidated panel: rail tabs + collapse ----------
+function wireMdpPanel() {
+  const rail = document.getElementById('mdp-rail');
+  const sections = document.querySelectorAll('#mdp-sections .mdp-section');
+  if (rail) {
+    rail.addEventListener('click', (e) => {
+      const btn = e.target.closest('.mdp-rail-btn'); if (!btn) return;
+      const tab = btn.dataset.tab;
+      rail.querySelectorAll('.mdp-rail-btn').forEach(b => b.classList.toggle('on', b === btn));
+      sections.forEach(s => s.classList.toggle('on', s.dataset.tab === tab));
+    });
+  }
+  const mdp = document.getElementById('mdp');
+  const collapse = document.getElementById('mdp-collapse');
+  if (mdp && collapse) {
+    collapse.addEventListener('click', () => {
+      const c = mdp.classList.toggle('collapsed');
+      collapse.setAttribute('title', c ? 'Show panel' : 'Hide panel');
+    });
+  }
+}
+
 function wirePanelCollapse() {
   const stack = document.querySelector('.left-stack');
   const btn = document.getElementById('panels-collapse');
@@ -1655,7 +1659,7 @@ function wireControls() {
   $('snap').addEventListener('change', e => { snap = e.target.checked; if (snap) setPos(Math.round(pos)); if (playing) { stopPlay(); startPlay(); } });
   $('speed').addEventListener('input', e => { speed = +e.target.value; if (playing && snap) stepPlay(); });
   $('opacity').addEventListener('input', e => { opacity = +e.target.value / 100; $('op-val').textContent = e.target.value + '%'; render(); });
-  $('gear').addEventListener('click', () => { opacity = 1; $('opacity').value = 100; $('op-val').textContent = '100%'; render(); });
+  { const g = $('gear'); if (g) g.addEventListener('click', () => { opacity = 1; $('opacity').value = 100; $('op-val').textContent = '100%'; render(); }); }
 
   // vector layer list (built-ins + uploads)
   $('vec-list').addEventListener('click', e => {
