@@ -212,30 +212,42 @@
   @media (max-width:760px){
     .left-stack{width:min(88vw,320px);top:10px;left:10px}
     .panel{width:100%}
-    .app-title{width:auto;max-width:calc(100vw - 20px);flex-wrap:wrap;padding:8px 12px;gap:8px}
-    .app-title-main{white-space:normal;font-size:12.5px}
-    .app-welcome{font-size:11.5px;padding:6px 11px}
-    .stack-scroll{max-height:calc(100vh - 210px)}
-    .timeline{bottom:12px;padding:11px 13px 9px;width:calc(100vw - 20px);max-width:420px}
-    .tl-year{font-size:22px}
+    /* compact title: single row, drop the year range to save vertical space */
+    .app-title{width:auto;max-width:calc(100vw - 20px);flex-wrap:nowrap;padding:7px 11px;gap:7px}
+    .app-title-main{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px;max-width:52vw}
+    .app-title-div,.app-title-sub{display:none}
+    .app-welcome{font-size:11px;padding:5px 9px;max-width:38vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .stack-scroll{max-height:calc(100dvh - 170px)}
+    /* compact timeline */
+    .timeline{bottom:10px;padding:10px 12px 8px;width:calc(100vw - 16px);max-width:440px}
+    .tl-year{font-size:20px}
     .tl-hint{display:none}
-    .tl-speed input{width:56px}
-    /* tools tuck under the zoom control, comfortable tap size */
-    .tool-stack{top:96px;right:8px}
-    .tool-toggle{width:38px;height:38px}
-    .tool-row{padding:10px 12px;font-size:13px}
-    /* move readouts above the timeline so they don't collide */
-    .coord-readout{bottom:auto;top:96px;left:8px;font-size:10px;padding:4px 8px;gap:7px}
-    .credit-line{display:none}   /* too cramped on phones */
+    .tl-speed input{width:50px}
+    /* tool stack: sit BELOW the zoom nav control (nav ends ~y=100) so they don't overlap */
+    .tool-stack{top:150px;right:8px}
+    .tool-toggle{width:40px;height:40px}
+    .tool-row{padding:11px 13px;font-size:13px}
+    .coord-readout{display:none}
+    .credit-line{display:none}
   }
   /* phones: start with panels collapsed so the map is visible first */
   @media (max-width:560px){
     .intro-h{font-size:22px}
-    .left-stack{width:min(92vw,340px)}
-    .coord-readout{display:none}   /* reclaim space; zoom still in nav ctrl */
+    .left-stack{width:calc(100vw - 20px)}
+    .app-title-main{max-width:46vw}
     .q-opt{padding:12px 14px;font-size:13px}
-    .intro-btn{padding:12px 22px}  /* bigger tap target */
-    .name-input{font-size:16px}    /* 16px avoids iOS zoom-on-focus */
+    .intro-btn{padding:12px 22px}
+    .name-input{font-size:16px}
+    /* timeline compare row wraps tighter on very small screens */
+    .tl-compare-row{flex-wrap:wrap;gap:6px}
+    /* trim timeline height: tighter rows, smaller year labels */
+    .timeline{gap:6px}
+    .tl-years{font-size:9px}
+    .tl-years button{padding:1px 2px}
+    .tl-bottom{gap:8px;font-size:10px}
+    .tl-snap{font-size:10px}
+    #scrub{height:5px}
+    .tl-badge{font-size:9px;padding:2px 6px}
   }
 
   /* ===== Welcome greeting (next to app title) ===== */
