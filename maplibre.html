@@ -48,9 +48,17 @@
   .app-title-div{width:1px;height:15px;background:var(--border-strong);flex:none}
   .app-title-sub{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;white-space:nowrap;flex:none}
   .app-title-sub .yl{color:var(--accent)} .app-title-sub .yd{color:var(--warn)}
+  .panels-collapse{flex:none;width:26px;height:26px;margin-left:2px;border-radius:7px;background:transparent;
+    border:1px solid var(--border);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:.2s}
+  .panels-collapse:hover{border-color:var(--accent);color:var(--accent)}
+  .panels-collapse svg{width:15px;height:15px;transition:transform .3s}
+  .left-stack.collapsed .panels-collapse svg{transform:rotate(180deg)}
+  .left-stack.collapsed .stack-scroll{max-height:0;opacity:0;margin-top:-12px;pointer-events:none;overflow:hidden;
+    transition:max-height .35s ease, opacity .25s ease, margin-top .35s ease}
 
   .stack-scroll{display:flex;flex-direction:column;gap:12px;overflow-y:auto;overflow-x:hidden;padding-right:2px;
-    scrollbar-width:thin;scrollbar-color:#2a333b transparent}
+    scrollbar-width:thin;scrollbar-color:#2a333b transparent;max-height:calc(100vh - 90px);
+    transition:max-height .35s ease, opacity .25s ease, margin-top .35s ease}
   .stack-scroll::-webkit-scrollbar{width:8px}
   .stack-scroll::-webkit-scrollbar-track{background:transparent}
   .stack-scroll::-webkit-scrollbar-thumb{background:#2a333b;border-radius:8px;border:2px solid transparent;background-clip:padding-box}
@@ -202,14 +210,32 @@
   .credit-line a{color:var(--muted);text-decoration:none}
 
   @media (max-width:760px){
-    .left-stack{width:min(86vw,300px)}
+    .left-stack{width:min(88vw,320px);top:10px;left:10px}
     .panel{width:100%}
-    .app-title{width:auto;max-width:100%;flex-wrap:wrap}
-    .app-title-main{white-space:normal;font-size:13px}
-    .timeline{bottom:14px;padding:13px 15px 11px}
-    .tl-year{font-size:24px}
+    .app-title{width:auto;max-width:calc(100vw - 20px);flex-wrap:wrap;padding:8px 12px;gap:8px}
+    .app-title-main{white-space:normal;font-size:12.5px}
+    .app-welcome{font-size:11.5px;padding:6px 11px}
+    .stack-scroll{max-height:calc(100vh - 210px)}
+    .timeline{bottom:12px;padding:11px 13px 9px;width:calc(100vw - 20px);max-width:420px}
+    .tl-year{font-size:22px}
     .tl-hint{display:none}
     .tl-speed input{width:56px}
+    /* tools tuck under the zoom control, comfortable tap size */
+    .tool-stack{top:96px;right:8px}
+    .tool-toggle{width:38px;height:38px}
+    .tool-row{padding:10px 12px;font-size:13px}
+    /* move readouts above the timeline so they don't collide */
+    .coord-readout{bottom:auto;top:96px;left:8px;font-size:10px;padding:4px 8px;gap:7px}
+    .credit-line{display:none}   /* too cramped on phones */
+  }
+  /* phones: start with panels collapsed so the map is visible first */
+  @media (max-width:560px){
+    .intro-h{font-size:22px}
+    .left-stack{width:min(92vw,340px)}
+    .coord-readout{display:none}   /* reclaim space; zoom still in nav ctrl */
+    .q-opt{padding:12px 14px;font-size:13px}
+    .intro-btn{padding:12px 22px}  /* bigger tap target */
+    .name-input{font-size:16px}    /* 16px avoids iOS zoom-on-focus */
   }
 
   /* ===== Welcome greeting (next to app title) ===== */
@@ -454,6 +480,9 @@
     <span class="app-title-div"></span>
     <span class="app-title-sub"><span class="yl">2015</span><span class="yd">–</span><span class="yl">2025</span></span>
     <span class="app-welcome" id="app-welcome"></span>
+    <button class="panels-collapse" id="panels-collapse" aria-label="Hide panels" title="Hide panels">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
   </div>
 
   <div class="stack-scroll">
@@ -739,6 +768,7 @@ map.on('load', () => {
   wireCompare();
   setupMeasure();
   wireViewTools();
+  wirePanelCollapse();
   render();
 });
 
@@ -1184,6 +1214,22 @@ function exitCompare() {
 // ---------- Batch 5: view tools (reset, boundary, basemap, screenshot, fullscreen, coords) ----------
 const DEFAULT_VIEW = { center: [91.3, 25.55], zoom: 7.2, bearing: 0, pitch: 0 };
 let boundaryHidden = false;
+
+// ---------- panel collapse (hide/show the left panels) ----------
+function wirePanelCollapse() {
+  const stack = document.querySelector('.left-stack');
+  const btn = document.getElementById('panels-collapse');
+  if (!stack || !btn) return;
+  const setLabel = (collapsed) => {
+    btn.setAttribute('aria-label', collapsed ? 'Show panels' : 'Hide panels');
+    btn.setAttribute('title', collapsed ? 'Show panels' : 'Hide panels');
+  };
+  btn.addEventListener('click', () => setLabel(stack.classList.toggle('collapsed')));
+  // on phones, start collapsed so the map is the first thing seen
+  if (window.matchMedia('(max-width:560px)').matches) {
+    stack.classList.add('collapsed'); setLabel(true);
+  }
+}
 
 function wireViewTools() {
   // menu open/close
