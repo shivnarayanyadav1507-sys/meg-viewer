@@ -378,6 +378,37 @@
     .intro-step,.intro-btn,.q-opt{transition:none}
   }
   @media (max-width:560px){ .intro-h{font-size:22px} }
+
+  /* ===== Help walkthrough (guided tour) ===== */
+  .help-btn{position:absolute;top:14px;right:56px;z-index:1000;width:34px;height:34px;border-radius:9px;
+    background:var(--panel-solid);border:1px solid var(--border);color:var(--muted);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;padding:0;box-shadow:var(--shadow);font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px}
+  .help-btn:hover{border-color:var(--accent);color:var(--accent)}
+  @media (max-width:760px){ .help-btn{top:auto;bottom:auto;right:8px;top:52px} }
+
+  #tour{position:fixed;inset:0;z-index:5500;display:none}
+  #tour.on{display:block}
+  .tour-veil{position:absolute;inset:0;background:rgba(6,8,11,.72);transition:clip-path .35s ease}
+  .tour-ring{position:absolute;border:2px solid var(--accent);border-radius:12px;pointer-events:none;
+    box-shadow:0 0 0 4px rgba(182,244,65,.18);transition:all .35s cubic-bezier(.4,0,.2,1);opacity:0}
+  .tour-ring.on{opacity:1}
+  .tour-pop{position:absolute;width:min(300px,86vw);background:var(--panel-solid);border:1px solid var(--border-strong);
+    border-radius:13px;box-shadow:var(--shadow);padding:15px 16px;transition:all .35s cubic-bezier(.4,0,.2,1);z-index:2}
+  .tour-kick{font:600 9.5px 'JetBrains Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+  .tour-title{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin:0 0 6px}
+  .tour-desc{font-family:'Space Grotesk',sans-serif;font-size:13px;line-height:1.55;color:var(--muted);margin:0}
+  .tour-foot{display:flex;align-items:center;justify-content:space-between;margin-top:14px;gap:10px}
+  .tour-dots{display:flex;gap:5px}
+  .tour-dots i{width:6px;height:6px;border-radius:50%;background:var(--border-strong);transition:.25s}
+  .tour-dots i.on{background:var(--accent);width:16px;border-radius:3px}
+  .tour-nav{display:flex;gap:7px}
+  .tour-nav button{font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;border-radius:8px;padding:7px 13px;cursor:pointer;border:1px solid var(--border-strong);background:transparent;color:var(--muted);transition:.15s}
+  .tour-nav button:hover{border-color:var(--accent);color:var(--text)}
+  .tour-nav button.primary{background:var(--accent);color:#0a0c0e;border-color:var(--accent)}
+  .tour-nav button.primary:hover{filter:brightness(1.08)}
+  .tour-skip{position:absolute;top:18px;right:20px;z-index:3;background:none;border:none;cursor:pointer;
+    color:var(--muted-dim);font:600 11px 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase}
+  .tour-skip:hover{color:var(--text)}
 </style>
 </head>
 <body>
@@ -642,6 +673,26 @@
 
 <div class="credit-line" id="credit-line">
   Imagery: Sentinel-2 &amp; Landsat (Google Earth Engine) · Basemap: <span id="credit-base">Esri</span> · © OpenStreetMap
+</div>
+
+<button class="help-btn" id="help-btn" aria-label="How to use this viewer" title="How to use this viewer">?</button>
+
+<div id="tour" aria-label="Guided tour">
+  <div class="tour-veil" id="tour-veil"></div>
+  <div class="tour-ring" id="tour-ring"></div>
+  <button class="tour-skip" id="tour-skip">End tour ✕</button>
+  <div class="tour-pop" id="tour-pop">
+    <div class="tour-kick" id="tour-kick">Step</div>
+    <h3 class="tour-title" id="tour-title"></h3>
+    <p class="tour-desc" id="tour-desc"></p>
+    <div class="tour-foot">
+      <div class="tour-dots" id="tour-dots"></div>
+      <div class="tour-nav">
+        <button id="tour-back">Back</button>
+        <button class="primary" id="tour-next">Next</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script type="importmap">
@@ -1661,6 +1712,115 @@ function wireControls() {
   if (mn) mn.addEventListener('click', finish);
 
   show(0);
+})();
+</script>
+
+<script>
+/* ===== Help walkthrough (guided tour) ===== */
+(function(){
+  var tour = document.getElementById('tour');
+  var helpBtn = document.getElementById('help-btn');
+  if (!tour || !helpBtn) return;
+
+  var veil = document.getElementById('tour-veil');
+  var ring = document.getElementById('tour-ring');
+  var pop = document.getElementById('tour-pop');
+  var elKick = document.getElementById('tour-kick');
+  var elTitle = document.getElementById('tour-title');
+  var elDesc = document.getElementById('tour-desc');
+  var elDots = document.getElementById('tour-dots');
+  var btnBack = document.getElementById('tour-back');
+  var btnNext = document.getElementById('tour-next');
+
+  // Each step points at a real control. `openPanel` expands the left stack first
+  // (some controls live inside it). `pad` widens the spotlight a touch.
+  var STEPS = [
+    { sel:'.app-title', title:'Welcome aboard', desc:'This viewer lets you explore Meghalaya\u2019s forests across years of satellite imagery. Here\u2019s a 20-second tour of the controls.', openPanel:false, pad:6 },
+    { sel:'#mode-seg', title:'Satellite or NDVI', desc:'Switch between true-colour satellite imagery and NDVI \u2014 a vegetation index where greener means denser forest.', openPanel:true, pad:8 },
+    { sel:'#opacity', title:'Imagery opacity', desc:'Fade the imagery in and out to compare it against the basemap underneath.', openPanel:true, pad:8 },
+    { sel:'#timeline', title:'Travel through time', desc:'Pick a year, or hit play to watch the landscape change from 2015 to 2025. Drag the slider to fade smoothly between years.', openPanel:false, pad:6 },
+    { sel:'#compare-toggle', title:'Compare two years', desc:'Open a side-by-side swipe view to compare any two years directly \u2014 great for spotting deforestation.', openPanel:false, pad:8 },
+    { sel:'#drop', title:'Add your own layers', desc:'Drop in KML, GeoJSON, Shapefile (.zip) or GeoPackage files to overlay your own boundaries or points.', openPanel:true, pad:8 },
+    { sel:'#measure-seg', title:'Measure distance & area', desc:'Measure a distance along a path, or the area of a region in hectares and km\u00b2. Click points on the map, double-click to finish.', openPanel:true, pad:8 },
+    { sel:'#tool-toggle', title:'View tools', desc:'Reset the view, toggle the district boundary, switch basemaps, take a screenshot, or go fullscreen.', openPanel:false, pad:8 },
+    { sel:'#panels-collapse', title:'More room to explore', desc:'Hide the panels anytime for an unobstructed map. That\u2019s it \u2014 enjoy exploring!', openPanel:false, pad:6 }
+  ];
+  var i = 0;
+
+  // build dots
+  STEPS.forEach(function(){ var d=document.createElement('i'); elDots.appendChild(d); });
+  var dots = Array.prototype.slice.call(elDots.children);
+
+  var stack = document.querySelector('.left-stack');
+  function setPanel(open){
+    if (!stack) return;
+    if (open) stack.classList.remove('collapsed');
+  }
+
+  function place(){
+    var step = STEPS[i];
+    var target = document.querySelector(step.sel);
+    if (step.openPanel) setPanel(true);
+    // wait a tick for panel expand layout, then measure
+    setTimeout(function(){
+      if (!target){ centerPop(); return; }
+      var r = target.getBoundingClientRect();
+      var pad = step.pad || 6;
+      // ring around target
+      ring.style.left = (r.left - pad) + 'px';
+      ring.style.top = (r.top - pad) + 'px';
+      ring.style.width = (r.width + pad*2) + 'px';
+      ring.style.height = (r.height + pad*2) + 'px';
+      ring.classList.add('on');
+      // cut a hole in the veil via clip-path (evenodd rectangle)
+      var hx=r.left-pad, hy=r.top-pad, hw=r.width+pad*2, hh=r.height+pad*2;
+      veil.style.clipPath = 'polygon(0 0, 100% 0, 100% 100%, 0 100%, 0 0, ' +
+        hx+'px '+hy+'px, '+hx+'px '+(hy+hh)+'px, '+(hx+hw)+'px '+(hy+hh)+'px, '+(hx+hw)+'px '+hy+'px, '+hx+'px '+hy+'px)';
+      positionPop(r);
+    }, step.openPanel ? 260 : 20);
+  }
+  function positionPop(r){
+    var pw = pop.offsetWidth, ph = pop.offsetHeight, gap = 14, vw = innerWidth, vh = innerHeight;
+    var left, top;
+    // prefer right of target; else left; else below; keep on screen
+    if (r.right + gap + pw < vw){ left = r.right + gap; top = Math.min(Math.max(10, r.top), vh - ph - 10); }
+    else if (r.left - gap - pw > 0){ left = r.left - gap - pw; top = Math.min(Math.max(10, r.top), vh - ph - 10); }
+    else { left = Math.min(Math.max(10, r.left), vw - pw - 10); top = (r.bottom + gap + ph < vh) ? r.bottom + gap : Math.max(10, r.top - gap - ph); }
+    pop.style.left = left + 'px'; pop.style.top = top + 'px';
+  }
+  function centerPop(){
+    ring.classList.remove('on'); veil.style.clipPath = 'none';
+    pop.style.left = (innerWidth/2 - pop.offsetWidth/2) + 'px';
+    pop.style.top = (innerHeight/2 - pop.offsetHeight/2) + 'px';
+  }
+
+  function render(){
+    var step = STEPS[i];
+    elKick.textContent = 'Step ' + (i+1) + ' of ' + STEPS.length;
+    elTitle.textContent = step.title;
+    elDesc.textContent = step.desc;
+    dots.forEach(function(d,k){ d.classList.toggle('on', k===i); });
+    btnBack.style.visibility = i===0 ? 'hidden' : 'visible';
+    btnNext.textContent = i===STEPS.length-1 ? 'Done' : 'Next';
+    place();
+  }
+  function open(){ tour.classList.add('on'); i=0; render(); }
+  function close(){ tour.classList.remove('on'); ring.classList.remove('on'); veil.style.clipPath='none'; }
+  function next(){ if (i < STEPS.length-1){ i++; render(); } else close(); }
+  function back(){ if (i>0){ i--; render(); } }
+
+  helpBtn.addEventListener('click', open);
+  btnNext.addEventListener('click', next);
+  btnBack.addEventListener('click', back);
+  document.getElementById('tour-skip').addEventListener('click', close);
+  document.addEventListener('keydown', function(e){
+    if (!tour.classList.contains('on')) return;
+    if (e.key === 'Escape') close();
+    else if (e.key === 'ArrowRight') next();
+    else if (e.key === 'ArrowLeft') back();
+  });
+  // reposition on resize while open
+  window.addEventListener('resize', function(){ if (tour.classList.contains('on')) place(); });
 })();
 </script>
 </body>
