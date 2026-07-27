@@ -8,7 +8,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/maplibre-gl@5/dist/maplibre-gl.css" rel="stylesheet" />
 
 <style>
@@ -211,9 +211,237 @@
     .tl-hint{display:none}
     .tl-speed input{width:56px}
   }
+
+  /* ===== Welcome greeting (next to app title) ===== */
+  .app-welcome{font-family:'Space Grotesk',sans-serif;font-size:12.5px;font-weight:600;color:var(--text);
+    background:var(--panel-solid);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:9px;padding:7px 13px;white-space:nowrap;opacity:0;transform:translateY(-4px);transition:.4s;margin-left:4px}
+  .app-welcome.on{opacity:1;transform:none}
+  .app-welcome b{color:var(--accent);font-weight:700}
+
+  /* ===== Intro experience (skippable) ===== */
+  #intro{position:fixed;inset:0;z-index:6000;background:#0a0c0e;color:var(--text);
+    display:flex;align-items:center;justify-content:center;padding:24px;
+    font-family:'Space Grotesk',system-ui,sans-serif;transition:opacity .55s ease}
+  #intro.done{opacity:0;pointer-events:none}
+  #intro::after{content:'';position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(120% 90% at 50% 14%, rgba(182,244,65,.06), transparent 60%)}
+  .intro-skip{position:absolute;top:18px;right:20px;z-index:4;background:none;border:none;cursor:pointer;
+    color:var(--muted-dim);font:600 11px 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase;transition:.15s}
+  .intro-skip:hover{color:var(--text)}
+  .intro-step{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:18px;text-align:center;padding:24px;opacity:0;visibility:hidden;transform:translateY(12px);
+    transition:opacity .45s ease, transform .45s ease, visibility 0s linear .45s;pointer-events:none}
+  .intro-step.on{opacity:1;visibility:visible;transform:none;transition:opacity .5s ease, transform .5s ease;pointer-events:auto}
+  .intro-inner{width:min(540px,92vw);display:flex;flex-direction:column;align-items:center;gap:18px;position:relative;z-index:3}
+  .intro-kicker{font:600 10.5px 'JetBrains Mono',monospace;letter-spacing:.28em;text-transform:uppercase;color:var(--accent)}
+  .intro-h{font-size:27px;font-weight:700;letter-spacing:-.01em;line-height:1.2;margin:0}
+  .intro-step[data-step="forest"] .intro-h{font-family:'Bagel Fat One',ui-sans-serif,sans-serif;font-weight:400;
+    font-size:clamp(30px,6vw,52px);letter-spacing:0;line-height:1.12}
+  .intro-p{font-size:14px;color:var(--muted);line-height:1.6;margin:0;max-width:440px}
+  .intro-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:4px}
+  .intro-btn{border:1px solid var(--accent);background:var(--accent);color:#0a0c0e;border-radius:10px;
+    padding:11px 20px;font:600 13px 'Space Grotesk',sans-serif;cursor:pointer;transition:.15s}
+  .intro-btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
+  .intro-btn.ghost{background:none;color:var(--muted)}
+  .intro-btn.ghost:hover{border-color:var(--border-strong);color:var(--text);transform:translateY(-1px)}
+  .name-input{width:min(320px,80vw);background:rgba(255,255,255,.03);border:1px solid var(--border-strong);
+    color:var(--text);border-radius:11px;padding:13px 16px;font:500 15px 'Space Grotesk',sans-serif;
+    text-align:center;outline:none;transition:.15s}
+  .name-input::placeholder{color:var(--muted-dim)}
+  .name-input:focus{border-color:var(--accent);background:var(--accent-dim)}
+  .q-opts{display:flex;flex-direction:column;gap:9px;width:100%;max-width:390px}
+  .q-opt{text-align:left;border:1px solid var(--border-strong);background:rgba(255,255,255,.03);color:var(--text);
+    border-radius:11px;padding:13px 15px;font-size:13.5px;cursor:pointer;transition:.15s;font-family:inherit}
+  .q-opt:hover:not(:disabled){border-color:var(--accent);background:var(--accent-dim);transform:translateX(2px)}
+  .q-opt:disabled{cursor:default}
+  .q-opt.right{border-color:var(--accent);background:var(--accent-dim);color:#fff}
+  .q-opt.wrong{border-color:var(--warn);opacity:.75}
+  .q-reveal{display:none;flex-direction:column;gap:14px;align-items:center;animation:fadeUp .45s ease}
+  .q-reveal.on{display:flex}
+  .q-fact{font-size:13px;color:var(--muted);line-height:1.6;max-width:440px;
+    border-left:2px solid var(--accent);padding:3px 0 3px 14px;text-align:left}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .intro-dots{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:4;display:flex;gap:9px}
+  .intro-dots i{width:7px;height:7px;border-radius:50%;background:var(--border-strong);transition:.35s}
+  .intro-dots i.on{background:var(--accent);width:22px;border-radius:4px}
+  .intro-dots i.done{background:var(--accent-dim)}
+  /* forest scene */
+  .forest-step .intro-inner{z-index:3}
+  .forest{position:absolute;inset:0;width:100%;height:100%;overflow:hidden;z-index:0}
+  .forest .sky{position:absolute;inset:0;z-index:0;opacity:0;transition:opacity 1.4s ease;
+    background:linear-gradient(180deg,#0a0c0e 0%,#0c1410 55%,#0e1a12 100%)}
+  .forest.grow .sky{opacity:1}
+  .forest .dawn{position:absolute;inset:0;z-index:0;pointer-events:none;opacity:0;transition:opacity 1.6s ease .2s;
+    background:radial-gradient(110% 62% at 50% 66%, rgba(255,150,80,.30), rgba(255,150,80,.07) 42%, transparent 66%)}
+  .forest.grow .dawn{opacity:1}
+  .forest .hills{position:absolute;left:0;right:0;bottom:0;width:100%;height:44%;display:block;z-index:0}
+  .cloud{position:absolute;z-index:1;display:flex;align-items:flex-end;filter:blur(4px);opacity:.9}
+  .cloud i{display:block;background:rgba(255,255,255,.9);border-radius:50%}
+  .cloud i:nth-child(1){width:34px;height:34px}
+  .cloud i:nth-child(2){width:56px;height:56px;margin:0 -14px}
+  .cloud i:nth-child(3){width:32px;height:32px}
+  .cloud.c1{top:13%;left:11%;animation:drift1 26s ease-in-out infinite}
+  .cloud.c2{top:24%;left:58%;animation:drift2 34s ease-in-out infinite}
+  .cloud.c3{top:8%;left:78%;animation:drift3 30s ease-in-out infinite}
+  @keyframes drift1{0%,100%{transform:translateX(-26px)}50%{transform:translateX(36px)}}
+  @keyframes drift2{0%,100%{transform:translateX(30px) scale(.82)}50%{transform:translateX(-30px) scale(.82)}}
+  @keyframes drift3{0%,100%{transform:translateX(-22px) scale(1.18)}50%{transform:translateX(32px) scale(1.18)}}
+  .forest .ground{position:absolute;z-index:2;left:0;right:0;bottom:7%;height:2px;
+    background:linear-gradient(90deg,transparent,rgba(182,244,65,.4),transparent)}
+  .tree{position:absolute;z-index:2;bottom:7%;transform:scale(0);transform-origin:bottom center;opacity:0}
+  .forest.grow .tree{animation:treeGrow .95s cubic-bezier(.2,.85,.25,1) forwards;animation-delay:var(--d,0s)}
+  @keyframes treeGrow{0%{transform:scale(0);opacity:0}55%{opacity:1}100%{transform:scale(1);opacity:1}}
+  .tree i{display:block;width:calc(var(--w,46px) * 1.7);height:calc(var(--w,46px) * 1.7);background:var(--c,#2e7d32);
+    border-radius:46% 46% 44% 44% / 62% 62% 40% 40%}
+  .tree b{display:block;width:9px;height:22px;margin:-7px auto 0;background:#5a3d2b;border-radius:0 0 2px 2px}
+  .sapling{position:absolute;z-index:2;bottom:7%;transform:translateX(-50%) scaleY(0);transform-origin:bottom center;opacity:0}
+  .sapling::before{content:'';display:block;width:3px;height:16px;background:#6b4a32;border-radius:2px;margin:0 auto}
+  .sapling::after{content:'';position:absolute;left:50%;top:-4px;transform:translateX(-50%);
+    width:16px;height:12px;background:#66bb6a;border-radius:50% 50% 50% 50% / 60% 60% 40% 40%}
+  .forest.grow .sapling{animation:sprout .5s ease forwards, saplingFade .5s ease forwards;animation-delay:var(--sd,1.9s), calc(var(--sd,1.9s) + .7s)}
+  @keyframes sprout{0%{transform:translateX(-50%) scaleY(0);opacity:0}60%{opacity:1}100%{transform:translateX(-50%) scaleY(1);opacity:1}}
+  @keyframes saplingFade{to{opacity:0}}
+  .planter{position:absolute;z-index:3;bottom:7%;left:var(--endLeft,50%);width:14px;height:30px;
+    transform:translateX(calc(-50% + var(--fromX,-140px)));opacity:0}
+  .planter i{position:absolute;background:#0c140d}
+  .planter .body{left:50%;bottom:8px;transform:translateX(-50%);width:8px;height:16px;border-radius:5px 5px 3px 3px}
+  .planter .body::before{content:'';position:absolute;left:50%;top:-7px;transform:translateX(-50%);
+    width:8px;height:8px;border-radius:50%;background:#0c140d}
+  .planter .leg{bottom:0;width:3px;height:9px;background:#0c140d;border-radius:0 0 2px 2px}
+  .planter .leg.l{left:3px}
+  .planter .leg.r{right:3px}
+  .forest.grow .planter{animation:walkIn 1.5s ease forwards, plantAndGo 2.6s ease forwards;
+    animation-delay:var(--wd,0s), var(--plant,1.5s)}
+  @keyframes walkIn{0%{transform:translateX(calc(-50% + var(--fromX,-140px)));opacity:0}12%{opacity:1}100%{transform:translateX(-50%);opacity:1}}
+  .forest.grow .planter .body{animation:bob .32s ease-in-out infinite;animation-delay:var(--wd,0s)}
+  .forest.grow .planter .leg.l{animation:stepL .32s ease-in-out infinite;animation-delay:var(--wd,0s);animation-iteration-count:5}
+  .forest.grow .planter .leg.r{animation:stepR .32s ease-in-out infinite;animation-delay:var(--wd,0s);animation-iteration-count:5}
+  @keyframes bob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-1.5px)}}
+  @keyframes stepL{0%,100%{transform:rotate(14deg);transform-origin:top}50%{transform:rotate(-14deg);transform-origin:top}}
+  @keyframes stepR{0%,100%{transform:rotate(-14deg);transform-origin:top}50%{transform:rotate(14deg);transform-origin:top}}
+  @keyframes plantAndGo{
+    0%{transform:translateX(-50%) rotate(0)}
+    18%{transform:translateX(-50%) translateY(3px) rotate(-18deg)}
+    36%{transform:translateX(-50%) rotate(0)}
+    100%{transform:translateX(calc(-50% + var(--goX,60px))) rotate(0);opacity:0}
+  }
+  .planter.p2,.planter.p4{--goX:80px}
+  .planter.p1,.planter.p3{--goX:-80px}
+  .forest-text{position:absolute;z-index:3;left:0;right:0;top:15%;display:flex;flex-direction:column;
+    align-items:center;gap:18px;padding:0 22px;text-align:center}
+  .forest-next{display:none}
+  .forest-next.on{display:inline-block;animation:fadeUp .5s ease}
+  @media (prefers-reduced-motion: reduce){
+    .forest.grow .tree{animation:none;transform:scale(1);opacity:1}
+    .forest.grow .sapling{animation:none;opacity:0}
+    .forest.grow .planter{animation:none;opacity:0}
+    .cloud{animation:none}
+    .intro-step,.intro-btn,.q-opt{transition:none}
+  }
+  @media (max-width:560px){ .intro-h{font-size:22px} }
 </style>
 </head>
 <body>
+
+<div id="intro" aria-label="Intro tour">
+  <button class="intro-skip" data-skip>Skip intro ✕</button>
+
+  <div class="intro-step on" data-step="welcome">
+    <div class="intro-inner">
+      <div class="intro-kicker">Meghalaya · Abode of the Clouds</div>
+      <h2 class="intro-h">Before you explore the forests…</h2>
+      <p class="intro-p">A 30-second detour through clouds, root bridges and conservation — or jump straight to the map.</p>
+      <div class="intro-actions">
+        <button class="intro-btn" data-begin>Begin the tour</button>
+        <button class="intro-btn ghost" data-skip>Skip to the map →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="intro-step" data-step="name">
+    <div class="intro-inner">
+      <div class="intro-kicker">First, a quick hello</div>
+      <h2 class="intro-h">What should we call you?</h2>
+      <p class="intro-p">We'll greet you on the map. Leave it blank to explore anonymously.</p>
+      <input type="text" id="name-input" class="name-input" placeholder="Your name" maxlength="40" autocomplete="off" />
+      <div class="intro-actions">
+        <button class="intro-btn" data-name-next>Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="intro-step" data-step="quiz">
+    <div class="intro-inner">
+      <div class="intro-kicker">Did you know?</div>
+      <h2 class="intro-h"></h2>
+      <div class="q-opts"></div>
+      <div class="q-reveal">
+        <p class="q-fact" id="quiz-fact"></p>
+        <button class="intro-btn" data-quiz-next>Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="intro-step forest-step" data-step="forest">
+    <div class="forest">
+      <span class="sky"></span>
+      <span class="dawn"></span>
+      <svg class="hills" viewBox="0 0 540 232" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0,126 C70,94 140,150 210,122 C280,96 350,150 420,118 C470,98 510,128 540,114 L540,232 L0,232 Z" fill="#33513f"/>
+        <path d="M0,162 C80,132 150,178 240,150 C320,126 400,172 480,150 C505,144 525,150 540,148 L540,232 L0,232 Z" fill="#26402f"/>
+        <path d="M0,196 C90,176 180,202 280,186 C370,172 450,198 520,188 C530,187 536,188 540,188 L540,232 L0,232 Z" fill="#1b2e22"/>
+      </svg>
+      <span class="cloud c1"><i></i><i></i><i></i></span>
+      <span class="cloud c2"><i></i><i></i><i></i></span>
+      <span class="cloud c3"><i></i><i></i><i></i></span>
+      <span class="tree" style="left:8%;--w:42px;--c:#1b5e20;--d:2.5s"><i></i><b></b></span>
+      <span class="tree" style="left:18%;--w:58px;--c:#2e7d32;--d:2.62s"><i></i><b></b></span>
+      <span class="tree" style="left:30%;--w:38px;--c:#43a047;--d:2.72s"><i></i><b></b></span>
+      <span class="tree" style="left:40%;--w:64px;--c:#388e3c;--d:2.55s"><i></i><b></b></span>
+      <span class="tree" style="left:52%;--w:46px;--c:#66bb6a;--d:2.8s"><i></i><b></b></span>
+      <span class="tree" style="left:62%;--w:56px;--c:#2e7d32;--d:2.66s"><i></i><b></b></span>
+      <span class="tree" style="left:73%;--w:40px;--c:#9ccc65;--d:2.9s"><i></i><b></b></span>
+      <span class="tree" style="left:82%;--w:60px;--c:#388e3c;--d:2.58s"><i></i><b></b></span>
+      <span class="tree" style="left:90%;--w:44px;--c:#b6f441;--d:2.78s"><i></i><b></b></span>
+      <span class="sapling" style="left:18%;--sd:1.9s"></span>
+      <span class="sapling" style="left:40%;--sd:1.8s"></span>
+      <span class="sapling" style="left:62%;--sd:1.95s"></span>
+      <span class="sapling" style="left:82%;--sd:1.85s"></span>
+      <span class="planter p1" style="--fromX:-140px;--endLeft:16%;--wd:0s;--plant:1.5s"><i class="body"></i><i class="leg l"></i><i class="leg r"></i></span>
+      <span class="planter p2" style="--fromX:160px;--endLeft:40%;--wd:.25s;--plant:1.4s"><i class="body"></i><i class="leg l"></i><i class="leg r"></i></span>
+      <span class="planter p3" style="--fromX:-180px;--endLeft:62%;--wd:.15s;--plant:1.55s"><i class="body"></i><i class="leg l"></i><i class="leg r"></i></span>
+      <span class="planter p4" style="--fromX:190px;--endLeft:82%;--wd:.4s;--plant:1.45s"><i class="body"></i><i class="leg l"></i><i class="leg r"></i></span>
+      <span class="ground"></span>
+    </div>
+    <div class="forest-text">
+      <div class="intro-kicker">Reforesting…</div>
+      <h2 class="intro-h">A future worth protecting</h2>
+      <button class="intro-btn forest-next" data-forest-next>Continue</button>
+    </div>
+  </div>
+
+  <div class="intro-step" data-step="mood">
+    <div class="intro-inner">
+      <div class="intro-kicker">Last thing</div>
+      <h2 class="intro-h">How is your mood today?</h2>
+      <div class="q-opts mood-opts">
+        <button class="q-opt" data-msg="Love that — let's grow something good today.">Great</button>
+        <button class="q-opt" data-msg="Glad to hear it. A calm mind pairs well with a growing forest.">Pretty good</button>
+        <button class="q-opt" data-msg="That's alright. Even a slow-growing forest still reaches the sky.">So-so</button>
+        <button class="q-opt" data-msg="Take a breath — the trees have waited years, the map can wait a moment.">A bit tired</button>
+      </div>
+      <div class="q-reveal">
+        <p class="q-fact" id="mood-msg"></p>
+        <button class="intro-btn" data-mood-next>Enter the map</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="intro-dots" id="intro-dots">
+    <i class="on"></i><i></i><i></i><i></i><i></i>
+  </div>
+</div>
 
 <div class="left-stack">
   <div class="app-title">
@@ -225,6 +453,7 @@
     <span class="app-title-main">Meghalaya Historical Imagery Visualizer</span>
     <span class="app-title-div"></span>
     <span class="app-title-sub"><span class="yl">2015</span><span class="yd">–</span><span class="yl">2025</span></span>
+    <span class="app-welcome" id="app-welcome"></span>
   </div>
 
   <div class="stack-scroll">
@@ -1258,6 +1487,113 @@ function wireControls() {
     else if (e.key === ' ') { e.preventDefault(); togglePlay(); }
   });
 }
+</script>
+
+<script>
+/* ===== Intro tour controller ===== */
+(function(){
+  var ov = document.getElementById('intro');
+  if (!ov) return;
+  var steps = Array.prototype.slice.call(ov.querySelectorAll('.intro-step'));
+  var dots = Array.prototype.slice.call(document.querySelectorAll('#intro-dots i'));
+  var nameSet = false;
+
+  function show(n){
+    steps.forEach(function(s,k){ s.classList.toggle('on', k === n); });
+    dots.forEach(function(d,k){ d.classList.toggle('on', k === n); d.classList.toggle('done', k < n); });
+    if (steps[n] && steps[n].dataset.step === 'forest') runForest();
+  }
+  function setUserName(raw){
+    var name = (raw || '').trim();
+    if (name.length > 40) name = name.slice(0, 40);
+    var display = name || 'Anonymous User';
+    var el = document.getElementById('app-welcome');
+    if (el){ el.innerHTML = 'Welcome, <b></b>'; el.querySelector('b').textContent = display; el.classList.add('on'); }
+    nameSet = true;
+  }
+  function finish(){
+    if (!nameSet) setUserName('');   // skipped without naming -> Anonymous User
+    ov.classList.add('done');
+    document.removeEventListener('keydown', onKey);
+    setTimeout(function(){ if (ov.parentNode) ov.parentNode.removeChild(ov); }, 600);
+  }
+  function onKey(e){ if (e.key === 'Escape') finish(); }
+  document.addEventListener('keydown', onKey);
+
+  ov.querySelectorAll('[data-skip]').forEach(function(b){ b.addEventListener('click', finish); });
+  var begin = ov.querySelector('[data-begin]');
+  if (begin) begin.addEventListener('click', function(){ show(1); setTimeout(function(){ var i=document.getElementById('name-input'); if(i) i.focus(); }, 300); });
+
+  var nameNext = ov.querySelector('[data-name-next]');
+  if (nameNext) nameNext.addEventListener('click', function(){ var i=document.getElementById('name-input'); setUserName(i?i.value:''); show(2); });
+  var nameInput = document.getElementById('name-input');
+  if (nameInput) nameInput.addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); setUserName(nameInput.value); show(2); } });
+
+  var QUIZ = [
+    { q:"What does \"Meghalaya\" mean?",
+      opts:["Land of a thousand hills","Abode of the clouds","Valley of the living bridges","Garden of the eastern sun"], a:1,
+      fact:"From Sanskrit megha (cloud) + alaya (abode). Mawsynram and Cherrapunji here are among the rainiest places on Earth — and those clouds are exactly what make a clear satellite image so valuable." },
+    { q:"Meghalaya's Khasi people are famous for building what across rivers?",
+      opts:["Bamboo rafts","Stone archways","Living root bridges","Floating gardens"], a:2,
+      fact:"They train the aerial roots of the rubber fig (Ficus elastica) across streams over many years, growing living bridges that only get stronger with age." },
+    { q:"In which year did Meghalaya become a full state of India?",
+      opts:["1947","1972","1985","1956"], a:1,
+      fact:"Meghalaya was carved out of Assam and attained full statehood on 21 January 1972." },
+    { q:"Meghalaya's major communities are unusually…",
+      opts:["Matrilineal","Patrilineal","Nomadic","Seafaring"], a:0,
+      fact:"Among the Khasi, Jaintia and Garo, lineage and inheritance pass through the mother — often the youngest daughter inherits the family home." },
+    { q:"Mawsynram in Meghalaya is renowned as one of the world's…",
+      opts:["Driest deserts","Highest peaks","Wettest places","Largest caves"], a:2,
+      fact:"It records among the highest annual rainfall on Earth — monsoon clouds pile against these hills and pour." }
+  ];
+  (function pickQuiz(){
+    var step = ov.querySelector('.intro-step[data-step="quiz"]');
+    if (!step) return;
+    var item = QUIZ[Math.floor(Math.random() * QUIZ.length)];
+    var h = step.querySelector('.intro-h'); if (h) h.textContent = item.q;
+    var opts = step.querySelector('.q-opts'); if (!opts) return;
+    opts.innerHTML = '';
+    item.opts.forEach(function(text, idx){
+      var b = document.createElement('button');
+      b.className = 'q-opt'; b.textContent = text;
+      if (idx === item.a) b.setAttribute('data-correct', '1');
+      b.addEventListener('click', function(){
+        opts.querySelectorAll('.q-opt').forEach(function(x){ x.disabled = true; if (x.dataset.correct === '1') x.classList.add('right'); });
+        if (b.dataset.correct !== '1') b.classList.add('wrong');
+        var fact = step.querySelector('.q-fact'); if (fact) fact.textContent = item.fact;
+        var r = step.querySelector('.q-reveal'); if (r) r.classList.add('on');
+      });
+      opts.appendChild(b);
+    });
+  })();
+  var qn = ov.querySelector('[data-quiz-next]');
+  if (qn) qn.addEventListener('click', function(){ show(3); });
+
+  function runForest(){
+    var f = ov.querySelector('.forest'), nb = ov.querySelector('[data-forest-next]');
+    if (nb) nb.classList.remove('on');
+    if (f){ f.classList.remove('grow'); void f.offsetWidth; f.classList.add('grow'); }
+    setTimeout(function(){ if (nb) nb.classList.add('on'); }, 4000);
+  }
+  var fn = ov.querySelector('[data-forest-next]');
+  if (fn) fn.addEventListener('click', function(){ show(4); });
+
+  var moodStep = ov.querySelector('.intro-step[data-step="mood"]');
+  if (moodStep){
+    moodStep.querySelectorAll('.q-opt').forEach(function(b){
+      b.addEventListener('click', function(){
+        moodStep.querySelectorAll('.q-opt').forEach(function(x){ x.disabled = true; x.classList.remove('right'); });
+        b.classList.add('right');
+        var msg = moodStep.querySelector('#mood-msg'); if (msg) msg.textContent = b.getAttribute('data-msg') || '';
+        var r = moodStep.querySelector('.q-reveal'); if (r) r.classList.add('on');
+      });
+    });
+  }
+  var mn = ov.querySelector('[data-mood-next]');
+  if (mn) mn.addEventListener('click', finish);
+
+  show(0);
+})();
 </script>
 </body>
 </html>
