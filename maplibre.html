@@ -170,6 +170,33 @@
   .maplibregl-ctrl-group{background:var(--panel-solid)!important;border:1px solid var(--border)!important}
   .maplibregl-ctrl-group button+button{border-top:1px solid var(--border)!important}
 
+  /* ---- Batch 5: view tools ---- */
+  .tool-stack{position:absolute;top:120px;right:10px;z-index:900;display:flex;flex-direction:column;gap:8px}
+  .tool-btn{width:34px;height:34px;border-radius:9px;background:var(--panel-solid);border:1px solid var(--border);
+    color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:var(--shadow);position:relative}
+  .tool-btn:hover{border-color:var(--accent);color:var(--text)}
+  .tool-btn svg{width:17px;height:17px}
+  .tool-btn[data-tip]:hover::after{content:attr(data-tip);position:absolute;right:calc(100% + 8px);top:50%;transform:translateY(-50%);
+    background:var(--panel-solid);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-family:'JetBrains Mono',monospace;
+    font-size:10px;color:var(--text);white-space:nowrap;box-shadow:var(--shadow);pointer-events:none}
+  .tool-btn.active{border-color:var(--accent);color:var(--accent)}
+
+  .basemap-pop{position:absolute;right:calc(100% + 8px);top:0;background:var(--panel-solid);border:1px solid var(--border);
+    border-radius:10px;padding:6px;display:none;flex-direction:column;gap:3px;box-shadow:var(--shadow);min-width:120px}
+  .basemap-pop.on{display:flex}
+  .basemap-opt{font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;color:var(--muted);background:transparent;
+    border:none;border-radius:7px;padding:7px 10px;cursor:pointer;text-align:left;white-space:nowrap}
+  .basemap-opt:hover{background:#161c22;color:var(--text)}
+  .basemap-opt.on{background:var(--accent);color:#0a0c0e}
+
+  .coord-readout{position:absolute;left:10px;bottom:10px;z-index:900;background:var(--panel-solid);border:1px solid var(--border);
+    border-radius:8px;padding:5px 10px;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--muted);
+    box-shadow:var(--shadow);letter-spacing:.03em;pointer-events:none;display:flex;gap:10px}
+  .coord-readout .cr-lab{color:var(--muted-dim)}
+  .credit-line{position:absolute;right:10px;bottom:10px;z-index:850;font-family:'JetBrains Mono',monospace;font-size:9px;
+    color:var(--muted-dim);background:rgba(15,19,23,.7);border-radius:5px;padding:3px 7px;max-width:46vw;text-align:right;line-height:1.4}
+  .credit-line a{color:var(--muted);text-decoration:none}
+
   @media (max-width:760px){
     .left-stack{width:min(86vw,300px)}
     .panel{width:100%}
@@ -303,8 +330,39 @@
   </div>
 </div>
 
-<script type="importmap">
-{ "imports": { "maplibre-gl": "https://esm.sh/maplibre-gl@5" } }
+<!-- ================= Batch 5: view tools ================= -->
+<div class="tool-stack" id="tool-stack">
+  <button class="tool-btn" id="tool-reset" data-tip="Reset view" aria-label="Reset view">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9 9 0 0 0-6.4 2.6L3 8"/><path d="M3 3v5h5"/></svg>
+  </button>
+  <button class="tool-btn" id="tool-boundary" data-tip="Toggle boundary" aria-label="Toggle district boundary">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg>
+  </button>
+  <button class="tool-btn" id="tool-basemap" data-tip="Basemap" aria-label="Switch basemap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    <div class="basemap-pop" id="basemap-pop">
+      <button class="basemap-opt on" data-base="dark">Dark Gray</button>
+      <button class="basemap-opt" data-base="satellite">Satellite</button>
+      <button class="basemap-opt" data-base="light">Light streets</button>
+    </div>
+  </button>
+  <button class="tool-btn" id="tool-shot" data-tip="Screenshot" aria-label="Download screenshot">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+  </button>
+  <button class="tool-btn" id="tool-fullscreen" data-tip="Fullscreen" aria-label="Toggle fullscreen">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M16 21h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+  </button>
+</div>
+
+<div class="coord-readout" id="coord-readout">
+  <span><span class="cr-lab">lat</span> <span id="cr-lat">—</span></span>
+  <span><span class="cr-lab">lng</span> <span id="cr-lng">—</span></span>
+  <span><span class="cr-lab">z</span> <span id="cr-zoom">—</span></span>
+</div>
+
+<div class="credit-line" id="credit-line">
+  Imagery: Sentinel-2 &amp; Landsat (Google Earth Engine) · Basemap: <span id="credit-base">Esri</span> · © OpenStreetMap
+</div>
 </script>
 <script type="module">
 import maplibregl from 'maplibre-gl';
@@ -365,19 +423,43 @@ const DARK_BASEMAP = {
     'esri-dark-ref': {
       type: 'raster', tileSize: 256,
       tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}']
+    },
+    'esri-sat': {
+      type: 'raster', tileSize: 256,
+      tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+      attribution: 'Esri, Maxar, Earthstar Geographics'
+    },
+    'carto-light': {
+      type: 'raster', tileSize: 256,
+      tiles: [
+        'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
+        'https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
+        'https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png'
+      ],
+      attribution: '© CARTO © OpenStreetMap contributors'
     }
   },
   layers: [
     { id: 'bg', type: 'background', paint: { 'background-color': '#1a1d21' } },
     { id: 'esri-dark-base', type: 'raster', source: 'esri-dark-base' },
-    { id: 'esri-dark-ref', type: 'raster', source: 'esri-dark-ref' }
+    { id: 'esri-dark-ref', type: 'raster', source: 'esri-dark-ref' },
+    { id: 'esri-sat', type: 'raster', source: 'esri-sat', layout: { visibility: 'none' } },
+    { id: 'carto-light', type: 'raster', source: 'carto-light', layout: { visibility: 'none' } }
   ]
 };
+// which basemap layers belong to each option (for visibility toggling)
+const BASEMAP_LAYERS = {
+  dark: ['esri-dark-base', 'esri-dark-ref'],
+  satellite: ['esri-sat'],
+  light: ['carto-light']
+};
+const BASEMAP_LABEL = { dark: 'Esri Dark Gray', satellite: 'Esri Imagery', light: 'CARTO' };
 
 const map = new maplibregl.Map({
   container: 'map',
   style: DARK_BASEMAP,
-  center: [91.3, 25.55], zoom: 7.2, maxZoom: 16
+  center: [91.3, 25.55], zoom: 7.2, maxZoom: 16,
+  preserveDrawingBuffer: true
 });
 map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
 map.addControl(new maplibregl.ScaleControl({ maxWidth: 120, unit: 'metric' }), 'bottom-right');
@@ -414,6 +496,7 @@ map.on('load', () => {
   wireControls();
   wireCompare();
   setupMeasure();
+  wireViewTools();
   render();
 });
 
@@ -854,6 +937,89 @@ function exitCompare() {
   $('scrub').disabled = false; $('prev').disabled = false; $('next').disabled = false; $('play').disabled = false;
   if (mapBReady) { YEARS.forEach(y => ['sat', 'ndvi'].forEach(m => { const id = lid(y, m); if (mapB.getLayer(id)) mapB.setLayoutProperty(id, 'visibility', 'none'); })); shownB = new Set(); }
   render();
+}
+
+// ---------- Batch 5: view tools (reset, boundary, basemap, screenshot, fullscreen, coords) ----------
+const DEFAULT_VIEW = { center: [91.3, 25.55], zoom: 7.2, bearing: 0, pitch: 0 };
+let boundaryHidden = false;
+
+function wireViewTools() {
+  // 1. Reset view
+  $('tool-reset').addEventListener('click', () => {
+    map.flyTo({ ...DEFAULT_VIEW, duration: 900, essential: true });
+  });
+
+  // 2. Boundary toggle (district outline on/off — independent quick toggle)
+  $('tool-boundary').addEventListener('click', () => {
+    boundaryHidden = !boundaryHidden;
+    const vis = boundaryHidden ? 'none' : 'visible';
+    ['dist-line', 'dist-label'].forEach(id => { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', vis); });
+    $('tool-boundary').classList.toggle('active', boundaryHidden);
+  });
+
+  // 3. Basemap switch
+  const bmBtn = $('tool-basemap'), bmPop = $('basemap-pop');
+  bmBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    bmPop.classList.toggle('on');
+  });
+  document.addEventListener('click', () => bmPop.classList.remove('on'));
+  bmPop.addEventListener('click', e => e.stopPropagation());
+  document.querySelectorAll('.basemap-opt').forEach(opt => opt.addEventListener('click', () => {
+    const choice = opt.dataset.base;
+    // toggle visibility of basemap layer groups
+    Object.entries(BASEMAP_LAYERS).forEach(([key, ids]) => {
+      const vis = key === choice ? 'visible' : 'none';
+      ids.forEach(id => { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', vis); });
+    });
+    document.querySelectorAll('.basemap-opt').forEach(o => o.classList.toggle('on', o === opt));
+    $('credit-base').textContent = BASEMAP_LABEL[choice] || 'Esri';
+    bmPop.classList.remove('on');
+  }));
+
+  // 4. Screenshot (map canvas only)
+  $('tool-shot').addEventListener('click', () => {
+    // force a synchronous render so the canvas has current pixels
+    map.once('render', () => {});
+    map.triggerRepaint();
+    requestAnimationFrame(() => {
+      try {
+        const canvas = map.getCanvas();
+        const url = canvas.toDataURL('image/png');
+        const a = document.createElement('a');
+        const yr = compareOn ? (cmpA + '-vs-' + cmpB) : YEARS[Math.round(pos)];
+        a.download = 'meghalaya_' + modeLabel().toLowerCase() + '_' + yr + '.png';
+        a.href = url;
+        a.click();
+      } catch (err) {
+        console.error('Screenshot failed:', err);
+        setStatus('Screenshot failed (try again)', 'err');
+      }
+    });
+  });
+
+  // 5. Fullscreen
+  $('tool-fullscreen').addEventListener('click', () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen?.().catch(() => {});
+    } else {
+      document.exitFullscreen?.();
+    }
+  });
+  document.addEventListener('fullscreenchange', () => {
+    $('tool-fullscreen').classList.toggle('active', !!document.fullscreenElement);
+    setTimeout(() => map.resize(), 100);
+  });
+
+  // 6. Coordinate + zoom readout
+  const crLat = $('cr-lat'), crLng = $('cr-lng'), crZoom = $('cr-zoom');
+  map.on('mousemove', e => {
+    crLat.textContent = e.lngLat.lat.toFixed(4);
+    crLng.textContent = e.lngLat.lng.toFixed(4);
+  });
+  const updZoom = () => { crZoom.textContent = map.getZoom().toFixed(1); };
+  map.on('zoom', updZoom);
+  updZoom();
 }
 
 // ---------- measure tool (distance / area, metric) ----------
