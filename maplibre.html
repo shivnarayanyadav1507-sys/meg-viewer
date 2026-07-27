@@ -473,8 +473,47 @@
 
   .mdp-timeline{flex:none;border-top:2px solid var(--md-rule-strong);padding:var(--md-s3) var(--md-s4);background:var(--md-surface-2)}
 
-  /* Stage 2: new panel revealed; old left-stack hidden. */
+  /* Stage 3: new panel revealed; old left-stack hidden. */
   .left-stack{display:none !important}
+
+  /* Stage 3 fit-up: docked timeline + view-tool rows inside the panel.
+     (Full Modernist restyle comes in Stage 4.) */
+  #mdp-timeline .tl-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+  #mdp-timeline .tl-head{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  #mdp-timeline .tl-year{font-size:24px;font-weight:700;color:var(--md-accent);line-height:1}
+  #mdp-timeline .tl-badge{font:600 9px 'JetBrains Mono',monospace;letter-spacing:.1em;padding:3px 7px;background:var(--md-accent-200);color:var(--md-accent)}
+  #mdp-timeline .tl-ctrls{display:flex;gap:4px}
+  #mdp-timeline .tl-btn{width:30px;height:30px;border:1px solid var(--md-rule-strong);background:transparent;color:var(--md-ink);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+  #mdp-timeline .tl-btn svg{width:14px;height:14px;fill:currentColor}
+  #mdp-timeline .tl-btn:hover{border-color:var(--md-accent);color:var(--md-accent)}
+  #mdp-timeline .tl-btn.tl-compare svg{fill:none}
+  #mdp-timeline .tl-compare-row{display:flex;align-items:center;gap:7px;margin:8px 0;font:600 11px 'JetBrains Mono',monospace;color:var(--md-muted)}
+  #mdp-timeline .tl-compare-row select{background:var(--md-surface);border:1px solid var(--md-rule-strong);color:var(--md-ink);padding:5px 7px;font-family:inherit;font-size:11px}
+  #mdp-timeline .cmp-lbl.a{color:var(--md-compare-a)} #mdp-timeline .cmp-lbl.b{color:var(--md-compare-b)}
+  #mdp-timeline .tl-years{display:flex;justify-content:space-between;font:500 9px 'JetBrains Mono',monospace;margin-top:4px}
+  #mdp-timeline .tl-years button{background:none;border:0;color:var(--md-dim);cursor:pointer;font:inherit;padding:2px}
+  #mdp-timeline .tl-years button:hover{color:var(--md-ink)}
+  #mdp-timeline .tl-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--md-rule);font:500 10px 'JetBrains Mono',monospace;color:var(--md-muted)}
+  #mdp-timeline .tl-snap{display:flex;align-items:center;gap:6px;cursor:pointer}
+  #mdp-timeline .tl-hint{color:var(--md-dim)}
+  #mdp-timeline .tl-speed{display:flex;align-items:center;gap:6px}
+  #mdp-timeline input[type=range]{-webkit-appearance:none;appearance:none;height:4px;background:var(--md-rule-strong);outline:none}
+  #mdp-timeline input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:0;background:var(--md-accent);cursor:pointer}
+  #mdp-timeline #scrub{width:100%;margin:6px 0}
+  #mdp-timeline .tl-speed input{width:60px}
+
+  /* view-tool rows in the View tab */
+  .mdp-section[data-tab="view"] .tool-row{display:flex;align-items:center;gap:10px;width:100%;padding:11px 10px;border:0;border-bottom:1px solid var(--md-rule);
+    background:transparent;color:var(--md-ink);cursor:pointer;font:600 13px 'Space Grotesk',sans-serif;text-align:left}
+  .mdp-section[data-tab="view"] .tool-row:hover{background:var(--md-accent-100)}
+  .mdp-section[data-tab="view"] .tool-row svg{width:16px;height:16px;color:var(--md-muted);flex:none}
+  .mdp-section[data-tab="view"] .tool-row:hover svg{color:var(--md-accent)}
+  .mdp-section[data-tab="view"] .tool-sep{height:2px;background:var(--md-rule);margin:10px 0}
+  .mdp-section[data-tab="view"] .tool-section-lab{font:600 10px 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--md-muted);margin-bottom:6px}
+  .mdp-section[data-tab="view"] .basemap-opt{display:block;width:100%;text-align:left;padding:9px 10px 9px 26px;background:transparent;border:1px solid var(--md-rule-strong);color:var(--md-muted);cursor:pointer;font:600 12px 'Space Grotesk',sans-serif;position:relative;margin-bottom:-1px}
+  .mdp-section[data-tab="view"] .basemap-opt:hover{background:var(--md-accent-100);color:var(--md-ink)}
+  .mdp-section[data-tab="view"] .basemap-opt.on{color:var(--md-accent)}
+  .mdp-section[data-tab="view"] .basemap-opt.on::before{content:'';position:absolute;left:10px;top:50%;transform:translateY(-50%);width:6px;height:6px;background:var(--md-accent)}
 </style>
 </head>
 <body>
@@ -539,10 +578,62 @@
         </div>
         <button class="btn-clear" id="clear-measure" hidden>Clear measurement</button>
       </div>
-      <div class="mdp-section" data-tab="view"><!-- Stage 3: View --></div>
+      <div class="mdp-section" data-tab="view">
+        <button class="tool-row" id="tool-reset">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9 9 0 0 0-6.4 2.6L3 8"/><path d="M3 3v5h5"/></svg>
+          <span>Reset view</span>
+        </button>
+        <button class="tool-row" id="tool-boundary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg>
+          <span id="tool-boundary-label">Hide boundary</span>
+        </button>
+        <button class="tool-row" id="tool-shot">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          <span>Screenshot</span>
+        </button>
+        <button class="tool-row" id="tool-fullscreen">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M16 21h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          <span id="tool-fs-label">Fullscreen</span>
+        </button>
+        <div class="tool-sep"></div>
+        <div class="tool-section-lab">Basemap</div>
+        <button class="basemap-opt on" data-base="dark">Dark Gray</button>
+        <button class="basemap-opt" data-base="satellite">Satellite</button>
+        <button class="basemap-opt" data-base="light">Light streets</button>
+      </div>
     </div>
   </div>
-  <div class="mdp-timeline" id="mdp-timeline"><!-- Stage 3: Timeline --></div>
+  <div class="mdp-timeline" id="mdp-timeline">
+    <div class="tl-top">
+      <div class="tl-head">
+        <span class="tl-year" id="ro-year">2018</span>
+        <span class="tl-badge" id="ro-mode">RGB</span>
+        <span class="tl-fade" id="ro-fade"></span>
+      </div>
+      <div class="tl-ctrls">
+        <button class="tl-btn" id="prev" aria-label="Previous year"><svg viewBox="0 0 24 24"><path d="M15 5l-8 7 8 7z"/></svg></button>
+        <button class="tl-btn" id="play" aria-label="Play"><svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z"/></svg></button>
+        <button class="tl-btn" id="next" aria-label="Next year"><svg viewBox="0 0 24 24"><path d="M9 5l8 7-8 7z"/></svg></button>
+        <button class="tl-btn tl-compare" id="compare-toggle" aria-label="Compare two years" title="Compare two years"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 8l-3 4 3 4M19 8l3 4-3 4"/></svg></button>
+      </div>
+    </div>
+    <div class="tl-compare-row" id="compare-row" hidden>
+      <span class="cmp-lbl a">A</span>
+      <select id="cmp-a"></select>
+      <span class="cmp-vs">vs</span>
+      <select id="cmp-b"></select>
+      <span class="cmp-lbl b">B</span>
+    </div>
+    <input type="range" id="scrub" min="0" max="6" step="0.01" value="3" />
+    <div class="tl-years" id="tl-years">
+      <button data-i="0">2015</button><button data-i="1">2016</button><button data-i="2">2017</button><button data-i="3">2018</button><button data-i="4">2019</button><button data-i="5">2020</button><button data-i="6">2025</button>
+    </div>
+    <div class="tl-bottom">
+      <label class="tl-snap"><input type="checkbox" id="snap" /><span class="sw"></span> Snap to year</label>
+      <span class="tl-hint">drag to fade between years</span>
+      <label class="tl-speed">speed <input type="range" id="speed" min="0" max="100" value="50" /></label>
+    </div>
+  </div>
 </div>
 
 <div id="intro" aria-label="Intro tour">
@@ -664,38 +755,7 @@
   </div>
 </div>
 
-<!-- ================= Timeline ================= -->
-<div class="timeline" id="timeline">
-  <div class="tl-top">
-    <div class="tl-head">
-      <span class="tl-year" id="ro-year">2018</span>
-      <span class="tl-badge" id="ro-mode">RGB</span>
-      <span class="tl-fade" id="ro-fade"></span>
-    </div>
-    <div class="tl-ctrls">
-      <button class="tl-btn" id="prev" aria-label="Previous year"><svg viewBox="0 0 24 24"><path d="M15 5l-8 7 8 7z"/></svg></button>
-      <button class="tl-btn" id="play" aria-label="Play"><svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z"/></svg></button>
-      <button class="tl-btn" id="next" aria-label="Next year"><svg viewBox="0 0 24 24"><path d="M9 5l8 7-8 7z"/></svg></button>
-      <button class="tl-btn tl-compare" id="compare-toggle" aria-label="Compare two years" title="Compare two years"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 8l-3 4 3 4M19 8l3 4-3 4"/></svg></button>
-    </div>
-  </div>
-  <div class="tl-compare-row" id="compare-row" hidden>
-    <span class="cmp-lbl a">A</span>
-    <select id="cmp-a"></select>
-    <span class="cmp-vs">vs</span>
-    <select id="cmp-b"></select>
-    <span class="cmp-lbl b">B</span>
-  </div>
-  <input type="range" id="scrub" min="0" max="6" step="0.01" value="3" />
-  <div class="tl-years" id="tl-years">
-    <button data-i="0">2015</button><button data-i="1">2016</button><button data-i="2">2017</button><button data-i="3">2018</button><button data-i="4">2019</button><button data-i="5">2020</button><button data-i="6">2025</button>
-  </div>
-  <div class="tl-bottom">
-    <label class="tl-snap"><input type="checkbox" id="snap" /><span class="sw"></span> Snap to year</label>
-    <span class="tl-hint">drag to fade between years</span>
-    <label class="tl-speed">speed <input type="range" id="speed" min="0" max="100" value="50" /></label>
-  </div>
-</div>
+<!-- ================= timeline now docked in the panel ================= -->
 
 <div id="map"></div>
 <div id="map-b"></div>
@@ -708,35 +768,7 @@
   </div>
 </div>
 
-<!-- ================= Batch 5: view tools ================= -->
-<div class="tool-stack" id="tool-stack">
-  <button class="tool-toggle" id="tool-toggle" aria-label="Tools" title="Tools">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
-  </button>
-  <div class="tool-menu" id="tool-menu">
-    <button class="tool-row" id="tool-reset">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9 9 0 0 0-6.4 2.6L3 8"/><path d="M3 3v5h5"/></svg>
-      <span>Reset view</span>
-    </button>
-    <button class="tool-row" id="tool-boundary">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg>
-      <span id="tool-boundary-label">Hide boundary</span>
-    </button>
-    <button class="tool-row" id="tool-shot">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-      <span>Screenshot</span>
-    </button>
-    <button class="tool-row" id="tool-fullscreen">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M16 21h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-      <span id="tool-fs-label">Fullscreen</span>
-    </button>
-    <div class="tool-sep"></div>
-    <div class="tool-section-lab">Basemap</div>
-    <button class="basemap-opt on" data-base="dark">Dark Gray</button>
-    <button class="basemap-opt" data-base="satellite">Satellite</button>
-    <button class="basemap-opt" data-base="light">Light streets</button>
-  </div>
-</div>
+<!-- ================= view tools now live in the panel View tab ================= -->
 
 <div class="coord-readout" id="coord-readout">
   <span><span class="cr-lab">lat</span> <span id="cr-lat">—</span></span>
@@ -1401,11 +1433,13 @@ function wirePanelCollapse() {
 }
 
 function wireViewTools() {
-  // menu open/close
+  // (menu open/close no longer needed — view tools live in the panel View tab)
   const toggle = $('tool-toggle'), menu = $('tool-menu');
-  toggle.addEventListener('click', e => { e.stopPropagation(); menu.classList.toggle('on'); toggle.classList.toggle('on'); });
-  document.addEventListener('click', () => { menu.classList.remove('on'); toggle.classList.remove('on'); });
-  menu.addEventListener('click', e => e.stopPropagation());
+  if (toggle && menu) {
+    toggle.addEventListener('click', e => { e.stopPropagation(); menu.classList.toggle('on'); toggle.classList.toggle('on'); });
+    document.addEventListener('click', () => { menu.classList.remove('on'); toggle.classList.remove('on'); });
+    menu.addEventListener('click', e => e.stopPropagation());
+  }
 
   // 1. Reset view
   $('tool-reset').addEventListener('click', () => {
@@ -1838,7 +1872,7 @@ function wireControls() {
     { sel:'#compare-toggle', title:'Compare two years', desc:'Open a side-by-side swipe view to compare any two years directly \u2014 great for spotting deforestation.', openPanel:false, pad:8 },
     { sel:'#drop', title:'Add your own layers', desc:'Drop in KML, GeoJSON, Shapefile (.zip) or GeoPackage files to overlay your own boundaries or points.', openPanel:true, pad:8 },
     { sel:'#measure-seg', title:'Measure distance & area', desc:'Measure a distance along a path, or the area of a region in hectares and km\u00b2. Click points on the map, double-click to finish.', openPanel:true, pad:8 },
-    { sel:'#tool-toggle', title:'View tools', desc:'Reset the view, toggle the district boundary, switch basemaps, take a screenshot, or go fullscreen.', openPanel:false, pad:8 },
+    { sel:'.mdp-rail-btn[data-tab="view"]', title:'View tools', desc:'Reset the view, toggle the district boundary, switch basemaps, take a screenshot, or go fullscreen.', openPanel:false, pad:8 },
     { sel:'#panels-collapse', title:'More room to explore', desc:'Hide the panels anytime for an unobstructed map. That\u2019s it \u2014 enjoy exploring!', openPanel:false, pad:6 }
   ];
   var i = 0;
