@@ -220,9 +220,11 @@
     border-radius:0;padding:5px 10px;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--md-muted);
     box-shadow:0 8px 24px rgba(0,0,0,.4);letter-spacing:.03em;pointer-events:none;display:flex;gap:10px}
   .coord-readout .cr-lab{color:var(--md-dim)}
-  .credit-line{position:absolute;right:10px;bottom:10px;z-index:850;font-family:'JetBrains Mono',monospace;font-size:9px;
-    color:var(--md-dim);background:rgba(15,19,23,.7);border-radius:0;padding:3px 7px;max-width:46vw;text-align:right;line-height:1.4}
-  .credit-line a{color:var(--md-muted);text-decoration:none}
+  /* MapLibre attribution + scale — dark themed */
+  .maplibregl-ctrl-attrib{background:rgba(15,19,23,.8)!important;color:var(--md-dim)!important;border-radius:0!important;font-family:'JetBrains Mono',monospace!important;font-size:9px!important}
+  .maplibregl-ctrl-attrib a{color:var(--md-muted)!important}
+  .maplibregl-ctrl-attrib-button{background-color:rgba(15,19,23,.85)!important}
+  .maplibregl-ctrl-scale{background:rgba(15,19,23,.8)!important;border-color:var(--md-rule-strong)!important;color:var(--md-muted)!important;border-radius:0!important;font-family:'JetBrains Mono',monospace!important}
 
   @media (max-width:760px){
     .left-stack{width:min(88vw,320px);top:10px;left:10px}
@@ -440,15 +442,15 @@
     border-bottom:2px solid var(--md-rule-strong)}
   .mdp-mark{width:24px;height:24px;flex:none}
   .mdp-brand{line-height:1;min-width:0;margin-right:auto}
-  .mdp-brand b{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;letter-spacing:.01em;color:var(--md-ink);text-transform:uppercase;display:block}
-  .mdp-brand small{font:600 8.5px 'JetBrains Mono',monospace;letter-spacing:.2em;color:var(--md-dim);text-transform:uppercase;display:block;margin-top:4px}
+  .mdp-brand b{font-family:'Syne',sans-serif;font-weight:800;font-size:15px;letter-spacing:.02em;color:var(--md-ink);text-transform:uppercase;display:block}
+  .mdp-brand small{font:600 8px 'JetBrains Mono',monospace;letter-spacing:.18em;color:var(--md-dim);text-transform:uppercase;display:block;margin-top:5px}
   .mdp-collapse{width:27px;height:27px;flex:none;border:1px solid var(--md-rule-strong);background:transparent;
     color:var(--md-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
   .mdp-collapse:hover{border-color:var(--md-accent);color:var(--md-accent)}
   .mdp-collapse svg{width:15px;height:15px}
 
-  .mdp-welcome{padding:var(--md-s2) var(--md-s3);border-left:2px solid var(--md-rule-strong);
-    font-size:11.5px;color:var(--md-ink);white-space:nowrap}
+  .mdp-welcome{padding:9px var(--md-s4);border-bottom:2px solid var(--md-rule-strong);border-left:3px solid var(--md-accent);
+    font:600 11.5px 'Space Grotesk',sans-serif;color:var(--md-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:var(--md-surface-2)}
   .mdp-welcome b{color:var(--md-accent);font-weight:700}
   .mdp-welcome[hidden]{display:none}
   .mdp-head .mdp-collapse{margin-left:var(--md-s2)}
@@ -639,9 +641,9 @@
   <div class="mdp-head">
     <svg class="mdp-mark" viewBox="0 0 24 24" fill="none" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 L21 7.5 L12 12 L3 7.5 Z" stroke="#ff8a4c" stroke-width="1.5"/><path d="M3 12 L12 16.5 L21 12" stroke="#b6f441" stroke-width="1.5"/><path d="M3 16.5 L12 21 L21 16.5" stroke="#ff8a4c" stroke-width="1.5"/></svg>
     <div class="mdp-brand"><b>Meghalaya</b><small>Historical Imagery · Eligibility</small></div>
-    <div class="mdp-welcome" id="mdp-welcome" hidden>Welcome, <b>Anonymous User</b></div>
     <button class="mdp-collapse" id="mdp-collapse" title="Hide panel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
   </div>
+  <div class="mdp-welcome" id="mdp-welcome" hidden>Welcome, <b>Anonymous User</b></div>
   <div class="mdp-body">
     <div class="mdp-rail" id="mdp-rail">
       <button class="mdp-rail-btn on" data-tab="imagery"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18"/><path d="M3 15l5-4 4 3 4-5 5 6"/><circle cx="8.5" cy="8.5" r="1.5"/></svg><span>Image</span></button>
@@ -905,10 +907,6 @@
   <span><span class="cr-lab">z</span> <span id="cr-zoom">—</span></span>
 </div>
 
-<div class="credit-line" id="credit-line">
-  Imagery: Sentinel-2 &amp; Landsat (Google Earth Engine) · Basemap: <span id="credit-base">Esri</span> · © OpenStreetMap
-</div>
-
 <button class="help-btn" id="help-btn" aria-label="How to use this viewer" title="How to use this viewer">?</button>
 
 <div id="tour" aria-label="Guided tour">
@@ -1027,10 +1025,12 @@ const map = new maplibregl.Map({
   container: 'map',
   style: DARK_BASEMAP,
   center: [91.3, 25.55], zoom: 7.2, maxZoom: 16,
-  preserveDrawingBuffer: true
+  preserveDrawingBuffer: true,
+  attributionControl: false
 });
 map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
-map.addControl(new maplibregl.ScaleControl({ maxWidth: 120, unit: 'metric' }), 'bottom-right');
+map.addControl(new maplibregl.ScaleControl({ maxWidth: 120, unit: 'metric' }), 'bottom-left');
+map.addControl(new maplibregl.AttributionControl({ compact: true, customAttribution: 'Imagery: Sentinel-2 &amp; Landsat (Google Earth Engine)' }), 'bottom-right');
 setStatus('Loading basemap…', 'load');
 
 map.on('load', () => {
@@ -1329,13 +1329,15 @@ function toggleVecLabel(e) {
 }
 function zoomToVecBounds(e) {
   if (!e.bounds) return;
-  const stack = document.querySelector('.left-stack');
-  const panelOpen = stack && !stack.classList.contains('collapsed') && window.innerWidth > 560;
-  // when the panel is open it covers the left ~310px of the map, so pad that side
-  // so the fitted layer sits in the visible area, not behind the panel.
+  const mdp = document.getElementById('mdp');
+  const isMobile = window.matchMedia('(max-width:600px)').matches;
+  // panel is open (visible, not collapsed) on desktop → it covers the left ~360px
+  const panelOpen = mdp && !mdp.classList.contains('collapsed') && !isMobile;
   const pad = panelOpen
-    ? { top: 90, right: 90, bottom: 120, left: 330 }
-    : { top: 90, right: 90, bottom: 120, left: 90 };
+    ? { top: 90, right: 90, bottom: 140, left: 380 }
+    : (isMobile
+        ? { top: 80, right: 40, bottom: 300, left: 40 }   // mobile: sheet is at bottom
+        : { top: 90, right: 90, bottom: 140, left: 90 });
   map.fitBounds(e.bounds, { padding: pad, maxZoom: 15, duration: 900 });
 }
 function removeVecLayer(e) {
@@ -1594,7 +1596,7 @@ function wireViewTools() {
       ids.forEach(id => { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', vis); });
     });
     document.querySelectorAll('.basemap-opt').forEach(o => o.classList.toggle('on', o === opt));
-    $('credit-base').textContent = BASEMAP_LABEL[choice] || 'Esri';
+    { const cb = $('credit-base'); if (cb) cb.textContent = BASEMAP_LABEL[choice] || 'Esri'; }
   }));
 
   // 4. Screenshot (map canvas only)
