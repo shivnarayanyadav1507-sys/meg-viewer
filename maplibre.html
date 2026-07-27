@@ -48,10 +48,10 @@
   .app-title-div{width:1px;height:15px;background:var(--border-strong);flex:none}
   .app-title-sub{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;white-space:nowrap;flex:none}
   .app-title-sub .yl{color:var(--accent)} .app-title-sub .yd{color:var(--warn)}
-  .panels-collapse{flex:none;width:26px;height:26px;margin-left:2px;border-radius:7px;background:transparent;
-    border:1px solid var(--border);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:.2s}
-  .panels-collapse:hover{border-color:var(--accent);color:var(--accent)}
-  .panels-collapse svg{width:15px;height:15px;transition:transform .3s}
+  .panels-collapse{flex:none;width:28px;height:28px;margin-right:2px;border-radius:8px;background:#161c22;
+    border:1px solid var(--border-strong);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:.2s}
+  .panels-collapse:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+  .panels-collapse svg{width:16px;height:16px;transition:transform .3s}
   .left-stack.collapsed .panels-collapse svg{transform:rotate(180deg)}
   .left-stack.collapsed .stack-scroll{max-height:0;opacity:0;margin-top:-12px;pointer-events:none;overflow:hidden;
     transition:max-height .35s ease, opacity .25s ease, margin-top .35s ease}
@@ -471,6 +471,9 @@
 
 <div class="left-stack">
   <div class="app-title">
+    <button class="panels-collapse" id="panels-collapse" aria-label="Hide panels" title="Hide panels">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
     <svg class="app-title-mark" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-linejoin="round" aria-hidden="true">
       <path d="M12 3 L21 7.5 L12 12 L3 7.5 Z" stroke="#ff8a4c" stroke-width="1.5"/>
       <path d="M3 12 L12 16.5 L21 12" stroke="#b6f441" stroke-width="1.5"/>
@@ -480,9 +483,6 @@
     <span class="app-title-div"></span>
     <span class="app-title-sub"><span class="yl">2015</span><span class="yd">–</span><span class="yl">2025</span></span>
     <span class="app-welcome" id="app-welcome"></span>
-    <button class="panels-collapse" id="panels-collapse" aria-label="Hide panels" title="Hide panels">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-    </button>
   </div>
 
   <div class="stack-scroll">
@@ -1029,7 +1029,17 @@ function toggleVecLabel(e) {
   if (e.labelLayerId && map.getLayer(e.labelLayerId)) map.setLayoutProperty(e.labelLayerId, 'visibility', (e.visible && e.labelOn) ? 'visible' : 'none');
   renderVecList();
 }
-function zoomToVecBounds(e) { if (e.bounds) map.fitBounds(e.bounds, { padding: 90, maxZoom: 15, duration: 900 }); }
+function zoomToVecBounds(e) {
+  if (!e.bounds) return;
+  const stack = document.querySelector('.left-stack');
+  const panelOpen = stack && !stack.classList.contains('collapsed') && window.innerWidth > 560;
+  // when the panel is open it covers the left ~310px of the map, so pad that side
+  // so the fitted layer sits in the visible area, not behind the panel.
+  const pad = panelOpen
+    ? { top: 90, right: 90, bottom: 120, left: 330 }
+    : { top: 90, right: 90, bottom: 120, left: 90 };
+  map.fitBounds(e.bounds, { padding: pad, maxZoom: 15, duration: 900 });
+}
 function removeVecLayer(e) {
   e.layerIds.forEach(l => map.getLayer(l) && map.removeLayer(l));
   if (e.labelLayerId && map.getLayer(e.labelLayerId)) map.removeLayer(e.labelLayerId);
