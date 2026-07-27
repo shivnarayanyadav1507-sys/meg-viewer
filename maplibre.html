@@ -147,8 +147,8 @@
   .mp-sub{color:var(--muted);font-size:12px;margin-top:3px}
 
   /* ---- timeline (old-viewer style) ---- */
-  .timeline{position:absolute;left:50%;transform:translateX(-50%);bottom:22px;z-index:1000;
-    width:min(620px,calc(100vw - 28px));background:var(--panel);backdrop-filter:blur(16px);
+  .timeline{position:absolute;left:calc(var(--md-panel-w) + 28px);right:14px;bottom:22px;z-index:1000;margin:0 auto;
+    width:min(620px,calc(100vw - var(--md-panel-w) - 56px));background:var(--panel);backdrop-filter:blur(16px);
     -webkit-backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:16px 20px 14px;display:flex;flex-direction:column;gap:11px}
   .tl-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
   .tl-head{display:flex;align-items:baseline;gap:11px;min-width:0;flex-wrap:wrap}
@@ -475,6 +475,8 @@
 
   /* Stage 3: new panel revealed; old left-stack hidden. */
   .left-stack{display:none !important}
+  /* timeline spans full width when the panel is collapsed */
+  #mdp.collapsed ~ .timeline{left:14px;right:14px;width:min(620px,calc(100vw - 28px))}
 
   /* Stage 3 fit-up: docked timeline + view-tool rows inside the panel.
      (Full Modernist restyle comes in Stage 4.) */
@@ -603,37 +605,7 @@
       </div>
     </div>
   </div>
-  <div class="mdp-timeline" id="mdp-timeline">
-    <div class="tl-top">
-      <div class="tl-head">
-        <span class="tl-year" id="ro-year">2018</span>
-        <span class="tl-badge" id="ro-mode">RGB</span>
-        <span class="tl-fade" id="ro-fade"></span>
-      </div>
-      <div class="tl-ctrls">
-        <button class="tl-btn" id="prev" aria-label="Previous year"><svg viewBox="0 0 24 24"><path d="M15 5l-8 7 8 7z"/></svg></button>
-        <button class="tl-btn" id="play" aria-label="Play"><svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z"/></svg></button>
-        <button class="tl-btn" id="next" aria-label="Next year"><svg viewBox="0 0 24 24"><path d="M9 5l8 7-8 7z"/></svg></button>
-        <button class="tl-btn tl-compare" id="compare-toggle" aria-label="Compare two years" title="Compare two years"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 8l-3 4 3 4M19 8l3 4-3 4"/></svg></button>
-      </div>
-    </div>
-    <div class="tl-compare-row" id="compare-row" hidden>
-      <span class="cmp-lbl a">A</span>
-      <select id="cmp-a"></select>
-      <span class="cmp-vs">vs</span>
-      <select id="cmp-b"></select>
-      <span class="cmp-lbl b">B</span>
-    </div>
-    <input type="range" id="scrub" min="0" max="6" step="0.01" value="3" />
-    <div class="tl-years" id="tl-years">
-      <button data-i="0">2015</button><button data-i="1">2016</button><button data-i="2">2017</button><button data-i="3">2018</button><button data-i="4">2019</button><button data-i="5">2020</button><button data-i="6">2025</button>
-    </div>
-    <div class="tl-bottom">
-      <label class="tl-snap"><input type="checkbox" id="snap" /><span class="sw"></span> Snap to year</label>
-      <span class="tl-hint">drag to fade between years</span>
-      <label class="tl-speed">speed <input type="range" id="speed" min="0" max="100" value="50" /></label>
-    </div>
-  </div>
+  <div class="mdp-timeline" id="mdp-timeline" hidden></div>
 </div>
 
 <div id="intro" aria-label="Intro tour">
@@ -755,7 +727,38 @@
   </div>
 </div>
 
-<!-- ================= timeline now docked in the panel ================= -->
+<!-- ================= timeline: floating bottom-center of map ================= -->
+<div class="timeline" id="timeline">
+  <div class="tl-top">
+    <div class="tl-head">
+      <span class="tl-year" id="ro-year">2018</span>
+      <span class="tl-badge" id="ro-mode">RGB</span>
+      <span class="tl-fade" id="ro-fade"></span>
+    </div>
+    <div class="tl-ctrls">
+      <button class="tl-btn" id="prev" aria-label="Previous year"><svg viewBox="0 0 24 24"><path d="M15 5l-8 7 8 7z"/></svg></button>
+      <button class="tl-btn" id="play" aria-label="Play"><svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z"/></svg></button>
+      <button class="tl-btn" id="next" aria-label="Next year"><svg viewBox="0 0 24 24"><path d="M9 5l8 7-8 7z"/></svg></button>
+      <button class="tl-btn tl-compare" id="compare-toggle" aria-label="Compare two years" title="Compare two years"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 8l-3 4 3 4M19 8l3 4-3 4"/></svg></button>
+    </div>
+  </div>
+  <div class="tl-compare-row" id="compare-row" hidden>
+    <span class="cmp-lbl a">A</span>
+    <select id="cmp-a"></select>
+    <span class="cmp-vs">vs</span>
+    <select id="cmp-b"></select>
+    <span class="cmp-lbl b">B</span>
+  </div>
+  <input type="range" id="scrub" min="0" max="6" step="0.01" value="3" />
+  <div class="tl-years" id="tl-years">
+    <button data-i="0">2015</button><button data-i="1">2016</button><button data-i="2">2017</button><button data-i="3">2018</button><button data-i="4">2019</button><button data-i="5">2020</button><button data-i="6">2025</button>
+  </div>
+  <div class="tl-bottom">
+    <label class="tl-snap"><input type="checkbox" id="snap" /><span class="sw"></span> Snap to year</label>
+    <span class="tl-hint">drag to fade between years</span>
+    <label class="tl-speed">speed <input type="range" id="speed" min="0" max="100" value="50" /></label>
+  </div>
+</div>
 
 <div id="map"></div>
 <div id="map-b"></div>
