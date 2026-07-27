@@ -516,6 +516,97 @@
   .mdp-section[data-tab="view"] .basemap-opt:hover{background:var(--md-accent-100);color:var(--md-ink)}
   .mdp-section[data-tab="view"] .basemap-opt.on{color:var(--md-accent)}
   .mdp-section[data-tab="view"] .basemap-opt.on::before{content:'';position:absolute;left:10px;top:50%;transform:translateY(-50%);width:6px;height:6px;background:var(--md-accent)}
+
+  /* ============================================================
+     Stage 4 — Modernist-dark widget restyle (scoped to #mdp).
+     Overrides the old rounded/soft styling for the consolidated panel.
+     ============================================================ */
+  #mdp .mdp-eyebrow{font:600 9.5px 'JetBrains Mono',monospace;letter-spacing:.22em;text-transform:uppercase;color:var(--md-accent);margin-bottom:4px}
+  #mdp .mdp-title{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;letter-spacing:-.01em;color:var(--md-ink);margin:0 0 var(--md-s3);line-height:1.1}
+  #mdp .mdp-sec-head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--md-s2);margin-bottom:var(--md-s3)}
+  #mdp .mdp-sec-head .mdp-title{margin:0}
+  #mdp .mdp-grp{margin-top:var(--md-s4);padding-top:var(--md-s4);border-top:2px solid var(--md-rule)}
+  #mdp .mdp-grp:first-of-type{margin-top:0;padding-top:0;border-top:0}
+  #mdp .mdp-lbl{font:600 10px 'JetBrains Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--md-muted);margin-bottom:var(--md-s2)}
+
+  /* segmented control */
+  #mdp .seg{display:flex;gap:0;background:transparent;border:1px solid var(--md-rule-strong);border-radius:0;padding:0}
+  #mdp .seg-btn{flex:1;text-align:center;font-family:'Space Grotesk',sans-serif;font-size:12.5px;font-weight:600;letter-spacing:.02em;color:var(--md-muted);padding:10px;border-radius:0;background:transparent;border:none;cursor:pointer;transition:.12s}
+  #mdp .seg-btn+.seg-btn{border-left:1px solid var(--md-rule-strong)}
+  #mdp .seg-btn.on{background:var(--md-accent);color:var(--md-accent-ink)}
+  #mdp .seg-btn:not(.on):hover{background:var(--md-accent-100);color:var(--md-ink)}
+  /* measure = orange */
+  #mdp #measure-seg .seg-btn.on{background:var(--md-measure);color:#160a04}
+  #mdp #measure-seg .seg-btn:not(.on):hover{background:var(--md-measure-100)}
+
+  /* opacity control */
+  #mdp .ctl{display:flex;flex-direction:column;gap:6px;font:600 10px 'JetBrains Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--md-muted)}
+  #mdp .ctl .row{display:flex;justify-content:space-between;align-items:center}
+  #mdp .ctl #op-val{color:var(--md-accent);font-weight:700}
+  #mdp input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;background:var(--md-rule-strong);outline:none;margin:4px 0}
+  #mdp input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:0;background:var(--md-accent);cursor:pointer;border:2px solid var(--md-surface)}
+  #mdp input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:0;background:var(--md-accent);cursor:pointer;border:2px solid var(--md-surface)}
+
+  /* NDVI legend */
+  #mdp .legend .legend-cap{font:600 10px 'JetBrains Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--md-muted);margin-bottom:6px}
+  #mdp .legend-bar{height:10px;border-radius:0;background:linear-gradient(90deg,#8a5a2b,#c8a24a,#d9d24e,#6fae3a,#0f5a1e)}
+  #mdp .legend-labels{display:flex;justify-content:space-between;font:500 9.5px 'JetBrains Mono',monospace;color:var(--md-dim);margin-top:4px}
+  #mdp .legend-desc{color:var(--md-muted)}
+
+  /* upload dropzone */
+  #mdp .upload{border:1px dashed var(--md-rule-strong);border-radius:0;background:var(--md-surface-2);padding:var(--md-s3);display:flex;align-items:center;gap:var(--md-s2);justify-content:flex-start;cursor:pointer;transition:.12s}
+  #mdp .upload:hover{border-color:var(--md-accent);background:var(--md-accent-100)}
+  #mdp .upload .u-ic{width:20px;height:20px;color:var(--md-muted);flex:none}
+  #mdp .upload b{font-size:12.5px;font-weight:600;color:var(--md-ink)}
+  #mdp .upload .u-hint{font:500 9.5px 'JetBrains Mono',monospace;color:var(--md-dim)}
+
+  /* status line */
+  #mdp .status{font:500 10px 'JetBrains Mono',monospace;letter-spacing:.05em;color:var(--md-dim);margin-top:var(--md-s2)}
+  #mdp .vec-status{font:500 10px 'JetBrains Mono',monospace;color:var(--md-dim)}
+  #mdp .vec-status.ok{color:var(--md-accent)} #mdp .vec-status.err{color:#ff6b6b}
+
+  /* clear buttons */
+  #mdp .btn-clear{font-family:'Space Grotesk',sans-serif;font-size:11.5px;font-weight:600;color:var(--md-muted);background:transparent;border:1px solid var(--md-rule-strong);border-radius:0;padding:7px 12px;cursor:pointer;transition:.12s}
+  #mdp .btn-clear:hover{border-color:var(--md-accent);color:var(--md-ink);background:var(--md-accent-100)}
+
+  /* layer rows */
+  #mdp .list{display:flex;flex-direction:column}
+  #mdp .lrow{display:flex;align-items:center;gap:var(--md-s2);padding:11px 4px;border-radius:0;border-bottom:1px solid var(--md-rule);font-family:'Space Grotesk',sans-serif;font-size:12.5px;color:var(--md-ink)}
+  #mdp .lrow:last-child{border-bottom:0}
+  #mdp .lrow:hover{background:var(--md-accent-100)}
+  #mdp .lrow.muted{color:var(--md-dim)}
+  #mdp .lrow.muted .dot{opacity:.35}
+  #mdp .lrow .dot{flex:none;width:9px;height:9px;border-radius:50%}
+  #mdp .lrow .lname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #mdp .lrow-switch{display:flex;align-items:center;gap:var(--md-s2);padding:9px 4px;border-bottom:1px solid var(--md-rule)}
+  #mdp .lrow-switch .vname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'Space Grotesk',sans-serif;font-size:13px;color:var(--md-ink)}
+  #mdp .lrow .icbtn,#mdp .lrow-switch .icbtn{width:26px;height:26px;flex:none;border:1px solid var(--md-rule);background:transparent;color:var(--md-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;border-radius:0}
+  #mdp .lrow .icbtn:hover,#mdp .lrow-switch .icbtn:hover{border-color:var(--md-accent);color:var(--md-accent)}
+  #mdp .lrow .icbtn svg,#mdp .lrow-switch .icbtn svg{width:13px;height:13px}
+  #mdp .lrow .icbtn.active,#mdp .lrow-switch .icbtn.active{color:var(--md-accent);border-color:var(--md-accent)}
+
+  /* measure readout — orange accent card */
+  #mdp .meas-hint{font:500 10.5px 'JetBrains Mono',monospace;line-height:1.5;color:var(--md-dim);margin-top:10px}
+  #mdp .meas-readout{background:var(--md-surface);border:1px solid var(--md-rule-strong);border-left:3px solid var(--md-measure);border-radius:0;padding:14px;display:flex;flex-direction:column;gap:3px}
+  #mdp .meas-big{font:700 24px 'JetBrains Mono',monospace;color:var(--md-measure);letter-spacing:.02em}
+  #mdp .meas-sub{font:500 10.5px 'JetBrains Mono',monospace;color:var(--md-dim)}
+
+  /* ---- floating timeline: Modernist-dark restyle ---- */
+  #timeline{border-radius:0 !important;border:1px solid var(--md-rule-strong) !important;background:var(--md-surface) !important;backdrop-filter:none !important;-webkit-backdrop-filter:none !important}
+  #timeline .tl-year{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--md-accent);letter-spacing:.02em}
+  #timeline .tl-badge{border-radius:0;background:var(--md-accent-200);color:var(--md-accent);font-weight:700;padding:3px 8px}
+  #timeline .tl-btn{border-radius:0;background:transparent;border:1px solid var(--md-rule-strong);color:var(--md-ink)}
+  #timeline .tl-btn:hover{border-color:var(--md-accent);color:var(--md-accent)}
+  /* prominent circular lime play button */
+  #timeline #play{border-radius:50%;background:var(--md-accent);border-color:var(--md-accent);color:var(--md-accent-ink)}
+  #timeline #play:hover{filter:brightness(1.08);color:var(--md-accent-ink)}
+  #timeline #play svg{fill:var(--md-accent-ink)}
+  #timeline .tl-compare.on{border-color:var(--md-compare-b);color:var(--md-compare-b)}
+  #timeline .cmp-lbl.a{color:var(--md-compare-a)} #timeline .cmp-lbl.b{color:var(--md-compare-b)}
+  #timeline .cmp-a,#timeline .cmp-b,#timeline select{border-radius:0;background:var(--md-surface-2);border:1px solid var(--md-rule-strong);color:var(--md-ink)}
+  #timeline input[type=range]{height:4px}
+  #timeline input[type=range]::-webkit-slider-thumb{border-radius:50%;background:var(--md-accent)}
+  #timeline .tl-years button.on,#timeline .tl-years .on{color:var(--md-accent)}
 </style>
 </head>
 <body>
@@ -537,50 +628,78 @@
     </div>
     <div class="mdp-sections" id="mdp-sections">
       <div class="mdp-section on" data-tab="imagery">
-        <div class="upload" id="raster-drop">
-          <svg class="u-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-          <span><b>Load raster files</b><span class="u-hint"> · GeoTIFF (COG) · PNG · JPEG</span></span>
-          <input type="file" id="raster-file" accept=".tif,.tiff,.png,.jpg,.jpeg" multiple hidden />
+        <div class="mdp-eyebrow">Imagery</div>
+        <h2 class="mdp-title">Raster layer</h2>
+        <div class="mdp-grp">
+          <div class="mdp-lbl">Mode</div>
+          <div class="seg" id="mode-seg">
+            <button class="seg-btn on" data-mode="sat">Satellite</button>
+            <button class="seg-btn" data-mode="ndvi">NDVI</button>
+          </div>
         </div>
-        <div class="seg" id="mode-seg">
-          <button class="seg-btn on" data-mode="sat">Satellite</button>
-          <button class="seg-btn" data-mode="ndvi">NDVI</button>
+        <div class="mdp-grp">
+          <label class="ctl">
+            <span class="row"><span>Opacity</span><span id="op-val">100%</span></span>
+            <input type="range" id="opacity" min="0" max="100" value="100" style="width:100%" />
+          </label>
         </div>
-        <label class="ctl">
-          <span class="row"><span>Opacity</span><span id="op-val">100%</span></span>
-          <input type="range" id="opacity" min="0" max="100" value="100" style="width:100%" />
-        </label>
-        <div class="legend" id="legend" hidden>
+        <div class="mdp-grp legend" id="legend" hidden>
           <div class="legend-cap">NDVI · vegetation</div>
           <div class="legend-bar"></div>
-          <div class="legend-labels"><span>Dense</span><span>Sparse / bare</span></div>
+          <div class="legend-labels"><span>-1.0</span><span>0</span><span>+1.0</span></div>
+          <div class="legend-labels legend-desc"><span>Bare</span><span>Sparse</span><span>Dense canopy</span></div>
         </div>
-        <div class="list" id="img-list"></div>
-        <div class="status" id="status">Starting…</div>
+        <div class="mdp-grp">
+          <div class="mdp-lbl">Custom raster</div>
+          <div class="upload" id="raster-drop">
+            <svg class="u-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            <span><b>Load raster files</b><span class="u-hint"> · GeoTIFF (COG) · PNG · JPEG</span></span>
+            <input type="file" id="raster-file" accept=".tif,.tiff,.png,.jpg,.jpeg" multiple hidden />
+          </div>
+          <div class="list" id="img-list"></div>
+          <div class="status" id="status">Starting…</div>
+        </div>
       </div>
       <div class="mdp-section" data-tab="vectors">
-        <div class="upload" id="drop">
-          <svg class="u-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.9 17.4 12 21l-8.9-3.6a1 1 0 0 1-.6-.9V6.6a1 1 0 0 1 .6-.9L12 2l8.9 3.6a1 1 0 0 1 .6.9v10.9a1 1 0 0 1-.6.9Z"/><path d="M12 21V11"/><path d="M20.5 5.7 12 11 3.5 5.7"/></svg>
-          <span><b>Add vector</b><span class="u-hint"> · KML · GeoJSON · Shapefile (.zip) · GeoPackage</span></span>
-          <input type="file" id="file" accept=".zip,.kml,.kmz,.geojson,.json,.gpkg" multiple hidden />
+        <div class="mdp-sec-head">
+          <div><div class="mdp-eyebrow">Vectors</div><h2 class="mdp-title">Layers</h2></div>
+          <button class="btn-clear" id="clear-parcel">Clear all</button>
         </div>
-        <div class="list" id="vec-list"></div>
-        <div class="vec-status" id="vec-status"></div>
-        <button class="btn-clear" id="clear-parcel">Clear vectors</button>
+        <div class="mdp-grp">
+          <div class="upload" id="drop">
+            <svg class="u-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.9 17.4 12 21l-8.9-3.6a1 1 0 0 1-.6-.9V6.6a1 1 0 0 1 .6-.9L12 2l8.9 3.6a1 1 0 0 1 .6.9v10.9a1 1 0 0 1-.6.9Z"/><path d="M12 21V11"/><path d="M20.5 5.7 12 11 3.5 5.7"/></svg>
+            <span><b>Add vector</b><span class="u-hint"> · KML · GeoJSON · Shapefile (.zip) · GeoPackage</span></span>
+            <input type="file" id="file" accept=".zip,.kml,.kmz,.geojson,.json,.gpkg" multiple hidden />
+          </div>
+        </div>
+        <div class="mdp-grp">
+          <div class="list" id="vec-list"></div>
+          <div class="vec-status" id="vec-status"></div>
+        </div>
       </div>
       <div class="mdp-section" data-tab="measure">
-        <div class="seg" id="measure-seg">
-          <button class="seg-btn" data-measure="distance">Distance</button>
-          <button class="seg-btn" data-measure="area">Area</button>
+        <div class="mdp-eyebrow">Measure</div>
+        <h2 class="mdp-title">Distance &amp; area</h2>
+        <div class="mdp-grp">
+          <div class="seg" id="measure-seg">
+            <button class="seg-btn" data-measure="distance">Distance</button>
+            <button class="seg-btn" data-measure="area">Area</button>
+          </div>
+          <div class="meas-hint" id="meas-hint">Pick a mode, then click on the map to add points. Double-click to finish.</div>
         </div>
-        <div class="meas-hint" id="meas-hint">Pick a mode, then click on the map to add points. Double-click to finish.</div>
-        <div class="meas-readout" id="meas-readout" hidden>
-          <div class="meas-big" id="meas-value">—</div>
-          <div class="meas-sub" id="meas-sub"></div>
+        <div class="mdp-grp">
+          <div class="mdp-lbl">Result</div>
+          <div class="meas-readout" id="meas-readout" hidden>
+            <div class="meas-big" id="meas-value">—</div>
+            <div class="meas-sub" id="meas-sub"></div>
+          </div>
+          <button class="btn-clear" id="clear-measure" hidden>Clear measurement</button>
         </div>
-        <button class="btn-clear" id="clear-measure" hidden>Clear measurement</button>
       </div>
       <div class="mdp-section" data-tab="view">
+        <div class="mdp-eyebrow">Map</div>
+        <h2 class="mdp-title">View &amp; export</h2>
+        <div class="mdp-grp">
         <button class="tool-row" id="tool-reset">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9 9 0 0 0-6.4 2.6L3 8"/><path d="M3 3v5h5"/></svg>
           <span>Reset view</span>
@@ -597,11 +716,13 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M16 21h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
           <span id="tool-fs-label">Fullscreen</span>
         </button>
-        <div class="tool-sep"></div>
+        </div>
+        <div class="mdp-grp">
         <div class="tool-section-lab">Basemap</div>
         <button class="basemap-opt on" data-base="dark">Dark Gray</button>
         <button class="basemap-opt" data-base="satellite">Satellite</button>
         <button class="basemap-opt" data-base="light">Light streets</button>
+        </div>
       </div>
     </div>
   </div>
