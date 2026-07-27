@@ -105,6 +105,14 @@
   .vec-status{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--muted-dim)}
   .vec-status.ok{color:var(--accent)} .vec-status.err{color:#ff6b6b}
 
+  /* measure panel */
+  .logo.meas{background:linear-gradient(135deg,#4cc9f0,#4361ee)}
+  #measure-seg .seg-btn.on{background:#4cc9f0;color:#06121a}
+  .meas-hint{font-family:'JetBrains Mono',monospace;font-size:10.5px;line-height:1.5;color:var(--muted-dim)}
+  .meas-readout{background:#141a1f;border:1px solid #1f2730;border-radius:11px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+  .meas-big{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:#4cc9f0;letter-spacing:.02em}
+  .meas-sub{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--muted-dim)}
+
   /* popups */
   .maplibregl-popup-content{background:#0f1317!important;border:1px solid #2a333b!important;color:#e9eef2!important;border-radius:10px!important;padding:10px 12px!important;box-shadow:0 8px 24px rgba(0,0,0,.55)!important;font-family:'Space Grotesk',sans-serif}
   .maplibregl-popup-tip{border-top-color:#2a333b!important;border-bottom-color:#2a333b!important}
@@ -225,6 +233,22 @@
         <div class="list" id="vec-list"></div>
         <div class="vec-status" id="vec-status"></div>
         <button class="btn-clear" id="clear-parcel">Clear vectors</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><span class="logo meas"></span><h1>Measure</h1></div>
+      <div class="pbody">
+        <div class="seg" id="measure-seg">
+          <button class="seg-btn" data-measure="distance">Distance</button>
+          <button class="seg-btn" data-measure="area">Area</button>
+        </div>
+        <div class="meas-hint" id="meas-hint">Pick a mode, then click on the map to add points. Double-click to finish.</div>
+        <div class="meas-readout" id="meas-readout" hidden>
+          <div class="meas-big" id="meas-value">—</div>
+          <div class="meas-sub" id="meas-sub"></div>
+        </div>
+        <button class="btn-clear" id="clear-measure" hidden>Clear measurement</button>
       </div>
     </div>
   </div>
@@ -384,6 +408,7 @@ map.on('load', () => {
   addVectors();
   wireControls();
   wireCompare();
+  setupMeasure();
   render();
 });
 
@@ -824,6 +849,153 @@ function exitCompare() {
   $('scrub').disabled = false; $('prev').disabled = false; $('next').disabled = false; $('play').disabled = false;
   if (mapBReady) { YEARS.forEach(y => ['sat', 'ndvi'].forEach(m => { const id = lid(y, m); if (mapB.getLayer(id)) mapB.setLayoutProperty(id, 'visibility', 'none'); })); shownB = new Set(); }
   render();
+}
+
+// ---------- measure tool (distance / area, metric) ----------
+let measureMode = null;        // 'distance' | 'area' | null
+let measurePts = [];           // [[lng,lat], ...] confirmed vertices
+let measureFinished = false;
+
+const R_EARTH = 6371008.8;     // mean Earth radius (m)
+const toRad = d => d * Math.PI / 180;
+
+// great-circle distance between two [lng,lat] points, metres
+function haversine(a, b) {
+  const dLat = toRad(b[1] - a[1]), dLng = toRad(b[0] - a[0]);
+  const lat1 = toRad(a[1]), lat2 = toRad(b[1]);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+  return 2 * R_EARTH * Math.asin(Math.min(1, Math.sqrt(h)));
+}
+function pathLength(pts) {
+  let m = 0;
+  for (let i = 1; i < pts.length; i++) m += haversine(pts[i - 1], pts[i]);
+  return m;
+}
+// spherical polygon area (m²), ring of [lng,lat]; assumes closed or auto-closes
+function sphericalArea(ring) {
+  if (ring.length < 3) return 0;
+  const pts = ring.slice();
+  if (pts[0][0] !== pts[pts.length - 1][0] || pts[0][1] !== pts[pts.length - 1][1]) pts.push(pts[0]);
+  let total = 0;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const l1 = toRad(pts[i][0]), l2 = toRad(pts[i + 1][0]);
+    const p1 = toRad(pts[i][1]), p2 = toRad(pts[i + 1][1]);
+    total += (l2 - l1) * (2 + Math.sin(p1) + Math.sin(p2));
+  }
+  return Math.abs(total * R_EARTH * R_EARTH / 2);
+}
+function fmtDist(m) {
+  if (m < 1000) return { big: m.toFixed(m < 100 ? 1 : 0) + ' m', sub: '' };
+  return { big: (m / 1000).toFixed(2) + ' km', sub: Math.round(m).toLocaleString() + ' m' };
+}
+function fmtArea(m2) {
+  const ha = m2 / 10000, km2 = m2 / 1e6;
+  if (km2 >= 1) return { big: km2.toFixed(2) + ' km²', sub: ha.toLocaleString(undefined, { maximumFractionDigits: 0 }) + ' ha' };
+  if (ha >= 1) return { big: ha.toFixed(2) + ' ha', sub: Math.round(m2).toLocaleString() + ' m²' };
+  return { big: Math.round(m2).toLocaleString() + ' m²', sub: '' };
+}
+
+function measureGeoJSON(includeHover) {
+  const line = measurePts.slice();
+  if (includeHover && measureHover && !measureFinished) line.push(measureHover);
+  const feats = [];
+  // vertices
+  measurePts.forEach(p => feats.push({ type: 'Feature', geometry: { type: 'Point', coordinates: p }, properties: {} }));
+  if (measureMode === 'area' && line.length >= 3) {
+    const ring = line.slice(); ring.push(ring[0]);
+    feats.push({ type: 'Feature', geometry: { type: 'Polygon', coordinates: [ring] }, properties: {} });
+  } else if (line.length >= 2) {
+    feats.push({ type: 'Feature', geometry: { type: 'LineString', coordinates: line }, properties: {} });
+  }
+  return { type: 'FeatureCollection', features: feats };
+}
+let measureHover = null;
+
+function refreshMeasureLayers() {
+  const src = map.getSource('measure');
+  if (src) src.setData(measureGeoJSON(true));
+  // update readout
+  let val = '—', sub = '';
+  if (measureMode === 'distance' && measurePts.length >= 1) {
+    const pts = measurePts.slice();
+    if (measureHover && !measureFinished) pts.push(measureHover);
+    const f = fmtDist(pathLength(pts)); val = f.big; sub = f.sub || (measurePts.length + ' points');
+  } else if (measureMode === 'area' && measurePts.length >= 2) {
+    const ring = measurePts.slice();
+    if (measureHover && !measureFinished) ring.push(measureHover);
+    if (ring.length >= 3) { const f = fmtArea(sphericalArea(ring)); val = f.big; sub = f.sub || (measurePts.length + ' points'); }
+  }
+  if (measurePts.length) {
+    $('meas-readout').hidden = false;
+    $('clear-measure').hidden = false;
+    $('meas-value').textContent = val;
+    $('meas-sub').textContent = sub;
+  }
+}
+
+function setupMeasure() {
+  map.addSource('measure', { type: 'geojson', data: measureGeoJSON(false) });
+  map.addLayer({ id: 'measure-fill', type: 'fill', source: 'measure',
+    filter: ['==', '$type', 'Polygon'], paint: { 'fill-color': '#4cc9f0', 'fill-opacity': 0.18 } });
+  map.addLayer({ id: 'measure-line', type: 'line', source: 'measure',
+    filter: ['in', '$type', 'LineString', 'Polygon'],
+    paint: { 'line-color': '#4cc9f0', 'line-width': 2.5, 'line-dasharray': [2, 1] } });
+  map.addLayer({ id: 'measure-verts', type: 'circle', source: 'measure',
+    filter: ['==', '$type', 'Point'],
+    paint: { 'circle-radius': 5, 'circle-color': '#fff', 'circle-stroke-width': 2.5, 'circle-stroke-color': '#4cc9f0' } });
+
+  // mode buttons
+  document.querySelectorAll('#measure-seg .seg-btn').forEach(b => b.addEventListener('click', () => {
+    const m = b.dataset.measure;
+    if (measureMode === m) { setMeasureMode(null); return; }   // toggle off
+    setMeasureMode(m);
+  }));
+  $('clear-measure').addEventListener('click', () => clearMeasure(true));
+
+  // map interactions
+  map.on('click', measureClick);
+  map.on('dblclick', measureDblClick);
+  map.on('mousemove', e => { if (measureMode && !measureFinished && measurePts.length) { measureHover = [e.lngLat.lng, e.lngLat.lat]; refreshMeasureLayers(); } });
+}
+
+function setMeasureMode(m) {
+  measureMode = m;
+  document.querySelectorAll('#measure-seg .seg-btn').forEach(b => b.classList.toggle('on', b.dataset.measure === m));
+  clearMeasure(false);
+  if (m) {
+    map.getCanvas().style.cursor = 'crosshair';
+    map.doubleClickZoom.disable();
+    $('meas-hint').textContent = m === 'distance'
+      ? 'Click to add points along a path. Double-click to finish.'
+      : 'Click to outline an area. Double-click to finish.';
+  } else {
+    map.getCanvas().style.cursor = '';
+    map.doubleClickZoom.enable();
+    $('meas-hint').textContent = 'Pick a mode, then click on the map to add points. Double-click to finish.';
+  }
+}
+
+function measureClick(e) {
+  if (!measureMode) return;
+  if (measureFinished) { // starting a fresh measurement
+    measurePts = []; measureFinished = false; measureHover = null;
+  }
+  measurePts.push([e.lngLat.lng, e.lngLat.lat]);
+  refreshMeasureLayers();
+}
+function measureDblClick(e) {
+  if (!measureMode || measurePts.length < 1) return;
+  e.preventDefault();
+  // a dblclick fires a click first; remove the duplicate last point if it coincides
+  measureHover = null;
+  measureFinished = true;
+  refreshMeasureLayers();
+}
+function clearMeasure(resetReadout) {
+  measurePts = []; measureFinished = false; measureHover = null;
+  const src = map.getSource('measure');
+  if (src) src.setData({ type: 'FeatureCollection', features: [] });
+  if (resetReadout) { $('meas-readout').hidden = true; $('clear-measure').hidden = true; $('meas-value').textContent = '—'; $('meas-sub').textContent = ''; }
 }
 
 function wireCompare() {
