@@ -44,6 +44,7 @@
     --t-ink:#e9eef2; --t-mut:#8a97a2; --t-dim:#5d6873;
     --t-line:rgba(255,255,255,.1); --t-line-str:rgba(255,255,255,.18);
     --t-lime:#b6f441; --t-lime-soft:rgba(182,244,65,.14); --t-lime-line:rgba(182,244,65,.4); --t-lime-ink:#0a0c0e; --t-year:#a4e034; --t-dot:#aeb8c2;
+    --zc-g-lime:0 0 12px rgba(182,244,65,.6); --zc-g-blue:0 0 9px rgba(179,212,240,.5); --zc-g-orange:0 0 8px rgba(255,138,76,.85);
     --t-blue:#b3d4f0; --t-blue-soft:rgba(179,212,240,.14); --t-blue-line:rgba(179,212,240,.4);
     --t-orange:#ff8a4c; --t-orange-soft:rgba(255,138,76,.14); --t-orange-line:rgba(255,138,76,.4);
     --t-sh:0 24px 50px -18px rgba(0,0,0,.55),0 2px 10px rgba(0,0,0,.3);
@@ -60,6 +61,7 @@
     --t-ink:#1b211d; --t-mut:#6b756c; --t-dim:#9aa39a;
     --t-line:#dde2da; --t-line-str:#c7cec2;
     --t-lime:#5f8f21; --t-lime-soft:#e3edd2; --t-lime-line:#b9d38c; --t-lime-ink:#ffffff; --t-year:#3f6b16; --t-dot:#5a6570;
+    --zc-g-lime:0 0 6px rgba(95,143,33,.3); --zc-g-blue:0 0 5px rgba(63,111,149,.25); --zc-g-orange:0 0 5px rgba(181,89,31,.3);
     --t-blue:#3f6f95; --t-blue-soft:#dfe9f0; --t-blue-line:#aac4d6;
     --t-orange:#b5591f; --t-orange-soft:#f3e2d2; --t-orange-line:#e0b78c;
     --t-sh:0 18px 38px -18px rgba(30,40,25,.22),0 2px 8px rgba(30,40,25,.08);
@@ -454,19 +456,37 @@
   /* ===== circular zoom cluster (bottom-right) ===== */
   .zoom-cluster{position:absolute;right:34px;bottom:70px;width:180px;height:180px;z-index:1000}
   .zc-ring{position:absolute;inset:0;border-radius:50%;border:1px dashed var(--t-line-str)}
-  .zc-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:80px;height:80px;border-radius:50%;
+  .zc-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:80px;height:80px;border-radius:50%;z-index:2;
     background:var(--t-panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--t-line);box-shadow:var(--t-sh);
     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
   .zc-center svg{width:18px;height:18px;stroke:var(--t-ink)}
   .zc-center span{font:600 9px 'JetBrains Mono',monospace;letter-spacing:.08em;color:var(--t-mut);white-space:nowrap}
   .zc-center span .zc-zpfx{color:var(--t-dim);margin-right:1px}
-  .zc-btn{position:absolute;width:44px;height:44px;border-radius:50%;border:1px solid var(--t-line);background:var(--t-panel);
+  .zc-btn{position:absolute;width:44px;height:44px;border-radius:50%;border:1px solid var(--t-line);background:var(--t-panel);z-index:3;
     backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;color:var(--t-ink);box-shadow:var(--t-sh);transition:.15s}
   .zc-btn svg{width:17px;height:17px}
   .zc-btn:hover{border-color:var(--t-lime-line);color:var(--t-lime);background:var(--t-lime-soft);box-shadow:var(--t-glow),var(--t-sh)}
   .zc-in{left:50%;top:0;transform:translate(-50%,-50%)}
   .zc-out{left:50%;top:100%;transform:translate(-50%,-50%)}
   .zc-help{left:100%;top:50%;transform:translate(-50%,-50%)}
+
+  /* ---- orbital "solar system" decoration (decorative only; buttons stay static & on top) ---- */
+  .zc-orbit-layer{position:absolute;inset:0;pointer-events:none;z-index:1}
+  .zc-orbit-layer .zc-orbit2{position:absolute;left:50%;top:50%;width:120px;height:120px;margin:-60px 0 0 -60px;border-radius:50%;border:1px dashed var(--t-line)}
+  .zc-orb{position:absolute;left:50%;top:50%;border-radius:50%}
+  .zc-orb-a{width:180px;height:180px;margin:-90px 0 0 -90px;animation:zc-spin 26s linear infinite}
+  .zc-orb-b{width:120px;height:120px;margin:-60px 0 0 -60px;animation:zc-spinr 15s linear infinite}
+  .zc-orb-c{width:150px;height:150px;margin:-75px 0 0 -75px;animation:zc-spinr 7s linear infinite}
+  .zc-body{position:absolute;top:0;left:50%;transform:translate(-50%,-50%)}
+  .zc-planet{border-radius:50%;display:block}
+  .zc-planet.lime{width:16px;height:16px;background:var(--t-lime);box-shadow:var(--zc-g-lime)}
+  .zc-planet.blue{width:11px;height:11px;background:var(--t-blue);box-shadow:var(--zc-g-blue)}
+  .zc-sat{position:absolute;left:50%;top:50%;width:30px;height:11px;margin:-5.5px 0 0 -15px;border:1.5px solid var(--t-lime-line);border-radius:50%;transform:rotate(-22deg)}
+  .zc-comet{width:5px;height:5px;border-radius:50%;background:var(--t-orange);box-shadow:var(--zc-g-orange)}
+  .zc-comet:after{content:"";position:absolute;left:50%;bottom:3px;width:2px;height:22px;transform:translateX(-50%);background:linear-gradient(to top,transparent,var(--t-orange));opacity:.7;border-radius:2px}
+  @keyframes zc-spin{to{transform:rotate(360deg)}}
+  @keyframes zc-spinr{to{transform:rotate(-360deg)}}
+  @media (prefers-reduced-motion:reduce){.zc-orb{animation:none}}
   @media (max-width:760px){ .zoom-cluster{right:12px;bottom:auto;top:70px;width:150px;height:150px} }
 
   #tour{position:fixed;inset:0;z-index:5500;display:none}
@@ -1110,6 +1130,12 @@
 
 <div class="zoom-cluster" id="zoom-cluster">
   <div class="zc-ring"></div>
+  <div class="zc-orbit-layer" aria-hidden="true">
+    <div class="zc-orbit2"></div>
+    <div class="zc-orb zc-orb-a"><span class="zc-body"><span class="zc-planet lime"></span><span class="zc-sat"></span></span></div>
+    <div class="zc-orb zc-orb-b"><span class="zc-body"><span class="zc-planet blue"></span></span></div>
+    <div class="zc-orb zc-orb-c"><span class="zc-body"><span class="zc-comet"></span></span></div>
+  </div>
   <div class="zc-center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg><span id="zc-zoom"><span class="zc-zpfx">Z</span> 7.2</span></div>
   <button class="zc-btn zc-in" id="zc-in" aria-label="Zoom in" title="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="11" cy="11" r="7"/><path d="M11 8v6M8 11h6M21 21l-4.3-4.3"/></svg></button>
   <button class="zc-btn zc-out" id="zc-out" aria-label="Zoom out" title="Zoom out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="11" cy="11" r="7"/><path d="M8 11h6M21 21l-4.3-4.3"/></svg></button>
