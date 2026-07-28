@@ -476,45 +476,53 @@
      content is moved in during later stages.
      ============================================================ */
   #mdp{position:absolute;top:14px;left:14px;bottom:14px;width:var(--md-panel-w);z-index:1200;
-    display:flex;flex-direction:column;background:var(--md-surface);
-    border:1px solid var(--md-rule-strong);box-shadow:0 18px 50px rgba(0,0,0,.55)}
-  #mdp.collapsed{transform:translateX(calc(-1 * (var(--md-panel-w) + 20px)));transition:transform .3s ease}
-  #mdp{transition:transform .3s ease}
+    display:flex;flex-direction:column;background:var(--t-panel);
+    backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
+    border:1px solid var(--t-line);border-radius:24px;box-shadow:var(--t-sh);overflow:hidden;transition:transform .3s ease}
+  #mdp.collapsed{transform:translateX(calc(-1 * (var(--md-panel-w) + 20px)))}
 
-  .mdp-head{display:flex;align-items:center;gap:var(--md-s2);padding:var(--md-s3) var(--md-s4);
-    border-bottom:2px solid var(--md-rule-strong)}
-  .mdp-mark{width:24px;height:24px;flex:none}
+  .mdp-head{display:flex;align-items:center;gap:var(--md-s2);padding:var(--md-s4) var(--md-s4) var(--md-s3);
+    border-bottom:1px solid var(--t-line)}
+  .mdp-mark{width:30px;height:30px;flex:none;border-radius:9px;background:var(--t-lime-soft);border:1px solid var(--t-lime-line);
+    padding:6px;box-sizing:border-box}
+  .mdp-mark path{stroke:var(--t-lime)}
   .mdp-brand{line-height:1;min-width:0;margin-right:auto}
-  .mdp-brand b{font-family:'Syne',sans-serif;font-weight:800;font-size:15px;letter-spacing:.02em;color:var(--md-ink);text-transform:uppercase;display:block}
-  .mdp-brand small{font:600 8px 'JetBrains Mono',monospace;letter-spacing:.18em;color:var(--md-dim);text-transform:uppercase;display:block;margin-top:5px}
-  .mdp-collapse{width:27px;height:27px;flex:none;border:1px solid var(--md-rule-strong);background:transparent;
-    color:var(--md-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
-  .mdp-collapse:hover{border-color:var(--md-accent);color:var(--md-accent)}
+  .mdp-brand b{font-family:'Syne',sans-serif;font-weight:800;font-size:15px;letter-spacing:.02em;color:var(--t-ink);text-transform:uppercase;display:block}
+  .mdp-brand small{font:600 8px 'JetBrains Mono',monospace;letter-spacing:.16em;color:var(--t-dim);text-transform:uppercase;display:block;margin-top:4px}
+  .mdp-collapse{width:28px;height:28px;flex:none;border:1px solid var(--t-line);border-radius:9px;background:transparent;
+    color:var(--t-mut);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:.15s}
+  .mdp-collapse:hover{border-color:var(--t-lime);color:var(--t-lime)}
   .mdp-collapse svg{width:15px;height:15px}
-
-  .mdp-welcome{padding:9px var(--md-s4);border-bottom:2px solid var(--md-rule-strong);border-left:3px solid var(--md-accent);
-    font:600 11.5px 'Space Grotesk',sans-serif;color:var(--md-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:var(--md-surface-2)}
-  .mdp-welcome b{color:var(--md-accent);font-weight:700}
-  .mdp-welcome[hidden]{display:none}
   .mdp-head .mdp-collapse{margin-left:var(--md-s2)}
 
+  .mdp-welcome{padding:9px var(--md-s4);border-bottom:1px solid var(--t-line);
+    font:400 11.5px 'Space Grotesk',sans-serif;color:var(--t-mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mdp-welcome b{color:var(--t-ink);font-weight:600}
+  .mdp-welcome[hidden]{display:none}
+
   .mdp-body{flex:1;display:flex;min-height:0}
-  .mdp-rail{width:var(--md-rail);flex:none;display:flex;flex-direction:column;
-    border-right:2px solid var(--md-rule-strong);background:var(--md-surface)}
-  .mdp-rail-btn{width:100%;height:var(--md-rail);border:0;background:transparent;color:var(--md-muted);cursor:pointer;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0;
-    border-bottom:1px solid var(--md-rule);transition:color .12s,background .12s}
-  .mdp-rail-btn svg{width:18px;height:18px}
-  .mdp-rail-btn span{font:600 7.5px 'JetBrains Mono',monospace;letter-spacing:.05em;text-transform:uppercase}
-  .mdp-rail-btn:hover{background:var(--md-accent-100);color:var(--md-ink)}
-  .mdp-rail-btn.on{color:var(--md-accent-ink);background:var(--md-accent)}
-  .mdp-rail-btn[data-tab="measure"].on{background:var(--md-measure);color:#160a04}
-  .mdp-rail-spacer{flex:1;border-bottom:1px solid var(--md-rule)}
+  .mdp-rail{width:64px;flex:none;display:flex;flex-direction:column;align-items:center;gap:18px;
+    padding:20px 0;border-right:1px solid var(--t-line)}
+  .mdp-rail-btn{width:auto;height:auto;border:0;background:transparent;color:var(--t-mut);cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:5px;padding:0;transition:color .15s}
+  .mdp-rail-btn svg{width:17px;height:17px}
+  .mdp-rail-ic{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+    border:1px solid transparent;transition:.15s}
+  .mdp-rail-btn span{font:600 7.5px 'JetBrains Mono',monospace;letter-spacing:.05em;text-transform:uppercase;color:var(--t-dim);transition:color .15s}
+  .mdp-rail-btn:hover .mdp-rail-ic{background:var(--t-lime-soft);color:var(--t-ink)}
+  .mdp-rail-btn:hover span{color:var(--t-mut)}
+  .mdp-rail-btn.on{color:var(--t-lime)}
+  .mdp-rail-btn.on .mdp-rail-ic{background:var(--t-lime-soft);border-color:var(--t-lime-line);color:var(--t-lime);box-shadow:var(--t-glow)}
+  .mdp-rail-btn.on span{color:var(--t-lime)}
+  .mdp-rail-btn[data-tab="measure"].on{color:var(--t-orange)}
+  .mdp-rail-btn[data-tab="measure"].on .mdp-rail-ic{background:var(--t-orange-soft);border-color:var(--t-orange-line);color:var(--t-orange);box-shadow:none}
+  .mdp-rail-btn[data-tab="measure"].on span{color:var(--t-orange)}
+  .mdp-rail-spacer{flex:1}
 
   .mdp-sections{flex:1;overflow-y:auto;overflow-x:hidden;min-width:0;
-    scrollbar-width:thin;scrollbar-color:#2a333b transparent}
+    scrollbar-width:thin;scrollbar-color:var(--t-line-str) transparent}
   .mdp-sections::-webkit-scrollbar{width:8px}
-  .mdp-sections::-webkit-scrollbar-thumb{background:#2a333b}
+  .mdp-sections::-webkit-scrollbar-thumb{background:var(--t-line-str);border-radius:4px}
   .mdp-section{display:none;padding:var(--md-s4)}
   .mdp-section.on{display:block}
 
@@ -697,10 +705,10 @@
   <div class="mdp-welcome" id="mdp-welcome" hidden>Welcome, <b>Anonymous User</b></div>
   <div class="mdp-body">
     <div class="mdp-rail" id="mdp-rail">
-      <button class="mdp-rail-btn on" data-tab="imagery"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18"/><path d="M3 15l5-4 4 3 4-5 5 6"/><circle cx="8.5" cy="8.5" r="1.5"/></svg><span>Image</span></button>
-      <button class="mdp-rail-btn" data-tab="vectors"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg><span>Vector</span></button>
-      <button class="mdp-rail-btn" data-tab="measure"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v6H3zM3 15h18v6H3z"/></svg><span>Measure</span></button>
-      <button class="mdp-rail-btn" data-tab="view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg><span>View</span></button>
+      <button class="mdp-rail-btn on" data-tab="imagery"><span class="mdp-rail-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18"/><path d="M3 15l5-4 4 3 4-5 5 6"/><circle cx="8.5" cy="8.5" r="1.5"/></svg></span><span>Image</span></button>
+      <button class="mdp-rail-btn" data-tab="vectors"><span class="mdp-rail-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg></span><span>Vector</span></button>
+      <button class="mdp-rail-btn" data-tab="measure"><span class="mdp-rail-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v6H3zM3 15h18v6H3z"/></svg></span><span>Measure</span></button>
+      <button class="mdp-rail-btn" data-tab="view"><span class="mdp-rail-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span><span>View</span></button>
     </div>
     <div class="mdp-sections" id="mdp-sections">
       <div class="mdp-section on" data-tab="imagery">
