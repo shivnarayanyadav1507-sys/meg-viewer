@@ -1179,8 +1179,18 @@ const modeLabel = () => (mode === 'sat' ? 'RGB' : 'NDVI');
 
 const $ = id => document.getElementById(id);
 const statusEl = $('status');
-const setStatus = (t, cls = '') => { statusEl.textContent = t; statusEl.className = 'status ' + cls; };
-const setVec = (t, cls = '') => { $('vec-status').textContent = t; $('vec-status').className = 'vec-status ' + cls; };
+const setStatus = (t, cls = '') => { if (!statusEl) return; statusEl.textContent = t; statusEl.className = 'status ' + cls; };
+const setVec = (t, cls = '') => { const el = $('vec-status'); if (!el) return; el.textContent = t; el.className = 'vec-status ' + cls; };
+
+// Global safety net: surface async failures instead of losing them silently.
+window.addEventListener('unhandledrejection', ev => {
+  console.error('Unhandled promise rejection:', ev.reason);
+});
+window.addEventListener('error', ev => {
+  // ignore benign ResizeObserver noise some browsers emit
+  if (ev.message && ev.message.includes('ResizeObserver')) return;
+  console.error('Uncaught error:', ev.error || ev.message);
+});
 
 // Esri Dark Gray Canvas: a brighter charcoal dark theme with strong contrast.
 // Two layers: the base (land/water/roads) + a reference layer for crisp labels on top.
@@ -1239,7 +1249,19 @@ map.addControl(new maplibregl.ScaleControl({ maxWidth: 110, unit: 'metric' }), '
 map.addControl(new maplibregl.AttributionControl({ compact: true, customAttribution: 'Imagery: Sentinel-2 &amp; Landsat (Google Earth Engine)' }), 'top-right');
 setStatus('Loading basemap…', 'load');
 
+// C2 guard: if the basemap style never loads (CDN down / offline / blocked),
+// surface it instead of leaving a dead page with no UI.
+let _mapLoaded = false;
+const _loadTimeout = setTimeout(() => {
+  if (!_mapLoaded) {
+    console.error('Basemap failed to load within timeout.');
+    setStatus('Map failed to load — check your connection and refresh', 'err');
+  }
+}, 15000);
+
 map.on('load', () => {
+  _mapLoaded = true;
+  clearTimeout(_loadTimeout);
   try { map.setProjection({ type: 'globe' }); } catch (e) { console.warn('globe unsupported', e); }
 
   let firstSymbol;
@@ -1695,6 +1717,10 @@ async function rasterizeGeoTIFF(file) {
   const ow = Math.max(1, Math.round(width * scale)), oh = Math.max(1, Math.round(height * scale));
   const rgba = await image.readRasters({ width: ow, height: oh, interleave: true });
   const samples = image.getSamplesPerPixel();
+  // Real nodata value if the file declares one; otherwise no nodata (don't assume 0).
+  let nodata = null;
+  try { const nd = image.getGDALNoData && image.getGDALNoData(); if (nd !== null && nd !== undefined && isFinite(nd)) nodata = nd; } catch (e) {}
+  const isNodata = v => !isFinite(v) || (nodata !== null && v === nodata);
   const canvas = document.createElement('canvas');
   canvas.width = ow; canvas.height = oh;
   const ctx = canvas.getContext('2d');
@@ -1704,7 +1730,7 @@ async function rasterizeGeoTIFF(file) {
   // find min/max for single-band (e.g. DEM) to stretch to greyscale
   let mn = Infinity, mx = -Infinity;
   if (samples === 1) {
-    for (let i = 0; i < rgba.length; i++) { const v = rgba[i]; if (v === 0 || !isFinite(v)) continue; if (v < mn) mn = v; if (v > mx) mx = v; }
+    for (let i = 0; i < rgba.length; i++) { const v = rgba[i]; if (isNodata(v)) continue; if (v < mn) mn = v; if (v > mx) mx = v; }
     if (!isFinite(mn) || mn === mx) { mn = 0; mx = 255; }
   }
   const px = ow * oh;
@@ -1713,7 +1739,7 @@ async function rasterizeGeoTIFF(file) {
       const v = rgba[i];
       const t = Math.max(0, Math.min(255, Math.round(((v - mn) / (mx - mn)) * 255)));
       out[i * 4] = t; out[i * 4 + 1] = t; out[i * 4 + 2] = t;
-      out[i * 4 + 3] = (v === 0 || !isFinite(v)) ? 0 : 255;
+      out[i * 4 + 3] = isNodata(v) ? 0 : 255;
     } else {
       out[i * 4] = rgba[i * samples];
       out[i * 4 + 1] = rgba[i * samples + (samples > 1 ? 1 : 0)];
