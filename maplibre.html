@@ -260,7 +260,7 @@
   .tool-menu .basemap-opt.on{color:var(--accent)}
   .tool-menu .basemap-opt.on::before{content:'';position:absolute;left:14px;top:50%;transform:translateY(-50%);width:6px;height:6px;border-radius:50%;background:var(--accent)}
 
-  .coord-readout{position:absolute;left:10px;bottom:10px;z-index:900;background:var(--t-panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--t-line);
+  .coord-readout{position:absolute;right:14px;top:150px;z-index:900;background:var(--t-panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--t-line);
     border-radius:12px;padding:8px 13px;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--t-ink);
     box-shadow:var(--t-sh);letter-spacing:.03em;pointer-events:none;display:flex;align-items:center;gap:9px}
   .coord-readout::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--t-lime);box-shadow:0 0 8px var(--t-lime);flex:none}
@@ -442,11 +442,23 @@
   @media (max-width:560px){ .intro-h{font-size:22px} }
 
   /* ===== Help walkthrough (guided tour) ===== */
-  .help-btn{position:absolute;top:14px;right:56px;z-index:1000;width:34px;height:34px;border-radius:11px;
-    background:var(--t-panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--t-line);color:var(--t-mut);cursor:pointer;
-    display:flex;align-items:center;justify-content:center;padding:0;box-shadow:var(--t-sh);font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px}
-  .help-btn:hover{border-color:var(--t-lime);color:var(--t-lime);background:var(--t-lime-soft)}
-  @media (max-width:760px){ .help-btn{top:auto;bottom:auto;right:8px;top:52px} }
+  /* ===== circular zoom cluster (bottom-right) ===== */
+  .zoom-cluster{position:absolute;right:34px;bottom:34px;width:180px;height:180px;z-index:1000}
+  .zc-ring{position:absolute;inset:0;border-radius:50%;border:1px dashed var(--t-line-str)}
+  .zc-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:80px;height:80px;border-radius:50%;
+    background:var(--t-panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--t-line);box-shadow:var(--t-sh);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+  .zc-center svg{width:18px;height:18px;stroke:var(--t-ink)}
+  .zc-center span{font:600 9px 'JetBrains Mono',monospace;color:var(--t-mut)}
+  .zc-btn{position:absolute;width:44px;height:44px;border-radius:50%;border:1px solid var(--t-line);background:var(--t-panel);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;color:var(--t-ink);box-shadow:var(--t-sh);transition:.15s}
+  .zc-btn svg{width:17px;height:17px}
+  .zc-btn:hover{border-color:var(--t-lime);color:var(--t-lime)}
+  .zc-in{left:50%;top:0;transform:translate(-50%,-50%);background:var(--t-lime-soft);border-color:var(--t-lime-line);color:var(--t-lime);box-shadow:var(--t-glow),var(--t-sh)}
+  .zc-in:hover{filter:brightness(1.05)}
+  .zc-out{left:50%;top:100%;transform:translate(-50%,-50%)}
+  .zc-help{left:100%;top:50%;transform:translate(-50%,-50%);color:var(--t-mut)}
+  @media (max-width:760px){ .zoom-cluster{right:12px;bottom:auto;top:70px;width:150px;height:150px} }
 
   #tour{position:fixed;inset:0;z-index:5500;display:none}
   #tour.on{display:block}
@@ -480,8 +492,15 @@
   #mdp{position:absolute;top:14px;left:14px;bottom:14px;width:var(--md-panel-w);z-index:1200;
     display:flex;flex-direction:column;background:var(--t-panel);
     backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
-    border:1px solid var(--t-line);border-radius:24px;box-shadow:var(--t-sh);overflow:hidden;transition:transform .3s ease}
-  #mdp.collapsed{transform:translateX(calc(-1 * (var(--md-panel-w) + 20px)))}
+    border:1px solid var(--t-line);border-radius:24px;box-shadow:var(--t-sh);overflow:hidden;transition:width .3s ease,transform .3s ease}
+  /* collapsed = shrink to the icon rail only (still reopenable) */
+  #mdp.collapsed{width:64px}
+  #mdp.collapsed .mdp-brand,#mdp.collapsed .mdp-welcome,#mdp.collapsed .mdp-sections,#mdp.collapsed .mdp-timeline{display:none}
+  #mdp.collapsed .mdp-head{border-bottom:1px solid var(--t-line);padding:14px 0;justify-content:center}
+  #mdp.collapsed .mdp-mark{display:none}
+  #mdp.collapsed .mdp-body{flex:1}
+  #mdp.collapsed .mdp-rail{border-right:0;width:100%}
+  #mdp.collapsed .mdp-collapse svg{transform:rotate(180deg)}
 
   .mdp-head{display:flex;align-items:center;gap:var(--md-s2);padding:var(--md-s4) var(--md-s4) var(--md-s3);
     border-bottom:1px solid var(--t-line)}
@@ -515,6 +534,7 @@
   .mdp-rail-btn:hover span{color:var(--t-mut)}
   .mdp-rail-btn.on{color:var(--t-lime)}
   .mdp-rail-btn.on .mdp-rail-ic{background:var(--t-lime-soft);border-color:var(--t-lime-line);color:var(--t-lime);box-shadow:var(--t-glow)}
+  [data-theme="light"] .mdp-rail-btn.on .mdp-rail-ic{box-shadow:0 4px 12px -4px rgba(95,143,33,.35)}
   .mdp-rail-btn.on span{color:var(--t-lime)}
   .mdp-rail-btn[data-tab="measure"].on{color:var(--t-orange)}
   .mdp-rail-btn[data-tab="measure"].on .mdp-rail-ic{background:var(--t-orange-soft);border-color:var(--t-orange-line);color:var(--t-orange);box-shadow:none}
@@ -532,8 +552,8 @@
 
   /* Stage 3: new panel revealed; old left-stack hidden. */
   .left-stack{display:none !important}
-  /* timeline spans full width when the panel is collapsed */
-  #mdp.collapsed ~ .timeline{left:14px;right:14px;width:min(620px,calc(100vw - 28px))}
+  /* timeline shifts to clear the collapsed 64px rail */
+  #mdp.collapsed ~ .timeline{left:92px;right:14px;width:min(620px,calc(100vw - 106px))}
 
   /* Stage 3 fit-up: docked timeline + view-tool rows inside the panel.
      (Full Modernist restyle comes in Stage 4.) */
@@ -592,8 +612,8 @@
   #mdp .mdp-section > .mdp-eyebrow{margin:0}
   #mdp .mdp-section > .mdp-eyebrow, #mdp .mdp-section > .mdp-title{padding-left:2px}
   /* each group is a rounded glassy sub-card */
-  #mdp .mdp-grp{background:var(--t-panel2);border:1px solid var(--t-line);border-radius:16px;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.04);padding:16px 18px;margin-top:12px}
+  #mdp .mdp-grp{background:var(--t-panel2);border:1px solid var(--t-line);border-radius:16px;padding:16px 18px;margin-top:12px}
+  [data-theme="dark"] #mdp .mdp-grp{box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
   #mdp .mdp-grp:first-of-type{margin-top:12px}
   /* the very first thing (section eyebrow+title) sits above the cards, not in one */
   #mdp .mdp-section > .mdp-eyebrow:first-child{margin-top:2px}
@@ -715,6 +735,39 @@
   #timeline .tl-years button.on,#timeline .tl-years .on{color:var(--t-lime);font-weight:700}
   #timeline .tl-year-mono,#timeline .tl-top,#timeline .tl-bottom{color:var(--t-mut)}
   #timeline .tl-snap,#timeline .tl-hint,#timeline .tl-speed{color:var(--t-mut)}
+
+  /* ---- curved year track ---- */
+  .tl-curve-wrap{position:relative;height:76px;margin:2px 0 4px}
+  .tl-curve{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+  .tl-curve-base{stroke:var(--t-line)}
+  .tl-curve-fill{stroke:var(--t-lime);transition:stroke-dasharray .15s linear}
+  .tl-dot{fill:var(--t-dim);transition:.15s}
+  .tl-dot.on{fill:var(--t-lime);r:8;stroke:var(--t-bg);stroke-width:3}
+  .tl-dot-year{fill:var(--t-dim);font:400 10px 'JetBrains Mono',monospace}
+  .tl-dot-label{fill:var(--t-lime);font:700 13px 'JetBrains Mono',monospace}
+  /* scrub sits invisibly over the curve for dragging */
+  .tl-curve-wrap #scrub{position:absolute;left:3%;right:3%;top:50%;transform:translateY(-50%);width:94%;height:40px;
+    -webkit-appearance:none;appearance:none;background:transparent;border:none;outline:none;margin:0;cursor:pointer}
+  .tl-curve-wrap #scrub::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:transparent;cursor:pointer}
+  .tl-curve-wrap #scrub::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:transparent;border:none;cursor:pointer}
+
+  /* ---- COMPARE pill in the controls row ---- */
+  #timeline .tl-compare-pill{display:flex;align-items:center;gap:6px;height:30px;padding:0 13px;border-radius:15px;
+    background:var(--t-blue-soft);border:1px solid var(--t-blue-line);color:var(--t-blue);cursor:pointer;margin-left:4px;transition:.15s}
+  #timeline .tl-compare-pill svg{width:13px;height:13px;fill:none;stroke:currentColor}
+  #timeline .tl-compare-pill span{font:600 9px 'JetBrains Mono',monospace;letter-spacing:.06em}
+  #timeline .tl-compare-pill.on{background:var(--t-blue);color:var(--t-lime-ink)}
+
+  /* ---- A / B compare row ---- */
+  #timeline .tl-compare-row{display:flex;align-items:center;gap:10px;padding-top:4px}
+  #timeline .cmp-eye{color:var(--t-dim)}
+  #timeline .cmp-pill{display:flex;align-items:center;gap:7px;padding:6px 11px;border-radius:10px}
+  #timeline .cmp-pill.a{background:var(--t-lime-soft);border:1px solid var(--t-lime-line)}
+  #timeline .cmp-pill.b{background:var(--t-blue-soft);border:1px solid var(--t-blue-line)}
+  #timeline .cmp-pill .cl{font:600 9px 'JetBrains Mono',monospace}
+  #timeline .cmp-pill.a .cl{color:var(--t-lime)} #timeline .cmp-pill.b .cl{color:var(--t-blue)}
+  #timeline .cmp-pill select{background:transparent;border:none;color:var(--t-ink);font:700 12px 'JetBrains Mono',monospace;cursor:pointer;outline:none}
+  #timeline .cmp-arrow{width:13px;height:13px;color:var(--t-mut)}
 </style>
 </head>
 <body>
@@ -963,20 +1016,27 @@
       <button class="tl-btn" id="prev" aria-label="Previous year"><svg viewBox="0 0 24 24"><path d="M15 5l-8 7 8 7z"/></svg></button>
       <button class="tl-btn" id="play" aria-label="Play"><svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z"/></svg></button>
       <button class="tl-btn" id="next" aria-label="Next year"><svg viewBox="0 0 24 24"><path d="M9 5l8 7-8 7z"/></svg></button>
-      <button class="tl-btn tl-compare" id="compare-toggle" aria-label="Compare two years" title="Compare two years"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 8l-3 4 3 4M19 8l3 4-3 4"/></svg></button>
+      <button class="tl-compare-pill" id="compare-toggle" aria-label="Compare two years" title="Compare two years"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18"/><path d="M7 8l-4 4 4 4M17 8l4 4-4 4"/></svg><span>COMPARE</span></button>
     </div>
   </div>
+
+  <!-- curved year track -->
+  <div class="tl-curve-wrap">
+    <svg class="tl-curve" viewBox="0 0 560 96" preserveAspectRatio="none">
+      <path class="tl-curve-base" d="M20 78 Q280 8 540 78" fill="none" stroke-width="3"/>
+      <path class="tl-curve-fill" id="tl-curve-fill" d="M20 78 Q280 8 540 78" fill="none" stroke-width="3"/>
+      <g id="tl-curve-dots"></g>
+    </svg>
+    <input type="range" id="scrub" min="0" max="6" step="0.01" value="3" aria-label="Scrub years" />
+  </div>
+
   <div class="tl-compare-row" id="compare-row" hidden>
-    <span class="cmp-lbl a">A</span>
-    <select id="cmp-a"></select>
-    <span class="cmp-vs">vs</span>
-    <select id="cmp-b"></select>
-    <span class="cmp-lbl b">B</span>
+    <span class="eye cmp-eye">Compare</span>
+    <span class="cmp-pill a"><span class="cl">A</span><select id="cmp-a"></select></span>
+    <svg class="cmp-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    <span class="cmp-pill b"><span class="cl">B</span><select id="cmp-b"></select></span>
   </div>
-  <input type="range" id="scrub" min="0" max="6" step="0.01" value="3" />
-  <div class="tl-years" id="tl-years">
-    <button data-i="0">2015</button><button data-i="1">2016</button><button data-i="2">2017</button><button data-i="3">2018</button><button data-i="4">2019</button><button data-i="5">2020</button><button data-i="6">2025</button>
-  </div>
+
   <div class="tl-bottom">
     <label class="tl-snap"><input type="checkbox" id="snap" /><span class="sw"></span> Snap to year</label>
     <span class="tl-hint">drag to fade between years</span>
@@ -1003,7 +1063,13 @@
   <span><span class="cr-lab">z</span> <span id="cr-zoom">—</span></span>
 </div>
 
-<button class="help-btn" id="help-btn" aria-label="How to use this viewer" title="How to use this viewer">?</button>
+<div class="zoom-cluster" id="zoom-cluster">
+  <div class="zc-ring"></div>
+  <div class="zc-center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg><span id="zc-zoom">Z 7.2</span></div>
+  <button class="zc-btn zc-in" id="zc-in" aria-label="Zoom in" title="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="11" cy="11" r="7"/><path d="M11 8v6M8 11h6M21 21l-4.3-4.3"/></svg></button>
+  <button class="zc-btn zc-out" id="zc-out" aria-label="Zoom out" title="Zoom out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="11" cy="11" r="7"/><path d="M8 11h6M21 21l-4.3-4.3"/></svg></button>
+  <button class="zc-btn zc-help" id="help-btn" aria-label="How to use this viewer" title="How to use this viewer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 4.9.8c0 1.7-2.4 1.9-2.4 3.4"/><path d="M12 17h.01"/></svg></button>
+</div>
 
 <div id="tour" aria-label="Guided tour">
   <div class="tour-veil" id="tour-veil"></div>
@@ -1124,7 +1190,6 @@ const map = new maplibregl.Map({
   preserveDrawingBuffer: true,
   attributionControl: false
 });
-map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
 map.addControl(new maplibregl.ScaleControl({ maxWidth: 120, unit: 'metric' }), 'bottom-left');
 map.addControl(new maplibregl.AttributionControl({ compact: true, customAttribution: 'Imagery: Sentinel-2 &amp; Landsat (Google Earth Engine)' }), 'bottom-right');
 setStatus('Loading basemap…', 'load');
@@ -1161,6 +1226,7 @@ map.on('load', () => {
   wireCompare();
   setupMeasure();
   wireViewTools();
+  wireZoomCluster();
   wirePanelCollapse();
   wireMdpPanel();
   render();
@@ -1263,12 +1329,66 @@ function render() {
   $('ro-mode').textContent = modeLabel();
   $('ro-fade').innerHTML = (frac > 0.02 && frac < 0.98 && hi !== lo)
     ? (YEARS[lo] + ' <b>⇄</b> ' + YEARS[hi] + ' · ' + Math.round(frac * 100) + '%') : '';
-  document.querySelectorAll('#tl-years button').forEach(b => b.classList.toggle('on', +b.dataset.i === near));
+  updateCurve(pos, near);
   $('legend').hidden = (mode !== 'ndvi');
-  const pct = (pos / (N - 1)) * 100;
-  $('scrub').style.background = 'linear-gradient(90deg, var(--t-lime) ' + pct + '%, var(--t-track) ' + pct + '%)';
   if (map.isSourceLoaded && map.isSourceLoaded(loId)) setStatus(YEARS[near] + ' · ' + modeLabel(), 'ok');
   else setStatus('Loading ' + YEARS[near] + '…', 'load');
+}
+// ---- curved year track geometry (matches design: M20 78 Q280 8 540 78) ----
+function curvePoint(t) {
+  // quadratic bezier P0(20,78) P1(280,8) P2(540,78), t in [0,1]
+  const mt = 1 - t;
+  const x = mt*mt*20 + 2*mt*t*280 + t*t*540;
+  const y = mt*mt*78 + 2*mt*t*8 + t*t*78;
+  return { x, y };
+}
+function buildCurveDots() {
+  const g = document.getElementById('tl-curve-dots');
+  if (!g) return;
+  const N7 = YEARS.length;
+  const NS = 'http://www.w3.org/2000/svg';
+  g.innerHTML = '';
+  YEARS.forEach((yr, i) => {
+    const t = i / (N7 - 1);
+    const p = curvePoint(t);
+    const dot = document.createElementNS(NS, 'circle');
+    dot.setAttribute('class', 'tl-dot');
+    dot.setAttribute('cx', p.x); dot.setAttribute('cy', p.y); dot.setAttribute('r', 4);
+    dot.dataset.i = i;
+    dot.style.cursor = 'pointer';
+    dot.addEventListener('click', () => setPos(i));
+    g.appendChild(dot);
+    const txt = document.createElementNS(NS, 'text');
+    txt.setAttribute('class', 'tl-dot-year');
+    txt.setAttribute('x', p.x); txt.setAttribute('y', p.y + 18);
+    txt.setAttribute('text-anchor', 'middle');
+    txt.textContent = "'" + String(yr).slice(2);
+    g.appendChild(txt);
+  });
+  const lbl = document.createElementNS(NS, 'text');
+  lbl.setAttribute('id', 'tl-dot-label');
+  lbl.setAttribute('class', 'tl-dot-label');
+  lbl.setAttribute('text-anchor', 'middle');
+  g.appendChild(lbl);
+}
+
+function updateCurve(pos, near) {
+  const N7 = YEARS.length;
+  const fill = document.getElementById('tl-curve-fill');
+  if (fill) {
+    const t = pos / (N7 - 1);
+    const total = fill.getTotalLength ? fill.getTotalLength() : 560;
+    fill.style.strokeDasharray = (total * t) + ' ' + total;
+  }
+  document.querySelectorAll('#tl-curve-dots .tl-dot').forEach((d, i) => {
+    d.classList.toggle('on', i === near);
+  });
+  const lbl = document.getElementById('tl-dot-label');
+  if (lbl) {
+    const p = curvePoint(pos / (N7 - 1));
+    lbl.setAttribute('x', p.x); lbl.setAttribute('y', p.y - 16);
+    lbl.textContent = YEARS[near];
+  }
 }
 
 function setPos(p) { pos = Math.max(0, Math.min(N - 1, p)); $('scrub').value = pos; render(); }
@@ -1661,6 +1781,18 @@ function wirePanelCollapse() {
   }
 }
 
+// ---------- circular zoom cluster ----------
+function wireZoomCluster() {
+  const zin = document.getElementById('zc-in');
+  const zout = document.getElementById('zc-out');
+  const zlab = document.getElementById('zc-zoom');
+  if (zin) zin.addEventListener('click', () => map.zoomIn({ duration: 300 }));
+  if (zout) zout.addEventListener('click', () => map.zoomOut({ duration: 300 }));
+  const updateZoom = () => { if (zlab) zlab.textContent = 'Z ' + map.getZoom().toFixed(1); };
+  map.on('zoom', updateZoom);
+  updateZoom();
+}
+
 function wireViewTools() {
   // theme toggle (light/dark)
   const applyTheme = (t) => {
@@ -1922,7 +2054,7 @@ function wireControls() {
   $('prev').addEventListener('click', () => step(-1));
   $('next').addEventListener('click', () => step(1));
   $('play').addEventListener('click', togglePlay);
-  document.querySelectorAll('#tl-years button').forEach(b => b.addEventListener('click', () => setPos(+b.dataset.i)));
+  buildCurveDots();
   document.querySelectorAll('#mode-seg .seg-btn').forEach(b => b.addEventListener('click', () => {
     mode = b.dataset.mode;
     document.querySelectorAll('#mode-seg .seg-btn').forEach(x => x.classList.toggle('on', x === b));
