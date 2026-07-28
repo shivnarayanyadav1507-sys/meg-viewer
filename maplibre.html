@@ -56,7 +56,7 @@
   /* LIGHT theme */
   [data-theme="light"]{
     --t-bg:#eef1ec; --t-bg-grad:linear-gradient(160deg,#f1f4ec 0%,#eef1ec 45%,#e8ece4 100%);
-    --t-panel:rgba(251,251,250,.55); --t-panel2:#f1f3ee; --t-panel-solid:#fbfbfa;
+    --t-panel:rgba(251,251,250,.92); --t-panel2:#f1f3ee; --t-panel-solid:#fbfbfa;
     --t-ink:#1b211d; --t-mut:#6b756c; --t-dim:#9aa39a;
     --t-line:#dde2da; --t-line-str:#c7cec2;
     --t-lime:#5f8f21; --t-lime-soft:#e3edd2; --t-lime-line:#b9d38c; --t-lime-ink:#ffffff;
@@ -65,7 +65,7 @@
     --t-sh:0 18px 38px -18px rgba(30,40,25,.22),0 2px 8px rgba(30,40,25,.08);
     --t-glow:none;
     --t-track:rgba(0,0,0,.06);
-    --t-card-bg:rgba(255,255,255,.62); --t-card-line:rgba(255,255,255,.7);
+    --t-card-bg:rgba(255,255,255,.62); --t-card-line:var(--t-line);
     --t-card-sh:inset 0 1px 0 rgba(255,255,255,.6),0 6px 16px -8px rgba(30,40,25,.15);
     --t-thumb:#fff; --t-thumb-sh:0 3px 8px rgba(30,40,25,.25);
   }
@@ -267,9 +267,10 @@
   .tool-menu .basemap-opt.on::before{content:'';position:absolute;left:14px;top:50%;transform:translateY(-50%);width:6px;height:6px;border-radius:50%;background:var(--accent)}
 
   .coord-readout{position:absolute;right:14px;top:14px;z-index:900;background:var(--t-panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--t-line);
-    border-radius:12px;padding:8px 13px;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--t-ink);
-    box-shadow:var(--t-sh);letter-spacing:.03em;pointer-events:none;display:flex;align-items:center;gap:9px}
+    border-radius:12px;padding:9px 14px;font:500 11px 'JetBrains Mono',monospace;color:var(--t-ink);
+    box-shadow:var(--t-sh);letter-spacing:.03em;pointer-events:none;display:flex;align-items:center;gap:8px}
   .coord-readout::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--t-lime);box-shadow:0 0 8px var(--t-lime);flex:none}
+  .coord-readout .cr-sep{color:var(--t-dim)}
   .coord-readout .cr-lab{color:var(--t-dim)}
   /* MapLibre attribution + scale — glassy themed */
   .maplibregl-ctrl-attrib{background:var(--t-panel)!important;backdrop-filter:blur(10px)!important;color:var(--t-dim)!important;border-radius:10px!important;font-family:'JetBrains Mono',monospace!important;font-size:9px!important}
@@ -455,7 +456,8 @@
     background:var(--t-panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--t-line);box-shadow:var(--t-sh);
     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
   .zc-center svg{width:18px;height:18px;stroke:var(--t-ink)}
-  .zc-center span{font:600 9px 'JetBrains Mono',monospace;color:var(--t-mut)}
+  .zc-center span{font:600 9px 'JetBrains Mono',monospace;letter-spacing:.08em;color:var(--t-mut);white-space:nowrap}
+  .zc-center span .zc-zpfx{color:var(--t-dim);margin-right:1px}
   .zc-btn{position:absolute;width:44px;height:44px;border-radius:50%;border:1px solid var(--t-line);background:var(--t-panel);
     backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;color:var(--t-ink);box-shadow:var(--t-sh);transition:.15s}
   .zc-btn svg{width:17px;height:17px}
@@ -542,6 +544,13 @@
   .mdp-rail-btn.on .mdp-rail-ic{background:var(--t-lime-soft);border-color:var(--t-lime-line);color:var(--t-lime);box-shadow:var(--t-glow)}
   [data-theme="light"] .mdp-rail-btn.on .mdp-rail-ic{box-shadow:0 4px 12px -4px rgba(95,143,33,.35)}
   .mdp-rail-btn.on span{color:var(--t-lime)}
+  /* light theme: glass panel over the map washes out --t-mut/--t-dim grays,
+     so darken inactive rail icons/labels for legibility.
+     NOTE: .mdp-rail-ic is itself a <span>, so exclude it from the label rule. */
+  [data-theme="light"] .mdp-rail-btn:not(.on){color:var(--t-ink)}
+  [data-theme="light"] .mdp-rail-btn:not(.on) .mdp-rail-ic{color:var(--t-ink)}
+  [data-theme="light"] .mdp-rail-btn:not(.on) > span:not(.mdp-rail-ic){color:var(--t-mut)}
+  [data-theme="light"] .mdp-rail-btn:hover,[data-theme="light"] .mdp-rail-btn:hover .mdp-rail-ic{color:var(--t-lime)}
   .mdp-rail-btn[data-tab="measure"].on{color:var(--t-orange)}
   .mdp-rail-btn[data-tab="measure"].on .mdp-rail-ic{background:var(--t-orange-soft);border-color:var(--t-orange-line);color:var(--t-orange);box-shadow:none}
   .mdp-rail-btn[data-tab="measure"].on span{color:var(--t-orange)}
@@ -690,8 +699,8 @@
   }
 
   /* ---- floating timeline: bare/transparent (design ref) — no card, minimal blur for legibility over the map ---- */
-  #timeline{border:0 !important;background:transparent !important;box-shadow:none !important;
-    backdrop-filter:blur(3px) !important;-webkit-backdrop-filter:blur(3px) !important;padding:8px 12px !important}
+  #timeline{border:0 !important;background:transparent !important;box-shadow:none !important;border-radius:22px !important;
+    backdrop-filter:blur(3px) !important;-webkit-backdrop-filter:blur(3px) !important;padding:10px 16px !important}
   #timeline .tl-year{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--t-lime);letter-spacing:.01em;text-shadow:0 0 20px var(--t-lime-soft)}
   #timeline .tl-badge{border-radius:6px;background:var(--t-lime-soft);border:1px solid var(--t-lime-line);color:var(--t-lime);font-weight:600;padding:3px 7px}
   /* round playback buttons */
@@ -714,7 +723,17 @@
   #timeline .tl-years button{color:var(--t-dim)}
   #timeline .tl-years button.on,#timeline .tl-years .on{color:var(--t-lime);font-weight:700}
   #timeline .tl-year-mono,#timeline .tl-top,#timeline .tl-bottom{color:var(--t-mut)}
-  #timeline .tl-snap,#timeline .tl-hint,#timeline .tl-speed{color:var(--t-mut)}
+  #timeline .tl-snap,#timeline .tl-speed{color:var(--t-ink)}
+  #timeline .tl-hint{color:var(--t-mut)}
+  /* subtle shadow keeps timeline text readable over varied map terrain */
+  #timeline .tl-year,#timeline .tl-snap,#timeline .tl-hint,#timeline .tl-speed,#timeline .tl-dot-label{text-shadow:0 1px 3px var(--t-bg)}
+  /* dark theme: timeline floats bare over a dark map — lift dim texts and strengthen shadow for legibility */
+  [data-theme="dark"] #timeline .tl-hint{color:var(--t-ink)}
+  [data-theme="dark"] #timeline .cmp-eye,[data-theme="dark"] #timeline .tl-years button{color:var(--t-mut)}
+  [data-theme="dark"] #timeline .tl-hint,[data-theme="dark"] #timeline .tl-snap,[data-theme="dark"] #timeline .tl-speed,
+  [data-theme="dark"] #timeline .tl-year,[data-theme="dark"] #timeline .tl-dot-label,[data-theme="dark"] #timeline .cmp-eye{
+    text-shadow:0 1px 4px rgba(0,0,0,.85),0 0 2px rgba(0,0,0,.6)}
+  [data-theme="dark"] #timeline .tl-snap,[data-theme="dark"] #timeline .tl-hint,[data-theme="dark"] #timeline .tl-speed{text-shadow:0 1px 4px rgba(0,0,0,.85)}
 
   /* ---- curved year track ---- */
   .tl-curve-wrap{position:relative;height:76px;margin:2px 0 4px}
@@ -725,11 +744,13 @@
   .tl-dot.on{fill:var(--t-lime);stroke:var(--t-bg);stroke-width:3}
   .tl-dot-year{fill:var(--t-dim);font:400 10px 'JetBrains Mono',monospace}
   .tl-dot-label{fill:var(--t-lime);font:700 13px 'JetBrains Mono',monospace}
-  /* scrub sits invisibly over the curve for dragging */
+  /* scrub sits invisibly over the curve for dragging — the SVG dot is the visible indicator */
   .tl-curve-wrap #scrub{position:absolute;left:3%;right:3%;top:50%;transform:translateY(-50%);width:94%;height:40px;
-    -webkit-appearance:none;appearance:none;background:transparent;border:none;outline:none;margin:0;cursor:pointer}
-  .tl-curve-wrap #scrub::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:transparent;cursor:pointer}
-  .tl-curve-wrap #scrub::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:transparent;border:none;cursor:pointer}
+    -webkit-appearance:none;appearance:none;background:transparent;border:none;outline:none;margin:0;cursor:pointer;box-shadow:none}
+  .tl-curve-wrap #scrub::-webkit-slider-thumb{-webkit-appearance:none;width:34px;height:34px;border-radius:50%;background:transparent;border:none;box-shadow:none;cursor:pointer;opacity:0}
+  .tl-curve-wrap #scrub::-moz-range-thumb{width:34px;height:34px;border-radius:50%;background:transparent;border:none;box-shadow:none;cursor:pointer;opacity:0}
+  .tl-curve-wrap #scrub::-webkit-slider-runnable-track{background:transparent;border:none}
+  .tl-curve-wrap #scrub::-moz-range-track{background:transparent;border:none}
 
   /* ---- COMPARE pill in the controls row ---- */
   #timeline .tl-compare-pill{display:flex;align-items:center;gap:6px;height:30px;padding:0 13px;border-radius:15px;
@@ -1037,14 +1058,14 @@
 <!-- ================= view tools now live in the panel View tab ================= -->
 
 <div class="coord-readout" id="coord-readout">
-  <span><span class="cr-lab">lat</span> <span id="cr-lat">—</span></span>
-  <span><span class="cr-lab">lng</span> <span id="cr-lng">—</span></span>
-  <span><span class="cr-lab">z</span> <span id="cr-zoom">—</span></span>
+  <span id="cr-latlng">—</span>
+  <span class="cr-sep">·</span>
+  <span><span class="cr-lab">Z</span> <span id="cr-zoom">—</span></span>
 </div>
 
 <div class="zoom-cluster" id="zoom-cluster">
   <div class="zc-ring"></div>
-  <div class="zc-center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg><span id="zc-zoom">Z 7.2</span></div>
+  <div class="zc-center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg><span id="zc-zoom"><span class="zc-zpfx">Z</span> 7.2</span></div>
   <button class="zc-btn zc-in" id="zc-in" aria-label="Zoom in" title="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="11" cy="11" r="7"/><path d="M11 8v6M8 11h6M21 21l-4.3-4.3"/></svg></button>
   <button class="zc-btn zc-out" id="zc-out" aria-label="Zoom out" title="Zoom out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="11" cy="11" r="7"/><path d="M8 11h6M21 21l-4.3-4.3"/></svg></button>
   <button class="zc-btn zc-help" id="help-btn" aria-label="How to use this viewer" title="How to use this viewer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 4.9.8c0 1.7-2.4 1.9-2.4 3.4"/><path d="M12 17h.01"/></svg></button>
@@ -1769,7 +1790,7 @@ function wireZoomCluster() {
   const zlab = document.getElementById('zc-zoom');
   if (zin) zin.addEventListener('click', () => map.zoomIn({ duration: 300 }));
   if (zout) zout.addEventListener('click', () => map.zoomOut({ duration: 300 }));
-  const updateZoom = () => { if (zlab) zlab.textContent = 'Z ' + map.getZoom().toFixed(1); };
+  const updateZoom = () => { if (zlab) zlab.innerHTML = '<span class="zc-zpfx">Z</span> ' + map.getZoom().toFixed(1); };
   map.on('zoom', updateZoom);
   updateZoom();
 }
@@ -1847,8 +1868,12 @@ function wireViewTools() {
   });
 
   // 6. Coordinate + zoom readout
-  const crLat = $('cr-lat'), crLng = $('cr-lng'), crZoom = $('cr-zoom');
-  map.on('mousemove', e => { crLat.textContent = e.lngLat.lat.toFixed(4); crLng.textContent = e.lngLat.lng.toFixed(4); });
+  const crLatLng = $('cr-latlng'), crZoom = $('cr-zoom');
+  const fmtLatLng = (lat, lng) => {
+    const ns = lat >= 0 ? 'N' : 'S', ew = lng >= 0 ? 'E' : 'W';
+    return Math.abs(lat).toFixed(4) + '° ' + ns + ' · ' + Math.abs(lng).toFixed(4) + '° ' + ew;
+  };
+  map.on('mousemove', e => { crLatLng.textContent = fmtLatLng(e.lngLat.lat, e.lngLat.lng); });
   const updZoom = () => { crZoom.textContent = map.getZoom().toFixed(1); };
   map.on('zoom', updZoom); updZoom();
 }
