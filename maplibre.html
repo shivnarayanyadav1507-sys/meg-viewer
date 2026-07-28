@@ -665,25 +665,28 @@
   #mdp .meas-big{font:700 24px 'JetBrains Mono',monospace;color:var(--t-orange);letter-spacing:.01em}
   #mdp .meas-sub{font:500 10.5px 'JetBrains Mono',monospace;color:var(--t-mut)}
 
-  /* ===== Stage 5: mobile bottom-sheet for the consolidated panel ===== */
+  /* ===== Stage E: mobile bottom-sheet (glassy, themed) ===== */
   @media (max-width:600px){
-    #mdp{top:auto;left:0;right:0;bottom:0;width:100%;max-height:64vh;border:0;border-top:2px solid var(--md-rule-strong);
-      box-shadow:0 -12px 40px rgba(0,0,0,.6)}
-    #mdp.collapsed{transform:translateY(calc(100% - 118px))}  /* peek: header + rail visible */
-    #mdp{transition:transform .3s ease}
-    /* rail becomes a horizontal strip under the header */
+    #mdp{top:auto;left:0;right:0;bottom:0;width:100%;max-height:66vh;border:1px solid var(--t-line);border-bottom:0;
+      border-radius:22px 22px 0 0;background:var(--t-panel);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
+      box-shadow:0 -16px 44px -12px rgba(0,0,0,.5);transition:transform .3s ease}
+    #mdp.collapsed{transform:translateY(calc(100% - 132px))}  /* peek: header + rail strip */
+    /* drag-handle affordance at the top of the sheet */
+    #mdp::before{content:'';position:absolute;top:8px;left:50%;transform:translateX(-50%);width:40px;height:4px;border-radius:2px;background:var(--t-line-str);z-index:5}
+    .mdp-head{padding-top:18px}
+    /* rail becomes a horizontal strip under the welcome */
     .mdp-body{flex-direction:column}
-    .mdp-rail{width:100%;flex-direction:row;border-right:0;border-bottom:2px solid var(--md-rule-strong);overflow-x:auto}
-    .mdp-rail-btn{height:auto;flex:1;min-width:64px;padding:9px 0;border-bottom:0;border-right:1px solid var(--md-rule)}
+    .mdp-rail{width:100%;flex-direction:row;justify-content:space-around;gap:0;border-right:0;border-bottom:1px solid var(--t-line);padding:12px 8px;overflow-x:auto}
+    .mdp-rail-btn{flex:1;min-width:60px}
     .mdp-rail-spacer{display:none}
-    .mdp-sections{max-height:38vh}
+    .mdp-sections{max-height:40vh}
     /* header collapse arrow points down on mobile (sheet slides down) */
     .mdp-collapse svg{transform:rotate(-90deg)}
     #mdp.collapsed .mdp-collapse svg{transform:rotate(90deg)}
     /* timeline floats full-width just above the sheet */
-    .timeline{left:8px !important;right:8px !important;width:auto !important;bottom:calc(64vh + 8px)}
-    #mdp.collapsed ~ .timeline{bottom:126px}
-    .coord-readout,.credit-line{display:none}
+    .timeline{left:8px !important;right:8px !important;width:auto !important;bottom:calc(66vh + 8px)}
+    #mdp.collapsed ~ .timeline{bottom:140px}
+    .coord-readout{display:none}
   }
 
   /* ---- floating timeline: glassy rounded (design) ---- */
