@@ -43,7 +43,7 @@
     --t-panel:rgba(15,19,23,.55); --t-panel2:rgba(255,255,255,.04); --t-panel-solid:#0f1317;
     --t-ink:#e9eef2; --t-mut:#8a97a2; --t-dim:#5d6873;
     --t-line:rgba(255,255,255,.1); --t-line-str:rgba(255,255,255,.18);
-    --t-lime:#b6f441; --t-lime-soft:rgba(182,244,65,.14); --t-lime-line:rgba(182,244,65,.4); --t-lime-ink:#0a0c0e;
+    --t-lime:#b6f441; --t-lime-soft:rgba(182,244,65,.14); --t-lime-line:rgba(182,244,65,.4); --t-lime-ink:#0a0c0e; --t-year:#a4e034;
     --t-blue:#b3d4f0; --t-blue-soft:rgba(179,212,240,.14); --t-blue-line:rgba(179,212,240,.4);
     --t-orange:#ff8a4c; --t-orange-soft:rgba(255,138,76,.14); --t-orange-line:rgba(255,138,76,.4);
     --t-sh:0 24px 50px -18px rgba(0,0,0,.55),0 2px 10px rgba(0,0,0,.3);
@@ -59,7 +59,7 @@
     --t-panel:rgba(251,251,250,.92); --t-panel2:#f1f3ee; --t-panel-solid:#fbfbfa;
     --t-ink:#1b211d; --t-mut:#6b756c; --t-dim:#9aa39a;
     --t-line:#dde2da; --t-line-str:#c7cec2;
-    --t-lime:#5f8f21; --t-lime-soft:#e3edd2; --t-lime-line:#b9d38c; --t-lime-ink:#ffffff;
+    --t-lime:#5f8f21; --t-lime-soft:#e3edd2; --t-lime-line:#b9d38c; --t-lime-ink:#ffffff; --t-year:#3f6b16;
     --t-blue:#3f6f95; --t-blue-soft:#dfe9f0; --t-blue-line:#aac4d6;
     --t-orange:#b5591f; --t-orange-soft:#f3e2d2; --t-orange-line:#e0b78c;
     --t-sh:0 18px 38px -18px rgba(30,40,25,.22),0 2px 8px rgba(30,40,25,.08);
@@ -131,7 +131,7 @@
   .logo{width:3px;height:13px;border-radius:2px;background:var(--warn);flex:none}
   .logo.vec{background:var(--blue)}
   .panel-head h1{margin:0;flex:1;font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase}
-  .icbtn{flex:none;width:22px;height:22px;border-radius:6px;background:transparent;border:none;color:var(--muted-dim);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+  .icbtn{flex:none;width:22px;height:22px;border-radius:6px;background:transparent;border:none;color:var(--muted-dim);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;caret-color:transparent;user-select:none;-webkit-user-select:none}
   .icbtn:hover{color:var(--text);background:#1c242b}
   .icbtn svg{width:15px;height:15px}
   .pbody{padding:14px;display:flex;flex-direction:column;gap:13px}
@@ -163,8 +163,8 @@
   .list{display:flex;flex-direction:column;gap:2px}
   .lrow-switch{display:flex;align-items:center;gap:9px;padding:5px 2px}
   .lrow-switch .vname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'Space Grotesk',sans-serif;font-size:13px;color:var(--text)}
-  .sw-btn{width:auto;height:auto;padding:0}
-  .sw{display:block;width:34px;height:19px;border-radius:10px;background:#222a31;border:1px solid #2e3942;position:relative;transition:.15s}
+  .sw-btn{width:auto;height:auto;padding:0;caret-color:transparent;user-select:none;-webkit-user-select:none}
+  .sw{display:block;width:34px;height:19px;border-radius:10px;background:#222a31;border:1px solid #2e3942;position:relative;transition:.15s;caret-color:transparent;user-select:none}
   .sw::after{content:'';position:absolute;top:1.5px;left:2px;width:13px;height:13px;border-radius:50%;background:#5d6873;transition:.15s}
   .sw.on{background:var(--accent-dim);border-color:var(--accent)}
   .sw.on::after{background:var(--accent);left:16px}
@@ -197,8 +197,8 @@
 
   /* ---- timeline (old-viewer style) ---- */
   .timeline{position:absolute;left:calc(var(--md-panel-w) + 28px);right:14px;bottom:22px;z-index:1000;margin:0 auto;
-    width:min(760px,calc(100vw - var(--md-panel-w) - 56px));background:var(--panel);backdrop-filter:blur(16px);
-    -webkit-backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:28px;box-shadow:var(--shadow);padding:16px 30px 14px;display:flex;flex-direction:column;gap:11px}
+    width:min(880px,calc(100vw - var(--md-panel-w) - 56px));background:var(--panel);backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:28px;box-shadow:var(--shadow);padding:16px 40px 14px;display:flex;flex-direction:column;gap:11px}
   .tl-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
   .tl-head{display:flex;align-items:baseline;gap:11px;min-width:0;flex-wrap:wrap}
   .tl-year{font-family:'JetBrains Mono',monospace;font-size:30px;font-weight:700;line-height:1;color:var(--accent);letter-spacing:.02em}
@@ -268,8 +268,9 @@
 
   .coord-readout{position:absolute;right:14px;top:14px;z-index:900;background:var(--t-panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--t-line);
     border-radius:12px;padding:9px 14px;font:500 11px 'JetBrains Mono',monospace;color:var(--t-ink);
-    box-shadow:var(--t-sh);letter-spacing:.03em;pointer-events:none;display:flex;align-items:center;gap:8px}
-  .coord-readout::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--t-lime);box-shadow:0 0 8px var(--t-lime);flex:none}
+    box-shadow:var(--t-sh);letter-spacing:.03em;pointer-events:none;display:flex;align-items:center;gap:9px}
+  .coord-readout .cr-pin{width:13px;height:13px;flex:none;color:var(--t-lime);filter:drop-shadow(0 0 5px var(--t-lime));order:99}
+  .coord-readout .cr-pin svg{width:100%;height:100%;display:block;stroke:currentColor;fill:none}
   .coord-readout .cr-sep{color:var(--t-dim)}
   .coord-readout .cr-lab{color:var(--t-dim)}
   /* MapLibre attribution + scale — glassy themed */
@@ -550,9 +551,9 @@
   [data-theme="light"] .mdp-rail-btn:not(.on) .mdp-rail-ic{color:var(--t-ink)}
   [data-theme="light"] .mdp-rail-btn:not(.on) > span:not(.mdp-rail-ic){color:var(--t-mut)}
   [data-theme="light"] .mdp-rail-btn:hover,[data-theme="light"] .mdp-rail-btn:hover .mdp-rail-ic{color:var(--t-lime)}
-  .mdp-rail-btn[data-tab="measure"].on{color:var(--t-orange)}
-  .mdp-rail-btn[data-tab="measure"].on .mdp-rail-ic{background:var(--t-orange-soft);border-color:var(--t-orange-line);color:var(--t-orange);box-shadow:none}
-  .mdp-rail-btn[data-tab="measure"].on span{color:var(--t-orange)}
+  .mdp-rail-btn[data-tab="measure"].on{color:var(--t-lime)}
+  .mdp-rail-btn[data-tab="measure"].on .mdp-rail-ic{background:var(--t-lime-soft);border-color:var(--t-lime-line);color:var(--t-lime);box-shadow:var(--t-glow)}
+  .mdp-rail-btn[data-tab="measure"].on span{color:var(--t-lime)}
   .mdp-rail-spacer{flex:1}
 
   .mdp-sections{flex:1;overflow-y:auto;overflow-x:hidden;min-width:0;padding-bottom:8px;
@@ -565,17 +566,17 @@
   /* Stage 3: new panel revealed; old left-stack hidden. */
   .left-stack{display:none !important}
   /* timeline shifts to clear the collapsed 64px rail */
-  #mdp.collapsed ~ .timeline{left:92px;right:14px;width:min(760px,calc(100vw - 106px))}
+  #mdp.collapsed ~ .timeline{left:92px;right:14px;width:min(880px,calc(100vw - 106px))}
 
   /* view-tool rows in the View tab */
-  .mdp-section[data-tab="view"] .tool-row{display:flex;align-items:center;gap:10px;width:100%;padding:11px 12px;border:1px solid var(--t-line);border-radius:11px;
+  .mdp-section[data-tab="view"] .tool-row,.mdp-section[data-tab="measure"] .tool-row{display:flex;align-items:center;gap:10px;width:100%;padding:11px 12px;border:1px solid var(--t-line);border-radius:11px;
     background:var(--t-track);color:var(--t-ink);cursor:pointer;font:600 12.5px 'Space Grotesk',sans-serif;text-align:left;margin-bottom:8px;transition:.15s}
-  .mdp-section[data-tab="view"] .tool-row:last-child{margin-bottom:0}
-  .mdp-section[data-tab="view"] .tool-row:hover{border-color:var(--t-lime);background:var(--t-lime-soft)}
-  .mdp-section[data-tab="view"] .tool-row svg{width:16px;height:16px;color:var(--t-mut);flex:none}
-  .mdp-section[data-tab="view"] .tool-row:hover svg{color:var(--t-lime)}
+  .mdp-section[data-tab="view"] .tool-row:last-child,.mdp-section[data-tab="measure"] .tool-row:last-child{margin-bottom:0}
+  .mdp-section[data-tab="view"] .tool-row:hover,.mdp-section[data-tab="measure"] .tool-row:hover{border-color:var(--t-lime);background:var(--t-lime-soft)}
+  .mdp-section[data-tab="view"] .tool-row svg,.mdp-section[data-tab="measure"] .tool-row svg{width:16px;height:16px;color:var(--t-mut);flex:none}
+  .mdp-section[data-tab="view"] .tool-row:hover svg,.mdp-section[data-tab="measure"] .tool-row:hover svg{color:var(--t-lime)}
   .mdp-section[data-tab="view"] .tool-sep{display:none}
-  .mdp-section[data-tab="view"] .tool-section-lab{font:600 9.5px 'JetBrains Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--t-dim);margin-bottom:10px}
+  .mdp-section[data-tab="view"] .tool-section-lab,.mdp-section[data-tab="measure"] .tool-section-lab{font:600 9.5px 'JetBrains Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--t-dim);margin-bottom:10px}
   .mdp-section[data-tab="view"] .basemap-opt{display:block;width:100%;text-align:left;padding:10px 12px 10px 30px;background:var(--t-track);border:1px solid var(--t-line);border-radius:10px;color:var(--t-mut);cursor:pointer;font:600 12px 'Space Grotesk',sans-serif;position:relative;margin-bottom:8px;transition:.15s}
   .mdp-section[data-tab="view"] .basemap-opt:last-child{margin-bottom:0}
   .mdp-section[data-tab="view"] .basemap-opt:hover{border-color:var(--t-lime);background:var(--t-lime-soft);color:var(--t-ink)}
@@ -699,8 +700,8 @@
 
   /* ---- floating timeline: bare/transparent (design ref) — no card, minimal blur for legibility over the map ---- */
   #timeline{border:0 !important;background:transparent !important;box-shadow:none !important;border-radius:999px !important;
-    backdrop-filter:blur(3px) !important;-webkit-backdrop-filter:blur(3px) !important;padding:12px 34px !important}
-  #timeline .tl-year{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--t-lime);letter-spacing:.01em;text-shadow:0 0 20px var(--t-lime-soft)}
+    backdrop-filter:blur(3px) !important;-webkit-backdrop-filter:blur(3px) !important;padding:14px 46px !important}
+  #timeline .tl-year{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:34px;color:var(--t-year);letter-spacing:.01em;text-shadow:0 0 16px var(--t-lime-soft)}
   #timeline .tl-badge{border-radius:6px;background:var(--t-lime-soft);border:1px solid var(--t-lime-line);color:var(--t-lime);font-weight:600;padding:3px 7px}
   /* round playback buttons */
   #timeline .tl-btn{border-radius:50%;width:30px;height:30px;background:var(--t-panel2);border:1px solid var(--t-line);color:var(--t-mut);transition:.15s}
@@ -804,7 +805,7 @@
     <div class="mdp-rail" id="mdp-rail">
       <button class="mdp-rail-btn on" data-tab="imagery"><span class="mdp-rail-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18"/><path d="M3 15l5-4 4 3 4-5 5 6"/><circle cx="8.5" cy="8.5" r="1.5"/></svg></span><span>Image</span></button>
       <button class="mdp-rail-btn" data-tab="vectors"><span class="mdp-rail-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg></span><span>Vector</span></button>
-      <button class="mdp-rail-btn" data-tab="measure"><span class="mdp-rail-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v6H3zM3 15h18v6H3z"/></svg></span><span>Measure</span></button>
+      <button class="mdp-rail-btn" data-tab="measure"><span class="mdp-rail-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.1-.6-.6-2.1z"/></svg></span><span>Tools</span></button>
       <button class="mdp-rail-btn" data-tab="view"><span class="mdp-rail-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span><span>View</span></button>
     </div>
     <div class="mdp-sections" id="mdp-sections">
@@ -859,9 +860,17 @@
         </div>
       </div>
       <div class="mdp-section" data-tab="measure">
-        <div class="mdp-eyebrow">Measure</div>
-        <h2 class="mdp-title">Distance &amp; area</h2>
+        <div class="mdp-eyebrow">Map</div>
+        <h2 class="mdp-title">Tools</h2>
         <div class="mdp-grp">
+          <div class="tool-section-lab">Export</div>
+          <button class="tool-row" id="tool-shot">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <span>Screenshot</span>
+          </button>
+        </div>
+        <div class="mdp-grp">
+          <div class="tool-section-lab">Measure</div>
           <div class="seg" id="measure-seg">
             <button class="seg-btn" data-measure="distance">Distance</button>
             <button class="seg-btn" data-measure="area">Area</button>
@@ -901,10 +910,6 @@
         <button class="tool-row" id="tool-boundary">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg>
           <span id="tool-boundary-label">Hide boundary</span>
-        </button>
-        <button class="tool-row" id="tool-shot">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-          <span>Screenshot</span>
         </button>
         <button class="tool-row" id="tool-fullscreen">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M16 21h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
@@ -1090,6 +1095,7 @@
   <span id="cr-latlng">—</span>
   <span class="cr-sep">·</span>
   <span><span class="cr-lab">Z</span> <span id="cr-zoom">—</span></span>
+  <span class="cr-pin" aria-hidden="true"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.3 7-11a7 7 0 0 0-14 0c0 4.7 7 11 7 11Z"/><circle cx="12" cy="10" r="2.4"/></svg></span>
 </div>
 
 <div class="zoom-cluster" id="zoom-cluster">
