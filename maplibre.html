@@ -49,6 +49,8 @@
     --t-sh:0 24px 50px -18px rgba(0,0,0,.55),0 2px 10px rgba(0,0,0,.3);
     --t-glow:0 0 14px rgba(182,244,65,.2);
     --t-track:rgba(0,0,0,.3);
+    --t-card-bg:rgba(255,255,255,.04); --t-card-line:rgba(255,255,255,.08);
+    --t-card-sh:inset 0 1px 0 rgba(255,255,255,.04);
   }
   /* LIGHT theme */
   [data-theme="light"]{
@@ -62,6 +64,8 @@
     --t-sh:0 18px 38px -18px rgba(30,40,25,.22),0 2px 8px rgba(30,40,25,.08);
     --t-glow:none;
     --t-track:rgba(0,0,0,.06);
+    --t-card-bg:rgba(255,255,255,.62); --t-card-line:rgba(255,255,255,.7);
+    --t-card-sh:inset 0 1px 0 rgba(255,255,255,.6),0 6px 16px -8px rgba(30,40,25,.15);
   }
   /* Bridge: md-* tokens follow the active theme so existing panel CSS themes automatically */
   :root{
@@ -260,7 +264,7 @@
   .tool-menu .basemap-opt.on{color:var(--accent)}
   .tool-menu .basemap-opt.on::before{content:'';position:absolute;left:14px;top:50%;transform:translateY(-50%);width:6px;height:6px;border-radius:50%;background:var(--accent)}
 
-  .coord-readout{position:absolute;right:14px;top:150px;z-index:900;background:var(--t-panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--t-line);
+  .coord-readout{position:absolute;right:14px;top:14px;z-index:900;background:var(--t-panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--t-line);
     border-radius:12px;padding:8px 13px;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--t-ink);
     box-shadow:var(--t-sh);letter-spacing:.03em;pointer-events:none;display:flex;align-items:center;gap:9px}
   .coord-readout::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--t-lime);box-shadow:0 0 8px var(--t-lime);flex:none}
@@ -269,7 +273,7 @@
   .maplibregl-ctrl-attrib{background:var(--t-panel)!important;backdrop-filter:blur(10px)!important;color:var(--t-dim)!important;border-radius:10px!important;font-family:'JetBrains Mono',monospace!important;font-size:9px!important}
   .maplibregl-ctrl-attrib a{color:var(--t-mut)!important}
   .maplibregl-ctrl-attrib-button{background-color:var(--t-panel)!important}
-  .maplibregl-ctrl-scale{background:var(--t-panel)!important;backdrop-filter:blur(10px)!important;border:1px solid var(--t-line)!important;border-top:none!important;color:var(--t-mut)!important;border-radius:0 0 8px 8px!important;font-family:'JetBrains Mono',monospace!important}
+  .maplibregl-ctrl-scale{background:var(--t-panel)!important;backdrop-filter:blur(10px)!important;-webkit-backdrop-filter:blur(10px)!important;border:1px solid var(--t-line)!important;color:var(--t-mut)!important;border-radius:8px!important;font-family:'JetBrains Mono',monospace!important;font-size:9px!important;padding:2px 6px!important;margin:0 4px 4px 0!important}
 
   @media (max-width:760px){
     .left-stack{width:min(88vw,320px);top:10px;left:10px}
@@ -443,7 +447,7 @@
 
   /* ===== Help walkthrough (guided tour) ===== */
   /* ===== circular zoom cluster (bottom-right) ===== */
-  .zoom-cluster{position:absolute;right:34px;bottom:34px;width:180px;height:180px;z-index:1000}
+  .zoom-cluster{position:absolute;right:34px;bottom:70px;width:180px;height:180px;z-index:1000}
   .zc-ring{position:absolute;inset:0;border-radius:50%;border:1px dashed var(--t-line-str)}
   .zc-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:80px;height:80px;border-radius:50%;
     background:var(--t-panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--t-line);box-shadow:var(--t-sh);
@@ -495,7 +499,7 @@
     border:1px solid var(--t-line);border-radius:24px;box-shadow:var(--t-sh);overflow:hidden;transition:width .3s ease,transform .3s ease}
   /* collapsed = shrink to the icon rail only (still reopenable) */
   #mdp.collapsed{width:64px}
-  #mdp.collapsed .mdp-brand,#mdp.collapsed .mdp-welcome,#mdp.collapsed .mdp-sections,#mdp.collapsed .mdp-timeline{display:none}
+  #mdp.collapsed .mdp-brand,#mdp.collapsed .mdp-welcome,#mdp.collapsed .mdp-sections{display:none}
   #mdp.collapsed .mdp-head{border-bottom:1px solid var(--t-line);padding:14px 0;justify-content:center}
   #mdp.collapsed .mdp-mark{display:none}
   #mdp.collapsed .mdp-body{flex:1}
@@ -541,66 +545,39 @@
   .mdp-rail-btn[data-tab="measure"].on span{color:var(--t-orange)}
   .mdp-rail-spacer{flex:1}
 
-  .mdp-sections{flex:1;overflow-y:auto;overflow-x:hidden;min-width:0;
+  .mdp-sections{flex:1;overflow-y:auto;overflow-x:hidden;min-width:0;padding-bottom:8px;
     scrollbar-width:thin;scrollbar-color:var(--t-line-str) transparent}
   .mdp-sections::-webkit-scrollbar{width:8px}
   .mdp-sections::-webkit-scrollbar-thumb{background:var(--t-line-str);border-radius:4px}
   .mdp-section{display:none;padding:var(--md-s4)}
   .mdp-section.on{display:block}
 
-  .mdp-timeline{flex:none;border-top:2px solid var(--md-rule-strong);padding:var(--md-s3) var(--md-s4);background:var(--md-surface-2)}
-
   /* Stage 3: new panel revealed; old left-stack hidden. */
   .left-stack{display:none !important}
   /* timeline shifts to clear the collapsed 64px rail */
   #mdp.collapsed ~ .timeline{left:92px;right:14px;width:min(620px,calc(100vw - 106px))}
 
-  /* Stage 3 fit-up: docked timeline + view-tool rows inside the panel.
-     (Full Modernist restyle comes in Stage 4.) */
-  #mdp-timeline .tl-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
-  #mdp-timeline .tl-head{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
-  #mdp-timeline .tl-year{font-size:24px;font-weight:700;color:var(--md-accent);line-height:1}
-  #mdp-timeline .tl-badge{font:600 9px 'JetBrains Mono',monospace;letter-spacing:.1em;padding:3px 7px;background:var(--md-accent-200);color:var(--md-accent)}
-  #mdp-timeline .tl-ctrls{display:flex;gap:4px}
-  #mdp-timeline .tl-btn{width:30px;height:30px;border:1px solid var(--md-rule-strong);background:transparent;color:var(--md-ink);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
-  #mdp-timeline .tl-btn svg{width:14px;height:14px;fill:currentColor}
-  #mdp-timeline .tl-btn:hover{border-color:var(--md-accent);color:var(--md-accent)}
-  #mdp-timeline .tl-btn.tl-compare svg{fill:none}
-  #mdp-timeline .tl-compare-row{display:flex;align-items:center;gap:7px;margin:8px 0;font:600 11px 'JetBrains Mono',monospace;color:var(--md-muted)}
-  #mdp-timeline .tl-compare-row select{background:var(--md-surface);border:1px solid var(--md-rule-strong);color:var(--md-ink);padding:5px 7px;font-family:inherit;font-size:11px}
-  #mdp-timeline .cmp-lbl.a{color:var(--md-compare-a)} #mdp-timeline .cmp-lbl.b{color:var(--md-compare-b)}
-  #mdp-timeline .tl-years{display:flex;justify-content:space-between;font:500 9px 'JetBrains Mono',monospace;margin-top:4px}
-  #mdp-timeline .tl-years button{background:none;border:0;color:var(--md-dim);cursor:pointer;font:inherit;padding:2px}
-  #mdp-timeline .tl-years button:hover{color:var(--md-ink)}
-  #mdp-timeline .tl-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--md-rule);font:500 10px 'JetBrains Mono',monospace;color:var(--md-muted)}
-  #mdp-timeline .tl-snap{display:flex;align-items:center;gap:6px;cursor:pointer}
-  #mdp-timeline .tl-hint{color:var(--md-dim)}
-  #mdp-timeline .tl-speed{display:flex;align-items:center;gap:6px}
-  #mdp-timeline input[type=range]{-webkit-appearance:none;appearance:none;height:4px;background:var(--md-rule-strong);outline:none}
-  #mdp-timeline input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:0;background:var(--md-accent);cursor:pointer}
-  #mdp-timeline #scrub{width:100%;margin:6px 0}
-  #mdp-timeline .tl-speed input{width:60px}
-
   /* view-tool rows in the View tab */
-  .mdp-section[data-tab="view"] .tool-row{display:flex;align-items:center;gap:10px;width:100%;padding:11px 10px;border:0;border-bottom:1px solid var(--md-rule);
-    background:transparent;color:var(--md-ink);cursor:pointer;font:600 13px 'Space Grotesk',sans-serif;text-align:left}
-  .mdp-section[data-tab="view"] .tool-row:hover{background:var(--md-accent-100)}
-  .mdp-section[data-tab="view"] .tool-row svg{width:16px;height:16px;color:var(--md-muted);flex:none}
-  .mdp-section[data-tab="view"] .tool-row:hover svg{color:var(--md-accent)}
-  .mdp-section[data-tab="view"] .tool-sep{height:2px;background:var(--md-rule);margin:10px 0}
-  .mdp-section[data-tab="view"] .tool-section-lab{font:600 10px 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--md-muted);margin-bottom:6px}
-  .mdp-section[data-tab="view"] .basemap-opt{display:block;width:100%;text-align:left;padding:9px 10px 9px 26px;background:transparent;border:1px solid var(--md-rule-strong);color:var(--md-muted);cursor:pointer;font:600 12px 'Space Grotesk',sans-serif;position:relative;margin-bottom:-1px}
-  .mdp-section[data-tab="view"] .basemap-opt:hover{background:var(--md-accent-100);color:var(--md-ink)}
-  .mdp-section[data-tab="view"] .basemap-opt.on{color:var(--md-accent)}
-  .mdp-section[data-tab="view"] .basemap-opt.on::before{content:'';position:absolute;left:10px;top:50%;transform:translateY(-50%);width:6px;height:6px;background:var(--md-accent)}
+  .mdp-section[data-tab="view"] .tool-row{display:flex;align-items:center;gap:10px;width:100%;padding:11px 12px;border:1px solid var(--t-line);border-radius:11px;
+    background:var(--t-track);color:var(--t-ink);cursor:pointer;font:600 12.5px 'Space Grotesk',sans-serif;text-align:left;margin-bottom:8px;transition:.15s}
+  .mdp-section[data-tab="view"] .tool-row:last-child{margin-bottom:0}
+  .mdp-section[data-tab="view"] .tool-row:hover{border-color:var(--t-lime);background:var(--t-lime-soft)}
+  .mdp-section[data-tab="view"] .tool-row svg{width:16px;height:16px;color:var(--t-mut);flex:none}
+  .mdp-section[data-tab="view"] .tool-row:hover svg{color:var(--t-lime)}
+  .mdp-section[data-tab="view"] .tool-sep{display:none}
+  .mdp-section[data-tab="view"] .tool-section-lab{font:600 9.5px 'JetBrains Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--t-dim);margin-bottom:10px}
+  .mdp-section[data-tab="view"] .basemap-opt{display:block;width:100%;text-align:left;padding:10px 12px 10px 30px;background:var(--t-track);border:1px solid var(--t-line);border-radius:10px;color:var(--t-mut);cursor:pointer;font:600 12px 'Space Grotesk',sans-serif;position:relative;margin-bottom:8px;transition:.15s}
+  .mdp-section[data-tab="view"] .basemap-opt:last-child{margin-bottom:0}
+  .mdp-section[data-tab="view"] .basemap-opt:hover{border-color:var(--t-lime);background:var(--t-lime-soft);color:var(--t-ink)}
+  .mdp-section[data-tab="view"] .basemap-opt.on{color:var(--t-lime);border-color:var(--t-lime-line);background:var(--t-lime-soft)}
+  .mdp-section[data-tab="view"] .basemap-opt.on::before{content:'';position:absolute;left:12px;top:50%;transform:translateY(-50%);width:7px;height:7px;border-radius:50%;background:var(--t-lime)}
 
   /* theme toggle (Appearance) in View tab */
-  .theme-seg{display:flex;border:1px solid var(--md-rule-strong)}
-  .theme-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:9px;background:transparent;border:0;color:var(--md-muted);cursor:pointer;font:600 12px 'Space Grotesk',sans-serif;transition:.12s}
-  .theme-btn+.theme-btn{border-left:1px solid var(--md-rule-strong)}
+  .theme-seg{display:flex;gap:4px;padding:4px;background:var(--t-track);border:1px solid var(--t-line);border-radius:13px}
+  .theme-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:9px;background:transparent;border:0;border-radius:9px;color:var(--t-mut);cursor:pointer;font:600 12px 'Space Grotesk',sans-serif;transition:.15s}
   .theme-btn svg{width:15px;height:15px}
-  .theme-btn:hover{background:var(--md-accent-100);color:var(--md-ink)}
-  .theme-btn.on{background:var(--md-accent);color:var(--md-accent-ink)}
+  .theme-btn:hover{color:var(--t-ink)}
+  .theme-btn.on{background:var(--t-lime);color:var(--t-lime-ink)}
 
   /* ============================================================
      Stage 4 — Modernist-dark widget restyle (scoped to #mdp).
@@ -612,8 +589,9 @@
   #mdp .mdp-section > .mdp-eyebrow{margin:0}
   #mdp .mdp-section > .mdp-eyebrow, #mdp .mdp-section > .mdp-title{padding-left:2px}
   /* each group is a rounded glassy sub-card */
-  #mdp .mdp-grp{background:var(--t-panel2);border:1px solid var(--t-line);border-radius:16px;padding:16px 18px;margin-top:12px}
-  [data-theme="dark"] #mdp .mdp-grp{box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+  #mdp .mdp-grp{background:var(--t-card-bg);border:1px solid var(--t-card-line);border-radius:16px;padding:16px 18px;margin-top:12px;
+    box-shadow:var(--t-card-sh)}
+  [data-theme="light"] #mdp .mdp-grp{backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
   #mdp .mdp-grp:first-of-type{margin-top:12px}
   /* the very first thing (section eyebrow+title) sits above the cards, not in one */
   #mdp .mdp-section > .mdp-eyebrow:first-child{margin-top:2px}
@@ -742,7 +720,7 @@
   .tl-curve-base{stroke:var(--t-line)}
   .tl-curve-fill{stroke:var(--t-lime);transition:stroke-dasharray .15s linear}
   .tl-dot{fill:var(--t-dim);transition:.15s}
-  .tl-dot.on{fill:var(--t-lime);r:8;stroke:var(--t-bg);stroke-width:3}
+  .tl-dot.on{fill:var(--t-lime);stroke:var(--t-bg);stroke-width:3}
   .tl-dot-year{fill:var(--t-dim);font:400 10px 'JetBrains Mono',monospace}
   .tl-dot-label{fill:var(--t-lime);font:700 13px 'JetBrains Mono',monospace}
   /* scrub sits invisibly over the curve for dragging */
@@ -900,7 +878,6 @@
       </div>
     </div>
   </div>
-  <div class="mdp-timeline" id="mdp-timeline" hidden></div>
 </div>
 
 <div id="intro" aria-label="Intro tour">
@@ -1022,7 +999,7 @@
 
   <!-- curved year track -->
   <div class="tl-curve-wrap">
-    <svg class="tl-curve" viewBox="0 0 560 96" preserveAspectRatio="none">
+    <svg class="tl-curve" viewBox="0 0 560 96" preserveAspectRatio="xMidYMid meet">
       <path class="tl-curve-base" d="M20 78 Q280 8 540 78" fill="none" stroke-width="3"/>
       <path class="tl-curve-fill" id="tl-curve-fill" d="M20 78 Q280 8 540 78" fill="none" stroke-width="3"/>
       <g id="tl-curve-dots"></g>
@@ -1190,7 +1167,7 @@ const map = new maplibregl.Map({
   preserveDrawingBuffer: true,
   attributionControl: false
 });
-map.addControl(new maplibregl.ScaleControl({ maxWidth: 120, unit: 'metric' }), 'bottom-left');
+map.addControl(new maplibregl.ScaleControl({ maxWidth: 110, unit: 'metric' }), 'bottom-right');
 map.addControl(new maplibregl.AttributionControl({ compact: true, customAttribution: 'Imagery: Sentinel-2 &amp; Landsat (Google Earth Engine)' }), 'bottom-right');
 setStatus('Loading basemap…', 'load');
 
@@ -1381,7 +1358,9 @@ function updateCurve(pos, near) {
     fill.style.strokeDasharray = (total * t) + ' ' + total;
   }
   document.querySelectorAll('#tl-curve-dots .tl-dot').forEach((d, i) => {
-    d.classList.toggle('on', i === near);
+    const on = (i === near);
+    d.classList.toggle('on', on);
+    d.setAttribute('r', on ? 8 : 4);
   });
   const lbl = document.getElementById('tl-dot-label');
   if (lbl) {
