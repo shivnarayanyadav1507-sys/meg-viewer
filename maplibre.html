@@ -1257,7 +1257,7 @@ map.on('load', () => {
 
   // (Spotlight mask removed — basemap shows at true brightness everywhere.)
   // We still compute the boundary geometry in case other features need it.
-  fetch('data/vectors/Meghalaya_Districts.geojson').then(r => r.json()).then(gj => {
+  fetch('data/vectors/Meghalaya_Districts.geojson').then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }).then(gj => {
     const holes = [];
     (gj.features || []).forEach(f => { const g = f.geometry; if (!g) return;
       if (g.type === 'Polygon') holes.push(g.coordinates[0]);
@@ -1329,7 +1329,10 @@ function addVectors() {
   });
   map.on('click', 'vil-clusters', e => {
     const f = map.queryRenderedFeatures(e.point, { layers: ['vil-clusters'] })[0];
-    map.getSource('villages').getClusterExpansionZoom(f.properties.cluster_id).then(z =>
+    if (!f) return;
+    const src = map.getSource('villages');
+    if (!src || !src.getClusterExpansionZoom) return;
+    src.getClusterExpansionZoom(f.properties.cluster_id).then(z =>
       map.easeTo({ center: f.geometry.coordinates, zoom: z })).catch(() => {});
   });
   ['dist-fill', 'vil-point', 'vil-clusters'].forEach(l => {
@@ -1344,12 +1347,12 @@ function addVectors() {
     { id: 'villages', name: 'Villages · 6,060', color: '#b6f441', visible: false, labelOn: true,
       labelLayerId: 'vil-label', layerIds: ['vil-cluster-glow', 'vil-clusters', 'vil-count', 'vil-point'], removable: false, bounds: null }
   );
-  fetch('data/vectors/Meghalaya_Districts_named.geojson').then(r => r.json()).then(gj => {
+  fetch('data/vectors/Meghalaya_Districts_named.geojson').then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }).then(gj => {
     const e = vecLayers.find(x => x.id === 'districts'); if (e) e.bounds = bboxOf(gj); renderVecList();
-  }).catch(() => {});
-  fetch('data/vectors/Meghalaya_Villages.geojson').then(r => r.json()).then(gj => {
+  }).catch(err => console.warn('Districts bounds load failed:', err));
+  fetch('data/vectors/Meghalaya_Villages.geojson').then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }).then(gj => {
     const e = vecLayers.find(x => x.id === 'villages'); if (e) e.bounds = bboxOf(gj); renderVecList();
-  }).catch(() => {});
+  }).catch(err => console.warn('Villages bounds load failed:', err));
   renderVecList();
 }
 
@@ -1679,8 +1682,13 @@ async function rasterizeGeoTIFF(file) {
   const buf = await file.arrayBuffer();
   const tiff = await GeoTIFF.fromArrayBuffer(buf);
   const image = await tiff.getImage();
-  const bbox = image.getBoundingBox(); // [minX, minY, maxX, maxY] in the file's CRS (assumed EPSG:4326)
+  const bbox = image.getBoundingBox(); // [minX, minY, maxX, maxY] in the file's CRS
+  // If the bbox values look like projected metres (well outside lat/lng range),
+  // the image can't be placed on a lng/lat map without reprojection.
+  const looksProjected = bbox.some(v => Math.abs(v) > 360);
+  if (looksProjected) throw new Error('projected CRS (needs EPSG:4326)');
   const width = image.getWidth(), height = image.getHeight();
+  if (!width || !height) throw new Error('empty raster');
   // downsample very large rasters so the canvas stays reasonable
   const maxDim = 2048;
   const scale = Math.min(1, maxDim / Math.max(width, height));
@@ -1690,6 +1698,7 @@ async function rasterizeGeoTIFF(file) {
   const canvas = document.createElement('canvas');
   canvas.width = ow; canvas.height = oh;
   const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('canvas unavailable');
   const imgData = ctx.createImageData(ow, oh);
   const out = imgData.data;
   // find min/max for single-band (e.g. DEM) to stretch to greyscale
