@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
@@ -30,6 +30,49 @@
     --md-measure-100:rgba(255,138,76,.10); --md-measure-200:rgba(255,138,76,.20);
     --md-s1:4px; --md-s2:8px; --md-s3:12px; --md-s4:16px; --md-s6:24px; --md-s8:32px;
     --md-rail:52px; --md-panel-w:344px;
+
+    /* ===== Theme system (light + dark) — palettes from the uploaded design ===== */
+    /* fonts */
+    --t-mono:'JetBrains Mono',ui-monospace,monospace;
+    --t-ui:'Space Grotesk',system-ui,sans-serif;
+    --t-disp:'Syne',system-ui,sans-serif;
+  }
+  /* DARK theme (default) */
+  :root, [data-theme="dark"]{
+    --t-bg:#0a0c0e; --t-bg-grad:radial-gradient(130% 110% at 66% 22%,#16211e 0%,#0d1412 34%,#0a0c0e 72%);
+    --t-panel:rgba(15,19,23,.55); --t-panel2:rgba(255,255,255,.04); --t-panel-solid:#0f1317;
+    --t-ink:#e9eef2; --t-mut:#8a97a2; --t-dim:#5d6873;
+    --t-line:rgba(255,255,255,.1); --t-line-str:rgba(255,255,255,.18);
+    --t-lime:#b6f441; --t-lime-soft:rgba(182,244,65,.14); --t-lime-line:rgba(182,244,65,.4); --t-lime-ink:#0a0c0e;
+    --t-blue:#b3d4f0; --t-blue-soft:rgba(179,212,240,.14); --t-blue-line:rgba(179,212,240,.4);
+    --t-orange:#ff8a4c; --t-orange-soft:rgba(255,138,76,.14); --t-orange-line:rgba(255,138,76,.4);
+    --t-sh:0 24px 50px -18px rgba(0,0,0,.55),0 2px 10px rgba(0,0,0,.3);
+    --t-glow:0 0 14px rgba(182,244,65,.2);
+    --t-track:rgba(0,0,0,.3);
+  }
+  /* LIGHT theme */
+  [data-theme="light"]{
+    --t-bg:#eef1ec; --t-bg-grad:linear-gradient(160deg,#f1f4ec 0%,#eef1ec 45%,#e8ece4 100%);
+    --t-panel:rgba(251,251,250,.55); --t-panel2:#f1f3ee; --t-panel-solid:#fbfbfa;
+    --t-ink:#1b211d; --t-mut:#6b756c; --t-dim:#9aa39a;
+    --t-line:#dde2da; --t-line-str:#c7cec2;
+    --t-lime:#5f8f21; --t-lime-soft:#e3edd2; --t-lime-line:#b9d38c; --t-lime-ink:#ffffff;
+    --t-blue:#3f6f95; --t-blue-soft:#dfe9f0; --t-blue-line:#aac4d6;
+    --t-orange:#b5591f; --t-orange-soft:#f3e2d2; --t-orange-line:#e0b78c;
+    --t-sh:0 18px 38px -18px rgba(30,40,25,.22),0 2px 8px rgba(30,40,25,.08);
+    --t-glow:none;
+    --t-track:rgba(0,0,0,.06);
+  }
+  /* Bridge: md-* tokens follow the active theme so existing panel CSS themes automatically */
+  :root{
+    --md-surface:var(--t-panel-solid); --md-surface-2:var(--t-panel2);
+    --md-ink:var(--t-ink); --md-muted:var(--t-mut); --md-dim:var(--t-dim);
+    --md-accent:var(--t-lime); --md-accent-ink:var(--t-lime-ink);
+    --md-measure:var(--t-orange); --md-compare-a:var(--t-lime); --md-compare-b:var(--t-blue);
+    --md-rule:var(--t-line); --md-rule-strong:var(--t-line-str);
+    --md-accent-100:var(--t-lime-soft); --md-accent-200:var(--t-lime-soft); --md-accent-300:var(--t-lime-line);
+    --md-measure-100:var(--t-orange-soft); --md-measure-200:var(--t-orange-soft);
+    --bg:var(--t-bg);
   }
   *{box-sizing:border-box}
   html,body{margin:0;height:100%;width:100%;overflow:hidden;background:var(--bg);color:var(--text);
@@ -521,6 +564,14 @@
   .mdp-section[data-tab="view"] .basemap-opt.on{color:var(--md-accent)}
   .mdp-section[data-tab="view"] .basemap-opt.on::before{content:'';position:absolute;left:10px;top:50%;transform:translateY(-50%);width:6px;height:6px;background:var(--md-accent)}
 
+  /* theme toggle (Appearance) in View tab */
+  .theme-seg{display:flex;border:1px solid var(--md-rule-strong)}
+  .theme-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:9px;background:transparent;border:0;color:var(--md-muted);cursor:pointer;font:600 12px 'Space Grotesk',sans-serif;transition:.12s}
+  .theme-btn+.theme-btn{border-left:1px solid var(--md-rule-strong)}
+  .theme-btn svg{width:15px;height:15px}
+  .theme-btn:hover{background:var(--md-accent-100);color:var(--md-ink)}
+  .theme-btn.on{background:var(--md-accent);color:var(--md-accent-ink)}
+
   /* ============================================================
      Stage 4 — Modernist-dark widget restyle (scoped to #mdp).
      Overrides the old rounded/soft styling for the consolidated panel.
@@ -724,6 +775,19 @@
       <div class="mdp-section" data-tab="view">
         <div class="mdp-eyebrow">Map</div>
         <h2 class="mdp-title">View &amp; export</h2>
+        <div class="mdp-grp">
+          <div class="tool-section-lab">Appearance</div>
+          <div class="theme-seg" id="theme-seg">
+            <button class="theme-btn" data-theme-set="dark">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></svg>
+              <span>Dark</span>
+            </button>
+            <button class="theme-btn" data-theme-set="light">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+              <span>Light</span>
+            </button>
+          </div>
+        </div>
         <div class="mdp-grp">
         <button class="tool-row" id="tool-reset">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9 9 0 0 0-6.4 2.6L3 8"/><path d="M3 3v5h5"/></svg>
@@ -1566,6 +1630,15 @@ function wirePanelCollapse() {
 }
 
 function wireViewTools() {
+  // theme toggle (light/dark)
+  const applyTheme = (t) => {
+    document.documentElement.setAttribute('data-theme', t);
+    document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('on', b.dataset.themeSet === t));
+    try { map.resize(); } catch(e){}
+  };
+  document.querySelectorAll('.theme-btn').forEach(b => b.addEventListener('click', () => applyTheme(b.dataset.themeSet)));
+  applyTheme(document.documentElement.getAttribute('data-theme') || 'dark');
+
   // (menu open/close no longer needed — view tools live in the panel View tab)
   const toggle = $('tool-toggle'), menu = $('tool-menu');
   if (toggle && menu) {
