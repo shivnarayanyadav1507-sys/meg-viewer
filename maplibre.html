@@ -44,7 +44,7 @@
     --t-ink:#e9eef2; --t-mut:#8a97a2; --t-dim:#5d6873;
     --t-line:rgba(255,255,255,.1); --t-line-str:rgba(255,255,255,.18);
     --t-lime:#b6f441; --t-lime-soft:rgba(182,244,65,.14); --t-lime-line:rgba(182,244,65,.4); --t-lime-ink:#0a0c0e; --t-year:#a4e034; --t-dot:#aeb8c2;
-    --zc-g-lime:0 0 12px rgba(182,244,65,.6); --zc-g-blue:0 0 9px rgba(179,212,240,.5); --zc-g-orange:0 0 8px rgba(255,138,76,.85);
+    --zc-moon:#d5d9dd; --zc-comet-head:#ff9f5c; --zc-comet-tail:#ff8a4c; --zc-comet-glow:rgba(255,138,76,.85); --zc-sun-ring:rgba(182,244,65,.5); --zc-sun-ring-glow:rgba(182,244,65,.22);
     --t-blue:#b3d4f0; --t-blue-soft:rgba(179,212,240,.14); --t-blue-line:rgba(179,212,240,.4);
     --t-orange:#ff8a4c; --t-orange-soft:rgba(255,138,76,.14); --t-orange-line:rgba(255,138,76,.4);
     --t-sh:0 24px 50px -18px rgba(0,0,0,.55),0 2px 10px rgba(0,0,0,.3);
@@ -61,7 +61,7 @@
     --t-ink:#1b211d; --t-mut:#6b756c; --t-dim:#9aa39a;
     --t-line:#dde2da; --t-line-str:#c7cec2;
     --t-lime:#5f8f21; --t-lime-soft:#e3edd2; --t-lime-line:#b9d38c; --t-lime-ink:#ffffff; --t-year:#3f6b16; --t-dot:#5a6570;
-    --zc-g-lime:0 0 6px rgba(95,143,33,.3); --zc-g-blue:0 0 5px rgba(63,111,149,.25); --zc-g-orange:0 0 5px rgba(181,89,31,.3);
+    --zc-moon:#5a6570; --zc-comet-head:#c85a1e; --zc-comet-tail:#cf7330; --zc-comet-glow:rgba(181,89,31,.55); --zc-sun-ring:rgba(95,143,33,.32); --zc-sun-ring-glow:rgba(95,143,33,.12);
     --t-blue:#3f6f95; --t-blue-soft:#dfe9f0; --t-blue-line:#aac4d6;
     --t-orange:#b5591f; --t-orange-soft:#f3e2d2; --t-orange-line:#e0b78c;
     --t-sh:0 18px 38px -18px rgba(30,40,25,.22),0 2px 8px rgba(30,40,25,.08);
@@ -454,40 +454,70 @@
 
   /* ===== Help walkthrough (guided tour) ===== */
   /* ===== circular zoom cluster (bottom-right) ===== */
-  .zoom-cluster{position:absolute;right:34px;bottom:70px;width:180px;height:180px;z-index:1000}
-  .zc-ring{position:absolute;inset:0;border-radius:50%;border:1px dashed var(--t-line-str)}
-  .zc-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:80px;height:80px;border-radius:50%;z-index:2;
-    background:var(--t-panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--t-line);box-shadow:var(--t-sh);
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+  .zoom-cluster{position:absolute;right:26px;bottom:56px;width:250px;height:250px;z-index:1000}
+  /* dashed orbit rings */
+  .zc-ring{position:absolute;left:50%;top:50%;border-radius:50%;border:1px dashed var(--t-line);transform:translate(-50%,-50%);pointer-events:none;z-index:0}
+  .zc-ring.rA{width:116px;height:116px}
+  .zc-ring.rCtl{width:152px;height:152px;border-color:var(--t-line-str)}
+  .zc-ring.rB{width:180px;height:180px}
+  .zc-ring.rC{width:224px;height:224px}
+  /* sun (recenter + zoom readout) */
+  .zc-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:76px;height:76px;border-radius:50%;z-index:2;
+    background:var(--t-panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--t-line);box-shadow:var(--t-sh);cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:transform .15s}
+  .zc-center:after{content:"";position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--zc-sun-ring);box-shadow:0 0 16px var(--zc-sun-ring-glow);animation:zc-corona 4.5s ease-in-out infinite;z-index:-1}
+  .zc-center:hover{transform:translate(-50%,-50%) scale(1.05)}
   .zc-center svg{width:18px;height:18px;stroke:var(--t-ink)}
-  .zc-center span{font:600 9px 'JetBrains Mono',monospace;letter-spacing:.08em;color:var(--t-mut);white-space:nowrap}
+  .zc-center span{font:700 11px 'JetBrains Mono',monospace;letter-spacing:.06em;color:var(--t-mut);white-space:nowrap}
   .zc-center span .zc-zpfx{color:var(--t-dim);margin-right:1px}
-  .zc-btn{position:absolute;width:44px;height:44px;border-radius:50%;border:1px solid var(--t-line);background:var(--t-panel);z-index:3;
-    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;color:var(--t-ink);box-shadow:var(--t-sh);transition:.15s}
-  .zc-btn svg{width:17px;height:17px}
-  .zc-btn:hover{border-color:var(--t-lime-line);color:var(--t-lime);background:var(--t-lime-soft);box-shadow:var(--t-glow),var(--t-sh)}
-  .zc-in{left:50%;top:0;transform:translate(-50%,-50%)}
-  .zc-out{left:50%;top:100%;transform:translate(-50%,-50%)}
-  .zc-help{left:100%;top:50%;transform:translate(-50%,-50%)}
-
-  /* ---- orbital "solar system" decoration (decorative only; buttons stay static & on top) ---- */
+  /* static control planets (icon buttons; per-planet hover colour) */
+  .zc-btn{position:absolute;width:40px;height:40px;border-radius:50%;border:1px solid var(--t-line);background:var(--t-panel);z-index:3;
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;color:var(--t-mut);box-shadow:var(--t-sh);transition:.15s}
+  .zc-btn svg{width:17px;height:17px;stroke:currentColor;color:var(--t-mut)}
+  .zc-btn:hover{border-color:var(--zc-hov);color:var(--zc-hov);box-shadow:0 0 15px var(--zc-hovg),var(--t-sh);transform:scale(1.08)}
+  .zc-btn:hover svg{color:var(--zc-hov)}
+  .zc-btn:active{transform:scale(.94)}
+  .zc-in{left:125px;top:49px;transform:translate(-50%,-50%);--zc-hov:#79b7b0;--zc-hovg:rgba(121,183,176,.45)}
+  .zc-out{left:125px;top:201px;transform:translate(-50%,-50%);--zc-hov:#c78f66;--zc-hovg:rgba(199,143,102,.45)}
+  .zc-help{left:201px;top:125px;transform:translate(-50%,-50%);--zc-hov:#6f92c4;--zc-hovg:rgba(111,146,196,.45)}
+  /* orbiting planets (decorative) */
   .zc-orbit-layer{position:absolute;inset:0;pointer-events:none;z-index:1}
-  .zc-orbit-layer .zc-orbit2{position:absolute;left:50%;top:50%;width:120px;height:120px;margin:-60px 0 0 -60px;border-radius:50%;border:1px dashed var(--t-line)}
   .zc-orb{position:absolute;left:50%;top:50%;border-radius:50%}
-  .zc-orb-a{width:180px;height:180px;margin:-90px 0 0 -90px;animation:zc-spin 26s linear infinite}
-  .zc-orb-b{width:120px;height:120px;margin:-60px 0 0 -60px;animation:zc-spinr 15s linear infinite}
-  .zc-orb-c{width:150px;height:150px;margin:-75px 0 0 -75px;animation:zc-spinr 7s linear infinite}
+  .zc-oMerc{width:92px;height:92px;margin:-46px 0 0 -46px;animation:zc-spin 6s linear infinite}
+  .zc-oVenus{width:116px;height:116px;margin:-58px 0 0 -58px;animation:zc-spinr 10s linear infinite}
+  .zc-oPluto{width:140px;height:140px;margin:-70px 0 0 -70px;animation:zc-spin 30s linear infinite}
+  .zc-oEarth{width:180px;height:180px;margin:-90px 0 0 -90px;animation:zc-spin 26s linear infinite}
+  .zc-oJup{width:204px;height:204px;margin:-102px 0 0 -102px;animation:zc-spinr 34s linear infinite}
+  .zc-oSat{width:224px;height:224px;margin:-112px 0 0 -112px;animation:zc-spin 44s linear infinite}
+  .zc-oComet{width:164px;height:164px;margin:-82px 0 0 -82px;animation:zc-spinr 5.5s linear infinite}
   .zc-body{position:absolute;top:0;left:50%;transform:translate(-50%,-50%)}
-  .zc-planet{border-radius:50%;display:block}
-  .zc-planet.lime{width:16px;height:16px;background:var(--t-lime);box-shadow:var(--zc-g-lime)}
-  .zc-planet.blue{width:11px;height:11px;background:var(--t-blue);box-shadow:var(--zc-g-blue)}
-  .zc-sat{position:absolute;left:50%;top:50%;width:30px;height:11px;margin:-5.5px 0 0 -15px;border:1.5px solid var(--t-lime-line);border-radius:50%;transform:rotate(-22deg)}
-  .zc-comet{width:5px;height:5px;border-radius:50%;background:var(--t-orange);box-shadow:var(--zc-g-orange)}
-  .zc-comet:after{content:"";position:absolute;left:50%;bottom:3px;width:2px;height:22px;transform:translateX(-50%);background:linear-gradient(to top,transparent,var(--t-orange));opacity:.7;border-radius:2px}
+  .zc-pl{border-radius:50%;display:block}
+  .zc-merc{width:5px;height:5px;background:radial-gradient(circle at 35% 35%,#9c928a,#7f766e);box-shadow:0 0 5px rgba(150,140,130,.4)}
+  .zc-venus{width:6px;height:6px;background:radial-gradient(circle at 35% 35%,#dccdad,#c2ac82);box-shadow:0 0 5px rgba(216,205,173,.38)}
+  .zc-pluto{width:5px;height:5px;background:radial-gradient(circle at 35% 35%,#cabdad,#a89580);box-shadow:0 0 5px rgba(202,189,173,.38)}
+  .zc-earth{width:9px;height:9px;background:radial-gradient(circle at 35% 35%,#7a9cc0,#4f74a0);box-shadow:0 0 6px rgba(122,156,192,.42)}
+  .zc-moonorbit{position:absolute;left:50%;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;animation:zc-spin 4s linear infinite}
+  .zc-moon{position:absolute;top:0;left:50%;width:4px;height:4px;border-radius:50%;background:var(--zc-moon);box-shadow:0 0 3px rgba(0,0,0,.25);transform:translate(-50%,-50%)}
+  .zc-jup{width:15px;height:15px;background:linear-gradient(#c6b499 0 18%,#b0997e 18% 30%,#cec0a5 30% 46%,#a89272 46% 60%,#c5b498 60% 78%,#b4a184 78% 100%);box-shadow:0 0 8px rgba(198,178,145,.42)}
+  .zc-sat{width:10px;height:10px;background:radial-gradient(circle at 35% 35%,#d8c89e,#c0aa7a);box-shadow:0 0 6px rgba(200,182,140,.34)}
+  .zc-satring{position:absolute;left:50%;top:50%;width:22px;height:8px;margin:-4px 0 0 -11px;border:1.5px solid rgba(190,172,130,.7);border-radius:50%;transform:rotate(-20deg)}
+  .zc-comet{width:6px;height:6px;border-radius:50%;background:radial-gradient(circle at 40% 40%,#ffd9b0,var(--zc-comet-head));box-shadow:0 0 11px var(--zc-comet-glow)}
+  .zc-comet:after{content:"";position:absolute;left:50%;bottom:4px;width:2.5px;height:22px;transform:translateX(-50%);background:linear-gradient(to top,transparent,var(--zc-comet-tail));opacity:.85;border-radius:3px}
   @keyframes zc-spin{to{transform:rotate(360deg)}}
   @keyframes zc-spinr{to{transform:rotate(-360deg)}}
-  @media (prefers-reduced-motion:reduce){.zc-orb{animation:none}}
-  @media (max-width:760px){ .zoom-cluster{right:12px;bottom:auto;top:70px;width:150px;height:150px} }
+  @keyframes zc-corona{0%,100%{opacity:.7;transform:scale(1)}50%{opacity:1;transform:scale(1.03)}}
+  @media (prefers-reduced-motion:reduce){.zc-orb,.zc-moonorbit,.zc-center:after{animation:none}}
+  @media (max-width:760px){
+    .zoom-cluster{right:10px;bottom:auto;top:64px;width:200px;height:200px}
+    .zc-ring.rA{width:92px;height:92px}.zc-ring.rCtl{width:122px;height:122px}.zc-ring.rB{width:144px;height:144px}.zc-ring.rC{width:180px;height:180px}
+    .zc-center{width:62px;height:62px}.zc-center span{font-size:9px}
+    .zc-btn{width:34px;height:34px}
+    .zc-in{left:100px;top:39px}.zc-out{left:100px;top:161px}.zc-help{left:161px;top:100px}
+    .zc-oMerc{width:74px;height:74px;margin:-37px 0 0 -37px}.zc-oVenus{width:94px;height:94px;margin:-47px 0 0 -47px}
+    .zc-oPluto{width:112px;height:112px;margin:-56px 0 0 -56px}.zc-oEarth{width:144px;height:144px;margin:-72px 0 0 -72px}
+    .zc-oJup{width:164px;height:164px;margin:-82px 0 0 -82px}.zc-oSat{width:180px;height:180px;margin:-90px 0 0 -90px}
+    .zc-oComet{width:132px;height:132px;margin:-66px 0 0 -66px}
+  }
 
   #tour{position:fixed;inset:0;z-index:5500;display:none}
   #tour.on{display:block}
@@ -1129,12 +1159,18 @@
 </div>
 
 <div class="zoom-cluster" id="zoom-cluster">
-  <div class="zc-ring"></div>
+  <div class="zc-ring rA"></div>
+  <div class="zc-ring rCtl"></div>
+  <div class="zc-ring rB"></div>
+  <div class="zc-ring rC"></div>
   <div class="zc-orbit-layer" aria-hidden="true">
-    <div class="zc-orbit2"></div>
-    <div class="zc-orb zc-orb-a"><span class="zc-body"><span class="zc-planet lime"></span><span class="zc-sat"></span></span></div>
-    <div class="zc-orb zc-orb-b"><span class="zc-body"><span class="zc-planet blue"></span></span></div>
-    <div class="zc-orb zc-orb-c"><span class="zc-body"><span class="zc-comet"></span></span></div>
+    <div class="zc-orb zc-oMerc"><span class="zc-body"><span class="zc-pl zc-merc"></span></span></div>
+    <div class="zc-orb zc-oVenus"><span class="zc-body"><span class="zc-pl zc-venus"></span></span></div>
+    <div class="zc-orb zc-oPluto"><span class="zc-body"><span class="zc-pl zc-pluto"></span></span></div>
+    <div class="zc-orb zc-oEarth"><span class="zc-body"><span class="zc-pl zc-earth"></span><span class="zc-moonorbit"><span class="zc-moon"></span></span></span></div>
+    <div class="zc-orb zc-oJup"><span class="zc-body"><span class="zc-pl zc-jup"></span></span></div>
+    <div class="zc-orb zc-oSat"><span class="zc-body"><span class="zc-pl zc-sat"></span><span class="zc-satring"></span></span></div>
+    <div class="zc-orb zc-oComet"><span class="zc-body"><span class="zc-comet"></span></span></div>
   </div>
   <div class="zc-center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg><span id="zc-zoom"><span class="zc-zpfx">Z</span> 7.2</span></div>
   <button class="zc-btn zc-in" id="zc-in" aria-label="Zoom in" title="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="11" cy="11" r="7"/><path d="M11 8v6M8 11h6M21 21l-4.3-4.3"/></svg></button>
