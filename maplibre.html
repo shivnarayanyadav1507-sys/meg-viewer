@@ -40,7 +40,7 @@
   /* DARK theme (default) */
   :root, [data-theme="dark"]{
     --t-bg:#0a0c0e; --t-bg-grad:radial-gradient(130% 110% at 66% 22%,#16211e 0%,#0d1412 34%,#0a0c0e 72%);
-    --t-panel:rgba(15,19,23,.55); --t-panel2:rgba(255,255,255,.04); --t-panel-solid:#0f1317;
+    --t-panel:rgba(15,19,23,.55); --t-panel2:rgba(255,255,255,.04); --t-panel-solid:#0f1317; --t-panel-strong:rgba(12,15,18,.9);
     --t-ink:#e9eef2; --t-mut:#8a97a2; --t-dim:#5d6873;
     --t-line:rgba(255,255,255,.1); --t-line-str:rgba(255,255,255,.18);
     --t-lime:#b6f441; --t-lime-soft:rgba(182,244,65,.14); --t-lime-line:rgba(182,244,65,.4); --t-lime-ink:#0a0c0e; --t-year:#a4e034; --t-dot:#aeb8c2;
@@ -56,7 +56,7 @@
   /* LIGHT theme */
   [data-theme="light"]{
     --t-bg:#eef1ec; --t-bg-grad:linear-gradient(160deg,#f1f4ec 0%,#eef1ec 45%,#e8ece4 100%);
-    --t-panel:rgba(251,251,250,.92); --t-panel2:#f1f3ee; --t-panel-solid:#fbfbfa;
+    --t-panel:rgba(251,251,250,.92); --t-panel2:#f1f3ee; --t-panel-solid:#fbfbfa; --t-panel-strong:rgba(251,251,250,.97);
     --t-ink:#1b211d; --t-mut:#6b756c; --t-dim:#9aa39a;
     --t-line:#dde2da; --t-line-str:#c7cec2;
     --t-lime:#5f8f21; --t-lime-soft:#e3edd2; --t-lime-line:#b9d38c; --t-lime-ink:#ffffff; --t-year:#3f6b16; --t-dot:#5a6570;
@@ -499,7 +499,7 @@
      content is moved in during later stages.
      ============================================================ */
   #mdp{position:absolute;top:14px;left:14px;bottom:14px;width:var(--md-panel-w);z-index:1200;
-    display:flex;flex-direction:column;background:var(--t-panel);
+    display:flex;flex-direction:column;background:var(--t-panel-strong);
     backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
     border:1px solid var(--t-line);border-radius:24px;box-shadow:var(--t-sh);overflow:hidden;transition:width .3s ease,transform .3s ease}
   /* collapsed = shrink to the icon rail only (still reopenable) */
@@ -724,6 +724,8 @@
   #timeline .tl-years button{color:var(--t-dim)}
   #timeline .tl-years button.on,#timeline .tl-years .on{color:var(--t-lime);font-weight:700}
   #timeline .tl-year-mono,#timeline .tl-top,#timeline .tl-bottom{color:var(--t-mut)}
+  /* keep the interactive controls grouped near the centre even though the glass+curve span the full width */
+  #timeline .tl-top,#timeline .tl-bottom,#timeline .tl-compare-row{max-width:720px;margin-left:auto;margin-right:auto;width:100%}
   #timeline .tl-snap,#timeline .tl-speed{color:var(--t-ink);font:600 10px 'JetBrains Mono',monospace;letter-spacing:.06em;text-transform:uppercase;gap:7px}
   #timeline .tl-hint{color:var(--t-mut);font:500 9.5px 'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;flex:1;text-align:center}
   #timeline .cmp-eye{font:600 9px 'JetBrains Mono',monospace;letter-spacing:.08em;text-transform:uppercase}
@@ -743,7 +745,7 @@
   [data-theme="dark"] #timeline .tl-snap,[data-theme="dark"] #timeline .tl-hint,[data-theme="dark"] #timeline .tl-speed{text-shadow:0 1px 4px rgba(0,0,0,.85)}
 
   /* ---- curved year track ---- */
-  .tl-curve-wrap{position:relative;height:76px;margin:2px 0 4px;cursor:grab}
+  .tl-curve-wrap{position:relative;height:92px;margin:2px 0 4px;cursor:grab}
   .tl-curve-wrap.grabbing{cursor:grabbing}
   .tl-curve{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
   .tl-curve-base{stroke:var(--t-line)}
@@ -1054,9 +1056,9 @@
 
   <!-- curved year track -->
   <div class="tl-curve-wrap">
-    <svg class="tl-curve" viewBox="0 0 560 96" preserveAspectRatio="xMidYMid meet">
-      <path class="tl-curve-base" d="M20 78 Q280 8 540 78" fill="none" stroke-width="3"/>
-      <path class="tl-curve-fill" id="tl-curve-fill" d="M20 78 Q280 8 540 78" fill="none" stroke-width="3"/>
+    <svg class="tl-curve" viewBox="0 0 1120 96" preserveAspectRatio="xMidYMid meet">
+      <path class="tl-curve-base" d="M20 78 Q560 8 1100 78" fill="none" stroke-width="2.4"/>
+      <path class="tl-curve-fill" id="tl-curve-fill" d="M20 78 Q560 8 1100 78" fill="none" stroke-width="2.4"/>
       <g id="tl-curve-dots"></g>
     </svg>
     <input type="range" id="scrub" min="0" max="6" step="0.01" value="3" aria-label="Scrub years" />
@@ -1377,11 +1379,11 @@ function render() {
   if (map.isSourceLoaded && map.isSourceLoaded(loId)) setStatus(YEARS[near] + ' · ' + modeLabel(), 'ok');
   else setStatus('Loading ' + YEARS[near] + '…', 'load');
 }
-// ---- curved year track geometry (matches design: M20 78 Q280 8 540 78) ----
+// ---- curved year track geometry (widened to span the timeline: M20 78 Q560 8 1100 78) ----
 function curvePoint(t) {
-  // quadratic bezier P0(20,78) P1(280,8) P2(540,78), t in [0,1]
+  // quadratic bezier P0(20,78) P1(560,8) P2(1100,78), t in [0,1]
   const mt = 1 - t;
-  const x = mt*mt*20 + 2*mt*t*280 + t*t*540;
+  const x = mt*mt*20 + 2*mt*t*560 + t*t*1100;
   const y = mt*mt*78 + 2*mt*t*8 + t*t*78;
   return { x, y };
 }
@@ -1665,52 +1667,77 @@ function clearRasters() {
   renderImgList();
   setStatus('', 'ok');
 }
+let _geotiffLib = null;
+async function getGeoTIFF() {
+  if (_geotiffLib) return _geotiffLib;
+  _geotiffLib = await import('https://esm.sh/geotiff@2.1.3');
+  return _geotiffLib;
+}
+// Render a GeoTIFF (raw or COG) to a data URL + return its geographic bbox.
+async function rasterizeGeoTIFF(file) {
+  const GeoTIFF = await getGeoTIFF();
+  const buf = await file.arrayBuffer();
+  const tiff = await GeoTIFF.fromArrayBuffer(buf);
+  const image = await tiff.getImage();
+  const bbox = image.getBoundingBox(); // [minX, minY, maxX, maxY] in the file's CRS (assumed EPSG:4326)
+  const width = image.getWidth(), height = image.getHeight();
+  // downsample very large rasters so the canvas stays reasonable
+  const maxDim = 2048;
+  const scale = Math.min(1, maxDim / Math.max(width, height));
+  const ow = Math.max(1, Math.round(width * scale)), oh = Math.max(1, Math.round(height * scale));
+  const rgba = await image.readRasters({ width: ow, height: oh, interleave: true });
+  const samples = image.getSamplesPerPixel();
+  const canvas = document.createElement('canvas');
+  canvas.width = ow; canvas.height = oh;
+  const ctx = canvas.getContext('2d');
+  const imgData = ctx.createImageData(ow, oh);
+  const out = imgData.data;
+  // find min/max for single-band (e.g. DEM) to stretch to greyscale
+  let mn = Infinity, mx = -Infinity;
+  if (samples === 1) {
+    for (let i = 0; i < rgba.length; i++) { const v = rgba[i]; if (v === 0 || !isFinite(v)) continue; if (v < mn) mn = v; if (v > mx) mx = v; }
+    if (!isFinite(mn) || mn === mx) { mn = 0; mx = 255; }
+  }
+  const px = ow * oh;
+  for (let i = 0; i < px; i++) {
+    if (samples === 1) {
+      const v = rgba[i];
+      const t = Math.max(0, Math.min(255, Math.round(((v - mn) / (mx - mn)) * 255)));
+      out[i * 4] = t; out[i * 4 + 1] = t; out[i * 4 + 2] = t;
+      out[i * 4 + 3] = (v === 0 || !isFinite(v)) ? 0 : 255;
+    } else {
+      out[i * 4] = rgba[i * samples];
+      out[i * 4 + 1] = rgba[i * samples + (samples > 1 ? 1 : 0)];
+      out[i * 4 + 2] = rgba[i * samples + (samples > 2 ? 2 : 0)];
+      out[i * 4 + 3] = samples >= 4 ? rgba[i * samples + 3] : 255;
+    }
+  }
+  ctx.putImageData(imgData, 0, 0);
+  return { dataUrl: canvas.toDataURL('image/png'), bbox };
+}
 async function addUploadedRaster(file) {
   const name = file.name.toLowerCase();
   const uid = 'ras' + (++imgUid);
-  const isTif = name.endsWith('.tif') || name.endsWith('.tiff');
+  const isTif = name.endsWith('.tif') || name.endsWith('.tiff') || name.endsWith('.geotiff');
   const isImg = name.endsWith('.png') || name.endsWith('.jpg') || name.endsWith('.jpeg');
   if (!isTif && !isImg) throw new Error('unsupported raster format');
 
-  // Push the entry FIRST so any async bounds update can always find it.
+  // Push the entry FIRST so async updates can always find it.
   const entry = { id: uid, name: file.name, visible: true, removable: true, bounds: null };
   imgLayers.push(entry);
+  renderImgList();
 
   if (isTif) {
-    const url = URL.createObjectURL(file);
-    map.addSource(uid, { type: 'raster', url: 'cog://' + url, tileSize: 256 });
+    // Parse the GeoTIFF ourselves (works for raw *and* COG), so we always get bounds + a visible image.
+    const { dataUrl, bbox } = await rasterizeGeoTIFF(file);
+    const [w, s, e, n] = bbox;
+    if (![w, s, e, n].every(isFinite)) throw new Error('GeoTIFF has no georeferencing');
+    const coords = [[w, n], [e, n], [e, s], [w, s]];
+    map.addSource(uid, { type: 'image', url: dataUrl, coordinates: coords });
     map.addLayer({ id: uid, type: 'raster', source: uid, paint: { 'raster-opacity': 0.9, 'raster-resampling': 'nearest' } });
-    // surface load errors for this source (e.g. a GeoTIFF the protocol can't parse)
-    const onErr = ev => {
-      if (ev.sourceId === uid) {
-        const short = file.name.length > 22 ? file.name.slice(0, 20) + '…' : file.name;
-        setStatus('Could not read ' + short + ' — try a COG GeoTIFF', 'err');
-      }
-    };
-    map.on('error', onErr);
-    setTimeout(() => map.off('error', onErr), 8000);
-    // COG bounds arrive (a)synchronously via the protocol; grab them, update the row, and fly there.
-    const grabBounds = () => {
-      const src = map.getSource(uid);
-      const b = src && (src.bounds || (src.tileBounds && src.tileBounds.bounds));
-      if (b && b.length === 4 && isFinite(b[0])) {
-        // ignore the whole-world default some sources return before real bounds load
-        const whole = Math.abs(b[0]) >= 179 && Math.abs(b[2]) >= 179;
-        if (whole) return false;
-        entry.bounds = [[b[0], b[1]], [b[2], b[3]]];
-        renderImgList();
-        map.fitBounds(entry.bounds, { padding: 80, maxZoom: 14, duration: 900 });
-        return true;
-      }
-      return false;
-    };
-    if (!grabBounds()) {
-      const onData = ev => {
-        if (ev.sourceId === uid && ev.isSourceLoaded) { if (grabBounds()) map.off('sourcedata', onData); }
-      };
-      map.on('sourcedata', onData);
-      setTimeout(() => map.off('sourcedata', onData), 8000);
-    }
+    entry.bounds = [[w, s], [e, n]];
+    renderImgList();
+    map.fitBounds(entry.bounds, { padding: 80, maxZoom: 14, duration: 900 });
   } else {
     // PNG / JPEG: place over the current view (no georeferencing available)
     const dataUrl = await fileToDataURL(file);
@@ -1719,15 +1746,15 @@ async function addUploadedRaster(file) {
     map.addSource(uid, { type: 'image', url: dataUrl, coordinates: coords });
     map.addLayer({ id: uid, type: 'raster', source: uid, paint: { 'raster-opacity': 0.9 } });
     entry.bounds = [[b.getWest(), b.getSouth()], [b.getEast(), b.getNorth()]];
+    renderImgList();
   }
-  renderImgList();
 }
 async function loadRasterFiles(files) {
   for (const file of files) {
     const short = file.name.length > 22 ? file.name.slice(0, 20) + '…' : file.name;
-    setStatus('Reading ' + short, 'load');
+    setStatus('Reading ' + short + '…', 'load');
     try { await addUploadedRaster(file); setStatus('Loaded · ' + short, 'ok'); }
-    catch (err) { console.error(err); setStatus('Could not load ' + short, 'err'); }
+    catch (err) { console.error('raster load failed:', err); setStatus('Could not load ' + short + ' (' + (err && err.message ? err.message : 'unreadable') + ')', 'err'); }
   }
 }
 
