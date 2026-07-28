@@ -197,8 +197,8 @@
 
   /* ---- timeline (old-viewer style) ---- */
   .timeline{position:absolute;left:calc(var(--md-panel-w) + 28px);right:14px;bottom:22px;z-index:1000;margin:0 auto;
-    width:min(620px,calc(100vw - var(--md-panel-w) - 56px));background:var(--panel);backdrop-filter:blur(16px);
-    -webkit-backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:16px 20px 14px;display:flex;flex-direction:column;gap:11px}
+    width:min(760px,calc(100vw - var(--md-panel-w) - 56px));background:var(--panel);backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:28px;box-shadow:var(--shadow);padding:16px 30px 14px;display:flex;flex-direction:column;gap:11px}
   .tl-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
   .tl-head{display:flex;align-items:baseline;gap:11px;min-width:0;flex-wrap:wrap}
   .tl-year{font-family:'JetBrains Mono',monospace;font-size:30px;font-weight:700;line-height:1;color:var(--accent);letter-spacing:.02em}
@@ -461,11 +461,10 @@
   .zc-btn{position:absolute;width:44px;height:44px;border-radius:50%;border:1px solid var(--t-line);background:var(--t-panel);
     backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;color:var(--t-ink);box-shadow:var(--t-sh);transition:.15s}
   .zc-btn svg{width:17px;height:17px}
-  .zc-btn:hover{border-color:var(--t-lime);color:var(--t-lime)}
-  .zc-in{left:50%;top:0;transform:translate(-50%,-50%);background:var(--t-lime-soft);border-color:var(--t-lime-line);color:var(--t-lime);box-shadow:var(--t-glow),var(--t-sh)}
-  .zc-in:hover{filter:brightness(1.05)}
+  .zc-btn:hover{border-color:var(--t-lime-line);color:var(--t-lime);background:var(--t-lime-soft);box-shadow:var(--t-glow),var(--t-sh)}
+  .zc-in{left:50%;top:0;transform:translate(-50%,-50%)}
   .zc-out{left:50%;top:100%;transform:translate(-50%,-50%)}
-  .zc-help{left:100%;top:50%;transform:translate(-50%,-50%);color:var(--t-mut)}
+  .zc-help{left:100%;top:50%;transform:translate(-50%,-50%)}
   @media (max-width:760px){ .zoom-cluster{right:12px;bottom:auto;top:70px;width:150px;height:150px} }
 
   #tour{position:fixed;inset:0;z-index:5500;display:none}
@@ -566,7 +565,7 @@
   /* Stage 3: new panel revealed; old left-stack hidden. */
   .left-stack{display:none !important}
   /* timeline shifts to clear the collapsed 64px rail */
-  #mdp.collapsed ~ .timeline{left:92px;right:14px;width:min(620px,calc(100vw - 106px))}
+  #mdp.collapsed ~ .timeline{left:92px;right:14px;width:min(760px,calc(100vw - 106px))}
 
   /* view-tool rows in the View tab */
   .mdp-section[data-tab="view"] .tool-row{display:flex;align-items:center;gap:10px;width:100%;padding:11px 12px;border:1px solid var(--t-line);border-radius:11px;
@@ -699,8 +698,8 @@
   }
 
   /* ---- floating timeline: bare/transparent (design ref) — no card, minimal blur for legibility over the map ---- */
-  #timeline{border:0 !important;background:transparent !important;box-shadow:none !important;border-radius:22px !important;
-    backdrop-filter:blur(3px) !important;-webkit-backdrop-filter:blur(3px) !important;padding:10px 16px !important}
+  #timeline{border:0 !important;background:transparent !important;box-shadow:none !important;border-radius:999px !important;
+    backdrop-filter:blur(3px) !important;-webkit-backdrop-filter:blur(3px) !important;padding:12px 34px !important}
   #timeline .tl-year{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--t-lime);letter-spacing:.01em;text-shadow:0 0 20px var(--t-lime-soft)}
   #timeline .tl-badge{border-radius:6px;background:var(--t-lime-soft);border:1px solid var(--t-lime-line);color:var(--t-lime);font-weight:600;padding:3px 7px}
   /* round playback buttons */
@@ -723,8 +722,9 @@
   #timeline .tl-years button{color:var(--t-dim)}
   #timeline .tl-years button.on,#timeline .tl-years .on{color:var(--t-lime);font-weight:700}
   #timeline .tl-year-mono,#timeline .tl-top,#timeline .tl-bottom{color:var(--t-mut)}
-  #timeline .tl-snap,#timeline .tl-speed{color:var(--t-ink)}
-  #timeline .tl-hint{color:var(--t-mut)}
+  #timeline .tl-snap,#timeline .tl-speed{color:var(--t-ink);font:600 10px 'JetBrains Mono',monospace;letter-spacing:.06em;text-transform:uppercase;gap:7px}
+  #timeline .tl-hint{color:var(--t-mut);font:500 9.5px 'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;flex:1;text-align:center}
+  #timeline .cmp-eye{font:600 9px 'JetBrains Mono',monospace;letter-spacing:.08em;text-transform:uppercase}
   /* subtle shadow keeps timeline text readable over varied map terrain */
   #timeline .tl-year,#timeline .tl-snap,#timeline .tl-hint,#timeline .tl-speed,#timeline .tl-dot-label{text-shadow:0 1px 3px var(--t-bg)}
   /* dark theme: timeline floats bare over a dark map — lift dim texts and strengthen shadow for legibility */
@@ -736,17 +736,18 @@
   [data-theme="dark"] #timeline .tl-snap,[data-theme="dark"] #timeline .tl-hint,[data-theme="dark"] #timeline .tl-speed{text-shadow:0 1px 4px rgba(0,0,0,.85)}
 
   /* ---- curved year track ---- */
-  .tl-curve-wrap{position:relative;height:76px;margin:2px 0 4px}
-  .tl-curve{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+  .tl-curve-wrap{position:relative;height:76px;margin:2px 0 4px;cursor:grab}
+  .tl-curve-wrap.grabbing{cursor:grabbing}
+  .tl-curve{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
   .tl-curve-base{stroke:var(--t-line)}
   .tl-curve-fill{stroke:var(--t-lime);transition:stroke-dasharray .15s linear}
-  .tl-dot{fill:var(--t-dim);transition:.15s}
+  .tl-dot{fill:var(--t-dim);transition:.15s;pointer-events:auto;cursor:pointer}
   .tl-dot.on{fill:var(--t-lime);stroke:var(--t-bg);stroke-width:3}
   .tl-dot-year{fill:var(--t-dim);font:400 10px 'JetBrains Mono',monospace}
   .tl-dot-label{fill:var(--t-lime);font:700 13px 'JetBrains Mono',monospace}
   /* scrub sits invisibly over the curve for dragging — the SVG dot is the visible indicator */
   .tl-curve-wrap #scrub{position:absolute;left:3%;right:3%;top:50%;transform:translateY(-50%);width:94%;height:40px;
-    -webkit-appearance:none;appearance:none;background:transparent;border:none;outline:none;margin:0;cursor:pointer;box-shadow:none}
+    -webkit-appearance:none;appearance:none;background:transparent;border:none;outline:none;margin:0;cursor:grab;box-shadow:none;pointer-events:none}
   .tl-curve-wrap #scrub::-webkit-slider-thumb{-webkit-appearance:none;width:34px;height:34px;border-radius:50%;background:transparent;border:none;box-shadow:none;cursor:pointer;opacity:0}
   .tl-curve-wrap #scrub::-moz-range-thumb{width:34px;height:34px;border-radius:50%;background:transparent;border:none;box-shadow:none;cursor:pointer;opacity:0}
   .tl-curve-wrap #scrub::-webkit-slider-runnable-track{background:transparent;border:none}
@@ -760,15 +761,33 @@
   #timeline .tl-compare-pill.on{background:var(--t-blue);color:var(--t-lime-ink)}
 
   /* ---- A / B compare row ---- */
-  #timeline .tl-compare-row{display:flex;align-items:center;gap:10px;padding-top:4px}
+  #timeline .tl-compare-row{display:flex;align-items:center;gap:8px;padding-top:4px}
   #timeline .cmp-eye{color:var(--t-dim)}
-  #timeline .cmp-pill{display:flex;align-items:center;gap:7px;padding:6px 11px;border-radius:10px}
+  #timeline .cmp-pill{display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:8px}
   #timeline .cmp-pill.a{background:var(--t-lime-soft);border:1px solid var(--t-lime-line)}
   #timeline .cmp-pill.b{background:var(--t-blue-soft);border:1px solid var(--t-blue-line)}
-  #timeline .cmp-pill .cl{font:600 9px 'JetBrains Mono',monospace}
+  #timeline .cmp-pill .cl{font:600 8px 'JetBrains Mono',monospace}
   #timeline .cmp-pill.a .cl{color:var(--t-lime)} #timeline .cmp-pill.b .cl{color:var(--t-blue)}
-  #timeline .cmp-pill select{background:transparent;border:none;color:var(--t-ink);font:700 12px 'JetBrains Mono',monospace;cursor:pointer;outline:none}
-  #timeline .cmp-arrow{width:13px;height:13px;color:var(--t-mut)}
+  #timeline .cmp-arrow{width:12px;height:12px;color:var(--t-mut)}
+
+  /* custom themed year dropdown (replaces native <select> so the option list matches the theme) */
+  #timeline .cmp-dd{position:relative}
+  #timeline .cmp-dd-btn{display:flex;align-items:center;gap:5px;background:transparent;border:0;color:var(--t-ink);
+    font:700 12px 'JetBrains Mono',monospace;cursor:pointer;outline:none;padding:1px 2px}
+  #timeline .cmp-dd-btn .cmp-caret{width:10px;height:10px;stroke:var(--t-mut);fill:none;transition:transform .15s}
+  #timeline .cmp-dd.open .cmp-caret{transform:rotate(180deg)}
+  #timeline .cmp-dd-list{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%) scale(.96);transform-origin:bottom center;
+    min-width:88px;max-height:190px;overflow-y:auto;background:var(--t-panel-solid);border:1px solid var(--t-line);border-radius:12px;
+    box-shadow:var(--t-sh);padding:5px;z-index:1200;opacity:0;pointer-events:none;transition:opacity .13s,transform .13s}
+  #timeline .cmp-dd.open .cmp-dd-list{opacity:1;pointer-events:auto;transform:translateX(-50%) scale(1)}
+  #timeline .cmp-dd-opt{display:block;width:100%;text-align:center;background:transparent;border:0;border-radius:8px;
+    color:var(--t-ink);font:600 12px 'JetBrains Mono',monospace;padding:7px 12px;cursor:pointer;transition:background .1s,color .1s}
+  #timeline .cmp-dd-opt:hover{background:var(--t-lime-soft);color:var(--t-lime)}
+  #timeline .cmp-dd.b .cmp-dd-opt:hover{background:var(--t-blue-soft);color:var(--t-blue)}
+  #timeline .cmp-dd-opt.sel{background:var(--t-lime-soft);color:var(--t-lime);font-weight:700}
+  #timeline .cmp-dd.b .cmp-dd-opt.sel{background:var(--t-blue-soft);color:var(--t-blue)}
+  #timeline .cmp-dd-list::-webkit-scrollbar{width:6px}
+  #timeline .cmp-dd-list::-webkit-scrollbar-thumb{background:var(--t-line-str);border-radius:3px}
 </style>
 </head>
 <body>
@@ -1032,9 +1051,19 @@
 
   <div class="tl-compare-row" id="compare-row" hidden>
     <span class="eye cmp-eye">Compare</span>
-    <span class="cmp-pill a"><span class="cl">A</span><select id="cmp-a"></select></span>
+    <span class="cmp-pill a"><span class="cl">A</span>
+      <span class="cmp-dd a" id="cmp-a-dd">
+        <button class="cmp-dd-btn" id="cmp-a-btn" aria-haspopup="listbox" aria-expanded="false"><span id="cmp-a-val">2015</span><svg class="cmp-caret" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+        <div class="cmp-dd-list" id="cmp-a-list" role="listbox"></div>
+      </span>
+    </span>
     <svg class="cmp-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-    <span class="cmp-pill b"><span class="cl">B</span><select id="cmp-b"></select></span>
+    <span class="cmp-pill b"><span class="cl">B</span>
+      <span class="cmp-dd b" id="cmp-b-dd">
+        <button class="cmp-dd-btn" id="cmp-b-btn" aria-haspopup="listbox" aria-expanded="false"><span id="cmp-b-val">2025</span><svg class="cmp-caret" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+        <div class="cmp-dd-list" id="cmp-b-list" role="listbox"></div>
+      </span>
+    </span>
   </div>
 
   <div class="tl-bottom">
@@ -1068,7 +1097,7 @@
   <div class="zc-center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg><span id="zc-zoom"><span class="zc-zpfx">Z</span> 7.2</span></div>
   <button class="zc-btn zc-in" id="zc-in" aria-label="Zoom in" title="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="11" cy="11" r="7"/><path d="M11 8v6M8 11h6M21 21l-4.3-4.3"/></svg></button>
   <button class="zc-btn zc-out" id="zc-out" aria-label="Zoom out" title="Zoom out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="11" cy="11" r="7"/><path d="M8 11h6M21 21l-4.3-4.3"/></svg></button>
-  <button class="zc-btn zc-help" id="help-btn" aria-label="How to use this viewer" title="How to use this viewer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 4.9.8c0 1.7-2.4 1.9-2.4 3.4"/><path d="M12 17h.01"/></svg></button>
+  <button class="zc-btn zc-help" id="help-btn" aria-label="How to use this viewer" title="How to use this viewer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M9.3 9.2a2.7 2.7 0 0 1 5.2 1c0 1.8-2.5 2.2-2.5 3.8"/><circle cx="12" cy="17.4" r="0.6" fill="currentColor" stroke="none"/></svg></button>
 </div>
 
 <div id="tour" aria-label="Guided tour">
@@ -1721,6 +1750,7 @@ function enterCompare() {
   $('swipe-divider').classList.add('on');
   $('compare-toggle').classList.add('compare-on');
   $('compare-row').hidden = false;
+  if (window._ddSync) window._ddSync();
   $('scrub').disabled = true; $('prev').disabled = true; $('next').disabled = true; $('play').disabled = true;
   setSwipe(0.5);
   ensureMapB();
@@ -2025,16 +2055,43 @@ function clearMeasure(resetReadout) {
   if (resetReadout) { $('meas-readout').hidden = true; $('clear-measure').hidden = true; $('meas-value').textContent = '—'; $('meas-sub').textContent = ''; }
 }
 
-function wireCompare() {
-  // populate A/B year selects
-  const aSel = $('cmp-a'), bSel = $('cmp-b');
-  YEARS.forEach(y => {
-    aSel.insertAdjacentHTML('beforeend', '<option value="' + y + '">' + y + '</option>');
-    bSel.insertAdjacentHTML('beforeend', '<option value="' + y + '">' + y + '</option>');
+function closeAllDD() {
+  document.querySelectorAll('#timeline .cmp-dd.open').forEach(dd => {
+    dd.classList.remove('open');
+    const b = dd.querySelector('.cmp-dd-btn'); if (b) b.setAttribute('aria-expanded', 'false');
   });
-  aSel.value = cmpA; bSel.value = cmpB;
-  aSel.addEventListener('change', e => { cmpA = +e.target.value; renderCompare(); });
-  bSel.addEventListener('change', e => { cmpB = +e.target.value; renderCompare(); });
+}
+function wireCompare() {
+  // custom themed year dropdowns (A/B) — native <select> option lists can't be themed cross-browser
+  function buildDD(key, getVal, setVal) {
+    const dd = $('cmp-' + key + '-dd'), btn = $('cmp-' + key + '-btn'),
+          list = $('cmp-' + key + '-list'), valEl = $('cmp-' + key + '-val');
+    list.innerHTML = '';
+    YEARS.forEach(y => {
+      const o = document.createElement('button');
+      o.type = 'button'; o.className = 'cmp-dd-opt'; o.textContent = y; o.dataset.year = y;
+      o.setAttribute('role', 'option');
+      o.addEventListener('click', () => { setVal(y); syncDD(); close(); renderCompare(); });
+      list.appendChild(o);
+    });
+    function syncDD() {
+      valEl.textContent = getVal();
+      [...list.children].forEach(o => o.classList.toggle('sel', +o.dataset.year === getVal()));
+    }
+    function open() { closeAllDD(); dd.classList.add('open'); btn.setAttribute('aria-expanded', 'true'); }
+    function close() { dd.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); }
+    btn.addEventListener('click', e => { e.stopPropagation(); dd.classList.contains('open') ? close() : open(); });
+    dd._close = close; dd._sync = syncDD;
+    syncDD();
+    return dd;
+  }
+  const ddA = buildDD('a', () => cmpA, v => cmpA = v);
+  const ddB = buildDD('b', () => cmpB, v => cmpB = v);
+  window._ddSync = () => { ddA._sync(); ddB._sync(); };
+  // close on outside click / Esc
+  document.addEventListener('click', closeAllDD);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAllDD(); });
+
   $('compare-toggle').addEventListener('click', () => compareOn ? exitCompare() : enterCompare());
 
   // divider drag
@@ -2057,6 +2114,38 @@ function wireCompare() {
 
 function wireControls() {
   $('scrub').addEventListener('input', e => { pos = +e.target.value; if (snap) pos = Math.round(pos); render(); });
+  // smooth grab-and-slide anywhere on the curve (invisible native thumb is hard to grab)
+  (function enableCurveDrag() {
+    const wrap = document.querySelector('.tl-curve-wrap');
+    const scrub = $('scrub');
+    if (!wrap) return;
+    let dragging = false;
+    const posFromX = clientX => {
+      const r = wrap.getBoundingClientRect();
+      // scrub spans 3%..97% of the wrap width
+      const x0 = r.left + r.width * 0.03, x1 = r.left + r.width * 0.97;
+      let f = (clientX - x0) / (x1 - x0);
+      f = Math.max(0, Math.min(1, f));
+      let p = f * (YEARS.length - 1);
+      if (snap) p = Math.round(p);
+      return p;
+    };
+    const apply = clientX => { pos = posFromX(clientX); scrub.value = pos; render(); };
+    const down = e => {
+      if (scrub.disabled) return;
+      dragging = true; wrap.classList.add('grabbing');
+      apply(e.touches ? e.touches[0].clientX : e.clientX);
+      e.preventDefault();
+    };
+    const move = e => { if (!dragging) return; apply(e.touches ? e.touches[0].clientX : e.clientX); };
+    const up = () => { if (!dragging) return; dragging = false; wrap.classList.remove('grabbing'); if (snap) { pos = Math.round(pos); scrub.value = pos; render(); } };
+    wrap.addEventListener('mousedown', down);
+    wrap.addEventListener('touchstart', down, { passive: false });
+    window.addEventListener('mousemove', move);
+    window.addEventListener('touchmove', move, { passive: false });
+    window.addEventListener('mouseup', up);
+    window.addEventListener('touchend', up);
+  })();
   $('prev').addEventListener('click', () => step(-1));
   $('next').addEventListener('click', () => step(1));
   $('play').addEventListener('click', togglePlay);
@@ -2067,7 +2156,8 @@ function wireControls() {
     render();
   }));
   $('snap').addEventListener('change', e => { snap = e.target.checked; if (snap) setPos(Math.round(pos)); if (playing) { stopPlay(); startPlay(); } });
-  $('speed').addEventListener('input', e => { speed = +e.target.value; if (playing && snap) stepPlay(); });
+  $('speed').addEventListener('input', e => { speed = +e.target.value; e.target.style.setProperty('--val', e.target.value + '%'); if (playing && snap) stepPlay(); });
+  $('speed').style.setProperty('--val', $('speed').value + '%');
   $('opacity').addEventListener('input', e => { opacity = +e.target.value / 100; $('op-val').textContent = e.target.value + '%'; e.target.style.setProperty('--val', e.target.value + '%'); render(); });
   $('opacity').style.setProperty('--val', $('opacity').value + '%');
   { const g = $('gear'); if (g) g.addEventListener('click', () => { opacity = 1; $('opacity').value = 100; $('op-val').textContent = '100%'; $('opacity').style.setProperty('--val','100%'); render(); }); }
