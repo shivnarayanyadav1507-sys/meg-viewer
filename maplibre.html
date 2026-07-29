@@ -474,9 +474,9 @@
   .zc-btn{position:absolute;width:40px;height:40px;border-radius:50%;border:1px solid var(--t-line);background:var(--t-panel);z-index:3;
     backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;color:var(--t-mut);box-shadow:var(--t-sh);transition:.15s}
   .zc-btn svg{width:17px;height:17px;stroke:currentColor;color:var(--t-mut)}
-  .zc-btn:hover{border-color:var(--zc-hov);color:var(--zc-hov);box-shadow:0 0 15px var(--zc-hovg),var(--t-sh);transform:scale(1.08)}
+  .zc-btn:hover{border-color:var(--zc-hov);color:var(--zc-hov);box-shadow:0 0 15px var(--zc-hovg),var(--t-sh);transform:translate(-50%,-50%) scale(1.08)}
   .zc-btn:hover svg{color:var(--zc-hov)}
-  .zc-btn:active{transform:scale(.94)}
+  .zc-btn:active{transform:translate(-50%,-50%) scale(.94)}
   .zc-in{left:125px;top:49px;transform:translate(-50%,-50%);--zc-hov:#79b7b0;--zc-hovg:rgba(121,183,176,.45)}
   .zc-out{left:125px;top:201px;transform:translate(-50%,-50%);--zc-hov:#c78f66;--zc-hovg:rgba(199,143,102,.45)}
   .zc-help{left:201px;top:125px;transform:translate(-50%,-50%);--zc-hov:#6f92c4;--zc-hovg:rgba(111,146,196,.45)}
@@ -506,7 +506,15 @@
   @keyframes zc-spin{to{transform:rotate(360deg)}}
   @keyframes zc-spinr{to{transform:rotate(-360deg)}}
   @keyframes zc-corona{0%,100%{opacity:.7;transform:scale(1)}50%{opacity:1;transform:scale(1.03)}}
-  @media (prefers-reduced-motion:reduce){.zc-orb,.zc-moonorbit,.zc-center:after{animation:none}}
+  /* center "locating" feedback: brighter, faster corona */
+  .zc-center.locating:after{border-color:var(--t-lime);box-shadow:0 0 20px var(--t-lime);animation:zc-locating 1s ease-in-out infinite}
+  .zc-center.locating svg{color:var(--t-lime)}
+  @keyframes zc-locating{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.12)}}
+  /* current-location marker on the map */
+  .loc-dot{width:16px;height:16px;border-radius:50%;background:var(--t-lime);border:2px solid var(--t-panel-solid);box-shadow:0 0 0 4px var(--t-lime-soft),0 0 12px var(--t-lime-line)}
+  .loc-dot:before{content:"";position:absolute;left:50%;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:var(--t-lime);opacity:.5;animation:loc-pulse 2s ease-out infinite}
+  @keyframes loc-pulse{0%{transform:scale(1);opacity:.5}100%{transform:scale(3);opacity:0}}
+  @media (prefers-reduced-motion:reduce){.zc-orb,.zc-moonorbit,.zc-center:after,.loc-dot:before{animation:none}}
   @media (max-width:760px){
     .zoom-cluster{right:10px;bottom:auto;top:64px;width:200px;height:200px}
     .zc-ring.rA{width:92px;height:92px}.zc-ring.rCtl{width:122px;height:122px}.zc-ring.rB{width:144px;height:144px}.zc-ring.rC{width:180px;height:180px}
@@ -1175,7 +1183,7 @@
     <div class="zc-orb zc-oSat"><span class="zc-body"><span class="zc-pl zc-sat"></span><span class="zc-satring"></span></span></div>
     <div class="zc-orb zc-oComet"><span class="zc-body"><span class="zc-comet"></span></span></div>
   </div>
-  <div class="zc-center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg><span id="zc-zoom"><span class="zc-zpfx">Z</span> 7.2</span></div>
+  <div class="zc-center" id="zc-locate" role="button" tabindex="0" aria-label="Go to my location" title="My location"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg><span id="zc-zoom"><span class="zc-zpfx">Z</span> 7.2</span></div>
   <button class="zc-btn zc-in" id="zc-in" aria-label="Zoom in" title="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="11" cy="11" r="7"/><path d="M11 8v6M8 11h6M21 21l-4.3-4.3"/></svg></button>
   <button class="zc-btn zc-out" id="zc-out" aria-label="Zoom out" title="Zoom out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="11" cy="11" r="7"/><path d="M8 11h6M21 21l-4.3-4.3"/></svg></button>
   <button class="zc-btn zc-help" id="help-btn" aria-label="How to use this viewer" title="How to use this viewer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M9.3 9.2a2.7 2.7 0 0 1 5.2 1c0 1.8-2.5 2.2-2.5 3.8"/><circle cx="12" cy="17.4" r="0.6" fill="currentColor" stroke="none"/></svg></button>
@@ -2003,15 +2011,44 @@ function wirePanelCollapse() {
 }
 
 // ---------- circular zoom cluster ----------
+let locMarker = null;
 function wireZoomCluster() {
   const zin = document.getElementById('zc-in');
   const zout = document.getElementById('zc-out');
   const zlab = document.getElementById('zc-zoom');
+  const locate = document.getElementById('zc-locate');
   if (zin) zin.addEventListener('click', () => map.zoomIn({ duration: 300 }));
   if (zout) zout.addEventListener('click', () => map.zoomOut({ duration: 300 }));
   const updateZoom = () => { if (zlab) zlab.innerHTML = '<span class="zc-zpfx">Z</span> ' + map.getZoom().toFixed(1); };
   map.on('zoom', updateZoom);
   updateZoom();
+
+  // center planet = "my location" (geolocation)
+  const runLocate = () => {
+    if (!('geolocation' in navigator)) { setStatus('Location not supported on this device', 'err'); return; }
+    if (locate.classList.contains('locating')) return;
+    locate.classList.add('locating');
+    setStatus('Finding your location…', 'load');
+    navigator.geolocation.getCurrentPosition(pos => {
+      locate.classList.remove('locating');
+      const lng = pos.coords.longitude, lat = pos.coords.latitude;
+      map.flyTo({ center: [lng, lat], zoom: Math.max(map.getZoom(), 12), duration: 1400, essential: true });
+      if (locMarker) { locMarker.setLngLat([lng, lat]); }
+      else {
+        const el = document.createElement('div');
+        el.className = 'loc-dot';
+        locMarker = new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map);
+      }
+      setStatus('', 'ok');
+    }, err => {
+      locate.classList.remove('locating');
+      setStatus(err && err.code === 1 ? 'Location permission denied' : 'Location unavailable', 'err');
+    }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
+  };
+  if (locate) {
+    locate.addEventListener('click', runLocate);
+    locate.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); runLocate(); } });
+  }
 }
 
 function wireViewTools() {
