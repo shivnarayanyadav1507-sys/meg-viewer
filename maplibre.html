@@ -1210,7 +1210,7 @@
 </div>
 
 <script type="importmap">
-{ "imports": { "maplibre-gl": "https://esm.sh/maplibre-gl@5" } }
+{ "imports": { "maplibre-gl": "https://esm.sh/maplibre-gl@5.24.0" } }
 </script>
 <script type="module">
 import maplibregl from 'maplibre-gl';
@@ -1225,7 +1225,6 @@ let playing = false, playTimer = null, rafId = null, lastT = 0;
 let shown = new Set();
 // swipe-compare state
 let compareOn = false, cmpA = 2015, cmpB = 2025, swipeX = 0.5, mapB = null, mapBReady = false, shownB = new Set();
-let maskGeoJSON = null;
 
 const PLAY_SVG  = '<svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z"/></svg>';
 const PAUSE_SVG = '<svg viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>';
@@ -1351,17 +1350,6 @@ map.on('load', () => {
       paint: { 'raster-opacity': 1, 'raster-opacity-transition': { duration: 0 }, 'raster-resampling': 'nearest', 'raster-fade-duration': 120 }
     }, firstSymbol);
   }));
-
-  // (Spotlight mask removed — basemap shows at true brightness everywhere.)
-  // We still compute the boundary geometry in case other features need it.
-  fetch('data/vectors/Meghalaya_Districts.geojson').then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }).then(gj => {
-    const holes = [];
-    (gj.features || []).forEach(f => { const g = f.geometry; if (!g) return;
-      if (g.type === 'Polygon') holes.push(g.coordinates[0]);
-      else if (g.type === 'MultiPolygon') g.coordinates.forEach(p => holes.push(p[0])); });
-    const world = [[-180, -85], [180, -85], [180, 85], [-180, 85], [-180, -85]];
-    maskGeoJSON = { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [world, ...holes] } };
-  }).catch(err => console.error('Boundary geometry load failed:', err));
 
   addVectors();
   wireControls();
@@ -1564,7 +1552,32 @@ function togglePlay() {
 }
 
 // ---------- vector upload (zip-shp / kml / kmz / geojson / gpkg) ----------
+// C4: every parser's output flows through sanitizeFC — a per-feature guard that drops
+// null/malformed geometries so a single bad feature can't fail (or corrupt) the whole layer.
+function sanitizeFC(gj) {
+  if (!gj || typeof gj !== 'object') throw new Error('empty or invalid file');
+  // normalize a bare geometry or Feature into a collection
+  let feats;
+  if (gj.type === 'FeatureCollection') feats = Array.isArray(gj.features) ? gj.features : [];
+  else if (gj.type === 'Feature') feats = [gj];
+  else if (gj.type && gj.coordinates) feats = [{ type: 'Feature', properties: {}, geometry: gj }];
+  else throw new Error('not valid GeoJSON');
+  const clean = [];
+  for (const f of feats) {
+    try {
+      if (!f || !f.geometry || !f.geometry.type) continue;
+      const c = f.geometry.coordinates;
+      if (f.geometry.type !== 'GeometryCollection' && (c == null || (Array.isArray(c) && c.length === 0))) continue;
+      clean.push(f.type === 'Feature' ? f : { type: 'Feature', properties: f.properties || {}, geometry: f.geometry });
+    } catch (e) { /* skip this feature, keep the rest */ }
+  }
+  if (!clean.length) throw new Error('no usable geometry in file');
+  return { type: 'FeatureCollection', features: clean };
+}
 async function parseFile(file) {
+  return sanitizeFC(await parseFileRaw(file));
+}
+async function parseFileRaw(file) {
   const name = file.name.toLowerCase();
   if (name.endsWith('.geojson') || name.endsWith('.json')) return JSON.parse(await file.text());
   if (name.endsWith('.kml')) {
@@ -1712,7 +1725,7 @@ function removeVecLayer(e) {
 }
 function clearVectors() { vecLayers.filter(e => e.removable).forEach(removeVecLayer); setVec(''); }
 
-async function addUploadedVector(gj, filename) {
+async function addUploadedVector(gj, filename, srcKey) {
   const uid = 'up' + (++vecUid);
   const color = VEC_PALETTE[vecPaletteI++ % VEC_PALETTE.length];
   const labelProp = pickLabelProp(gj);
@@ -1731,15 +1744,18 @@ async function addUploadedVector(gj, filename) {
       paint: { 'text-color': '#e9eef2', 'text-halo-color': '#0a0c0e', 'text-halo-width': 1.2 } });
   }
   const bounds = bboxOf(gj);
-  vecLayers.push({ id: uid, name: filename, color, visible: true, labelOn: true, labelLayerId,
+  vecLayers.push({ id: uid, name: filename, srcKey: srcKey || (filename + ':' + (gj.features ? gj.features.length : 0)), color, visible: true, labelOn: true, labelLayerId,
     layerIds: [uid + '-fill', uid + '-line', uid + '-pt'], removable: true, bounds });
   renderVecList();
   if (bounds) map.fitBounds(bounds, { padding: 90, maxZoom: 15, duration: 900 });
 }
 async function loadVectorFiles(files) {
   for (const file of files) {
+    if (file.size > MAX_VECTOR_BYTES) { setVec(file.name + ' is too large (' + fmtMB(file.size) + ' · max ' + fmtMB(MAX_VECTOR_BYTES) + ')', 'err'); continue; }
+    const key = file.name + ':' + file.size;
+    if (vecLayers.some(e => e.srcKey === key)) { setVec(file.name + ' is already loaded', 'ok'); continue; }
     setVec('Reading ' + file.name + '…');
-    try { const gj = await parseFile(file); await addUploadedVector(gj, file.name); setVec('Loaded ' + file.name, 'ok'); }
+    try { const gj = await parseFile(file); await addUploadedVector(gj, file.name, key); setVec('Loaded ' + file.name, 'ok'); }
     catch (err) { console.error(err); setVec(file.name + ': could not read — try GeoJSON', 'err'); }
   }
 }
@@ -1833,7 +1849,7 @@ async function addUploadedRaster(file) {
   if (!isTif && !isImg) throw new Error('unsupported raster format');
 
   // Push the entry FIRST so async updates can always find it.
-  const entry = { id: uid, name: file.name, visible: true, removable: true, bounds: null };
+  const entry = { id: uid, name: file.name, srcKey: file.name + ':' + file.size, visible: true, removable: true, bounds: null };
   imgLayers.push(entry);
   renderImgList();
 
@@ -1859,9 +1875,15 @@ async function addUploadedRaster(file) {
     renderImgList();
   }
 }
+// upload size ceilings — decode reads the whole file into memory, so reject giant files up front
+const MAX_RASTER_BYTES = 150 * 1024 * 1024; // 150 MB
+const MAX_VECTOR_BYTES = 60 * 1024 * 1024;  // 60 MB
+const fmtMB = b => (b / 1024 / 1024).toFixed(0) + ' MB';
 async function loadRasterFiles(files) {
   for (const file of files) {
     const short = file.name.length > 22 ? file.name.slice(0, 20) + '…' : file.name;
+    if (file.size > MAX_RASTER_BYTES) { setStatus(short + ' is too large (' + fmtMB(file.size) + ' · max ' + fmtMB(MAX_RASTER_BYTES) + ')', 'err'); continue; }
+    if (imgLayers.some(e => e.srcKey === file.name + ':' + file.size)) { setStatus(short + ' is already loaded', 'ok'); continue; }
     setStatus('Reading ' + short + '…', 'load');
     try { await addUploadedRaster(file); setStatus('Loaded · ' + short, 'ok'); }
     catch (err) { console.error('raster load failed:', err); setStatus('Could not load ' + short + ' (' + (err && err.message ? err.message : 'unreadable') + ')', 'err'); }
@@ -1870,7 +1892,6 @@ async function loadRasterFiles(files) {
 
 // ---------- swipe compare (year A vs year B) ----------
 let cmpSyncBound = false;
-function applyMaskToB() { /* spotlight mask removed — basemap shows at true brightness */ }
 function syncMapB() {
   if (!mapB) return;
   mapB.jumpTo({ center: map.getCenter(), zoom: map.getZoom(), bearing: map.getBearing(), pitch: map.getPitch() });
@@ -1895,7 +1916,6 @@ function ensureMapB() {
         paint: { 'raster-opacity': 1, 'raster-resampling': 'nearest', 'raster-fade-duration': 0 } }, firstSymbol);
     }));
     mapBReady = true;
-    applyMaskToB();
     syncMapB();
     renderCompare();
   });
@@ -1953,8 +1973,12 @@ function enterCompare() {
   $('scrub').disabled = true; $('prev').disabled = true; $('next').disabled = true; $('play').disabled = true;
   setSwipe(0.5);
   ensureMapB();
-  // resize B (its container was display:none until now, so it needs a resize to pick up dimensions)
-  requestAnimationFrame(() => { if (mapB) { mapB.resize(); syncMapB(); } });
+  // B's container was display:none until now; it needs resize() to pick up real dimensions.
+  // One rAF can be too early on slow devices, so resize across a few frames and again on idle.
+  const resizeB = () => { if (mapB) { mapB.resize(); syncMapB(); } };
+  requestAnimationFrame(resizeB);
+  requestAnimationFrame(() => requestAnimationFrame(resizeB));
+  if (mapB) mapB.once('idle', resizeB);
   renderCompare();
 }
 function exitCompare() {
