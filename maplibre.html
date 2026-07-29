@@ -792,11 +792,13 @@
   #timeline .cmp-eye{font:600 9px 'JetBrains Mono',monospace;letter-spacing:.08em;text-transform:uppercase}
   /* subtle shadow keeps timeline text readable over varied map terrain */
   #timeline .tl-year,#timeline .tl-snap,#timeline .tl-hint,#timeline .tl-speed,#timeline .tl-dot-label{text-shadow:0 1px 3px var(--t-bg)}
-  /* light theme: the soft light-halo above blurs the glyphs; use a crisp tight white outline instead */
-  [data-theme="light"] #timeline .tl-snap,[data-theme="light"] #timeline .tl-hint,[data-theme="light"] #timeline .tl-speed,
-  [data-theme="light"] #timeline .cmp-eye,[data-theme="light"] #timeline .tl-dot-label{
-    text-shadow:0 1px 2px rgba(255,255,255,.9),0 0 1px rgba(255,255,255,.9)}
-  [data-theme="light"] #timeline .tl-year{text-shadow:0 1px 2px rgba(255,255,255,.85)}
+  /* The timeline floats bare over the basemap, which stays dark in BOTH themes. So in light mode
+     we DON'T switch to dark text (which needs blurry white halos to read over the dark map) — we keep
+     the same crisp light-text + tight dark shadow as dark mode. */
+  [data-theme="light"] #timeline .tl-year{color:#c6f277;text-shadow:0 1px 4px rgba(0,0,0,.85),0 0 2px rgba(0,0,0,.55)}
+  [data-theme="light"] #timeline .tl-snap,[data-theme="light"] #timeline .tl-hint,[data-theme="light"] #timeline .tl-speed{color:#eef2f6;text-shadow:0 1px 4px rgba(0,0,0,.85)}
+  [data-theme="light"] #timeline .cmp-eye,[data-theme="light"] #timeline .tl-dot-label,[data-theme="light"] #timeline .tl-years button{color:#c3ccd5;text-shadow:0 1px 4px rgba(0,0,0,.8)}
+  [data-theme="light"] #timeline .tl-years button.on{color:#c6f277}
   /* dark theme: timeline floats bare over a dark map — lift dim texts and strengthen shadow for legibility */
   [data-theme="dark"] #timeline .tl-hint{color:var(--t-ink)}
   [data-theme="dark"] #timeline .cmp-eye,[data-theme="dark"] #timeline .tl-years button{color:var(--t-mut)}
