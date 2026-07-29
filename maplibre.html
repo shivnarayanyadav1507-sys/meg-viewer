@@ -198,8 +198,8 @@
   .mp-sub{color:var(--muted);font-size:12px;margin-top:3px}
 
   /* ---- timeline (old-viewer style) ---- */
-  .timeline{position:absolute;left:calc(var(--md-panel-w) + 20px);right:14px;bottom:22px;z-index:1000;margin:0 auto;
-    width:min(1200px,calc(100vw - var(--md-panel-w) - 44px));background:var(--panel);backdrop-filter:blur(16px);
+  .timeline{--zc-reserve:300px;position:absolute;left:calc(var(--md-panel-w) + 20px);right:var(--zc-reserve);bottom:22px;z-index:1000;margin:0 auto;
+    width:min(1120px,calc(100vw - var(--md-panel-w) - 20px - var(--zc-reserve)));background:var(--panel);backdrop-filter:blur(16px);
     -webkit-backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:28px;box-shadow:var(--shadow);padding:16px 56px 14px;display:flex;flex-direction:column;gap:11px}
   .tl-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
   .tl-head{display:flex;align-items:baseline;gap:11px;min-width:0;flex-wrap:wrap}
@@ -454,7 +454,7 @@
 
   /* ===== Help walkthrough (guided tour) ===== */
   /* ===== circular zoom cluster (bottom-right) ===== */
-  .zoom-cluster{position:absolute;right:26px;bottom:56px;width:250px;height:250px;z-index:1000}
+  .zoom-cluster{position:absolute;right:26px;bottom:56px;width:250px;height:250px;z-index:1000;transform-origin:bottom right}
   /* dashed orbit rings */
   .zc-ring{position:absolute;left:50%;top:50%;border-radius:50%;border:1px dashed var(--t-line);transform:translate(-50%,-50%);pointer-events:none;z-index:0}
   .zc-ring.rA{width:116px;height:116px}
@@ -518,6 +518,9 @@
     .zc-oJup{width:164px;height:164px;margin:-82px 0 0 -82px}.zc-oSat{width:180px;height:180px;margin:-90px 0 0 -90px}
     .zc-oComet{width:132px;height:132px;margin:-66px 0 0 -66px}
   }
+  /* keep the cluster proportionate on laptops and reserve matching timeline space */
+  @media (min-width:761px) and (max-width:1560px){ .zoom-cluster{transform:scale(.85)} .timeline{--zc-reserve:250px} }
+  @media (min-width:761px) and (max-width:1200px){ .zoom-cluster{transform:scale(.72)} .timeline{--zc-reserve:215px} }
 
   #tour{position:fixed;inset:0;z-index:5500;display:none}
   #tour.on{display:block}
@@ -617,7 +620,7 @@
   /* Stage 3: new panel revealed; old left-stack hidden. */
   .left-stack{display:none !important}
   /* timeline shifts to clear the collapsed 64px rail */
-  #mdp.collapsed ~ .timeline{left:92px;right:14px;width:min(1200px,calc(100vw - 106px))}
+  #mdp.collapsed ~ .timeline{left:92px;right:var(--zc-reserve);width:min(1120px,calc(100vw - 112px - var(--zc-reserve)))}
 
   /* view-tool rows in the View tab */
   .mdp-section[data-tab="view"] .tool-row,.mdp-section[data-tab="measure"] .tool-row{display:flex;align-items:center;gap:10px;width:100%;padding:11px 12px;border:1px solid var(--t-line);border-radius:11px;
