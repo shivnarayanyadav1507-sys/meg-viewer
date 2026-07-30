@@ -704,8 +704,10 @@
   #mdp .upload .u-hint{font:500 9.5px 'JetBrains Mono',monospace;color:var(--t-dim);line-height:1.5}
 
   /* status line */
-  #mdp .status{font:500 10px 'JetBrains Mono',monospace;letter-spacing:.05em;color:var(--t-dim);margin-top:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
-  #mdp .vec-status{font:500 10px 'JetBrains Mono',monospace;color:var(--t-dim)}
+  #mdp .status{font:500 10px 'JetBrains Mono',monospace;letter-spacing:.05em;color:var(--t-dim);margin-top:10px;max-width:100%;
+    line-height:1.45;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  #mdp .vec-status{font:500 10px 'JetBrains Mono',monospace;color:var(--t-dim);line-height:1.45;overflow-wrap:anywhere;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   #mdp .vec-status.ok{color:var(--t-lime)} #mdp .vec-status.err{color:#ff6b6b}
 
   /* clear buttons — rounded */
@@ -1253,8 +1255,8 @@ const modeLabel = () => (mode === 'sat' ? 'RGB' : 'NDVI');
 
 const $ = id => document.getElementById(id);
 const statusEl = $('status');
-const setStatus = (t, cls = '') => { if (!statusEl) return; statusEl.textContent = t; statusEl.className = 'status ' + cls; };
-const setVec = (t, cls = '') => { const el = $('vec-status'); if (!el) return; el.textContent = t; el.className = 'vec-status ' + cls; };
+const setStatus = (t, cls = '') => { if (!statusEl) return; statusEl.textContent = t; statusEl.title = t || ''; statusEl.className = 'status ' + cls; };
+const setVec = (t, cls = '') => { const el = $('vec-status'); if (!el) return; el.textContent = t; el.title = t || ''; el.className = 'vec-status ' + cls; };
 
 // Global safety net: surface async failures instead of losing them silently.
 window.addEventListener('unhandledrejection', ev => {
@@ -1703,18 +1705,20 @@ function toggleVecLabel(e) {
   if (e.labelLayerId && map.getLayer(e.labelLayerId)) map.setLayoutProperty(e.labelLayerId, 'visibility', (e.visible && e.labelOn) ? 'visible' : 'none');
   renderVecList();
 }
-function zoomToVecBounds(e) {
-  if (!e.bounds) return;
+// Padding that keeps fitted bounds clear of the left panel, bottom timeline and corner cluster.
+function fitPadding() {
   const mdp = document.getElementById('mdp');
   const isMobile = window.matchMedia('(max-width:600px)').matches;
-  // panel is open (visible, not collapsed) on desktop → it covers the left ~360px
   const panelOpen = mdp && !mdp.classList.contains('collapsed') && !isMobile;
-  const pad = panelOpen
+  return panelOpen
     ? { top: 90, right: 90, bottom: 140, left: 380 }
     : (isMobile
         ? { top: 80, right: 40, bottom: 300, left: 40 }   // mobile: sheet is at bottom
         : { top: 90, right: 90, bottom: 140, left: 90 });
-  map.fitBounds(e.bounds, { padding: pad, maxZoom: 15, duration: 900 });
+}
+function zoomToVecBounds(e) {
+  if (!e.bounds) return;
+  map.fitBounds(e.bounds, { padding: fitPadding(), maxZoom: 15, duration: 900 });
 }
 function removeVecLayer(e) {
   e.layerIds.forEach(l => map.getLayer(l) && map.removeLayer(l));
@@ -1747,14 +1751,16 @@ async function addUploadedVector(gj, filename, srcKey) {
   vecLayers.push({ id: uid, name: filename, srcKey: srcKey || (filename + ':' + (gj.features ? gj.features.length : 0)), color, visible: true, labelOn: true, labelLayerId,
     layerIds: [uid + '-fill', uid + '-line', uid + '-pt'], removable: true, bounds });
   renderVecList();
-  if (bounds) map.fitBounds(bounds, { padding: 90, maxZoom: 15, duration: 900 });
+  if (bounds) map.fitBounds(bounds, { padding: fitPadding(), maxZoom: 15, duration: 900 });
 }
 async function loadVectorFiles(files) {
   for (const file of files) {
-    if (file.size > MAX_VECTOR_BYTES) { setVec(file.name + ' is too large (' + fmtMB(file.size) + ' · max ' + fmtMB(MAX_VECTOR_BYTES) + ')', 'err'); continue; }
+    if (file.size > MAX_VECTOR_BYTES) { setVec('Too large to open · ' + file.name + ' (' + fmtMB(file.size) + ')', 'err'); continue; }
     const key = file.name + ':' + file.size;
-    if (vecLayers.some(e => e.srcKey === key)) { setVec(file.name + ' is already loaded', 'ok'); continue; }
-    setVec('Reading ' + file.name + '…');
+    if (vecLayers.some(e => e.srcKey === key)) { setVec('Already loaded · ' + file.name, 'ok'); continue; }
+    setVec(file.size > LARGE_VECTOR_BYTES
+      ? 'Large file (' + fmtMB(file.size) + ') — this may take a moment…'
+      : 'Reading ' + file.name + '…');
     try { const gj = await parseFile(file); await addUploadedVector(gj, file.name, key); setVec('Loaded ' + file.name, 'ok'); }
     catch (err) { console.error(err); setVec(file.name + ': could not read — try GeoJSON', 'err'); }
   }
@@ -1863,7 +1869,7 @@ async function addUploadedRaster(file) {
     map.addLayer({ id: uid, type: 'raster', source: uid, paint: { 'raster-opacity': 0.9, 'raster-resampling': 'nearest' } });
     entry.bounds = [[w, s], [e, n]];
     renderImgList();
-    map.fitBounds(entry.bounds, { padding: 80, maxZoom: 14, duration: 900 });
+    map.fitBounds(entry.bounds, { padding: fitPadding(), maxZoom: 14, duration: 900 });
   } else {
     // PNG / JPEG: place over the current view (no georeferencing available)
     const dataUrl = await fileToDataURL(file);
@@ -1875,16 +1881,22 @@ async function addUploadedRaster(file) {
     renderImgList();
   }
 }
-// upload size ceilings — decode reads the whole file into memory, so reject giant files up front
-const MAX_RASTER_BYTES = 150 * 1024 * 1024; // 150 MB
-const MAX_VECTOR_BYTES = 60 * 1024 * 1024;  // 60 MB
+// Upload ceilings. The decode reads the whole file into memory, so there is a hard backstop —
+// but it is set high so legitimate DEMs/mosaics are never blocked. Files past the "large"
+// threshold still load, they just warn that it may take a moment.
+const MAX_RASTER_BYTES = 800 * 1024 * 1024; // hard backstop
+const MAX_VECTOR_BYTES = 300 * 1024 * 1024;
+const LARGE_RASTER_BYTES = 150 * 1024 * 1024;
+const LARGE_VECTOR_BYTES = 60 * 1024 * 1024;
 const fmtMB = b => (b / 1024 / 1024).toFixed(0) + ' MB';
 async function loadRasterFiles(files) {
   for (const file of files) {
     const short = file.name.length > 22 ? file.name.slice(0, 20) + '…' : file.name;
-    if (file.size > MAX_RASTER_BYTES) { setStatus(short + ' is too large (' + fmtMB(file.size) + ' · max ' + fmtMB(MAX_RASTER_BYTES) + ')', 'err'); continue; }
-    if (imgLayers.some(e => e.srcKey === file.name + ':' + file.size)) { setStatus(short + ' is already loaded', 'ok'); continue; }
-    setStatus('Reading ' + short + '…', 'load');
+    if (file.size > MAX_RASTER_BYTES) { setStatus('Too large to open · ' + short + ' (' + fmtMB(file.size) + ')', 'err'); continue; }
+    if (imgLayers.some(e => e.srcKey === file.name + ':' + file.size)) { setStatus('Already loaded · ' + short, 'ok'); continue; }
+    setStatus(file.size > LARGE_RASTER_BYTES
+      ? 'Large file (' + fmtMB(file.size) + ') — this may take a moment…'
+      : 'Reading ' + short + '…', 'load');
     try { await addUploadedRaster(file); setStatus('Loaded · ' + short, 'ok'); }
     catch (err) { console.error('raster load failed:', err); setStatus('Could not load ' + short + ' (' + (err && err.message ? err.message : 'unreadable') + ')', 'err'); }
   }
@@ -2438,7 +2450,7 @@ function wireControls() {
     const row = btn.closest('.lrow'); const entry = imgLayers.find(x => x.id === row.dataset.id); if (!entry) return;
     const act = btn.dataset.act;
     if (act === 'eye') { entry.visible = !entry.visible; if (map.getLayer(entry.id)) map.setLayoutProperty(entry.id, 'visibility', entry.visible ? 'visible' : 'none'); renderImgList(); }
-    else if (act === 'zoom') { if (entry.bounds) map.fitBounds(entry.bounds, { padding: 90, duration: 900 }); }
+    else if (act === 'zoom') { if (entry.bounds) map.fitBounds(entry.bounds, { padding: fitPadding(), maxZoom: 15, duration: 900 }); }
     else if (act === 'remove') { if (map.getLayer(entry.id)) map.removeLayer(entry.id); if (map.getSource(entry.id)) map.removeSource(entry.id); imgLayers = imgLayers.filter(x => x !== entry); renderImgList(); }
   });
   const rdrop = $('raster-drop'), rfile = $('raster-file');
