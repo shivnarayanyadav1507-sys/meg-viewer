@@ -731,6 +731,22 @@
 
   /* layer rows — rounded, colored status dots */
   #mdp .list{display:flex;flex-direction:column;gap:8px}
+  /* ---- Phase 2a: per-raster card (opacity + DEM legend) ---- */
+  #mdp .rcard{border:1px solid var(--t-line);border-radius:12px;background:var(--t-panel2);padding:4px 4px 8px;display:flex;flex-direction:column;gap:2px}
+  #mdp .rcard:hover{border-color:var(--t-line-str)}
+  #mdp .rcard.muted{opacity:.6}
+  #mdp .rcard .lrow{border:0!important;background:transparent!important;padding:7px 8px}
+  #mdp .ropacity{display:flex;align-items:center;gap:8px;padding:0 10px 2px}
+  #mdp .rop-lbl{font:500 9px 'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--t-dim);flex:none}
+  #mdp .rop-val{font:600 9px 'JetBrains Mono',monospace;color:var(--t-mut);flex:none;min-width:30px;text-align:right}
+  #mdp .rop-range{flex:1;min-width:0;height:4px;-webkit-appearance:none;appearance:none;background:var(--t-line);border-radius:4px;outline:none}
+  #mdp .rop-range::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--t-lime);border:2px solid var(--t-panel-solid);cursor:pointer}
+  #mdp .rop-range::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:var(--t-lime);border:2px solid var(--t-panel-solid);cursor:pointer}
+  #mdp .rlegend{padding:2px 10px 0}
+  #mdp .rleg-bar{height:7px;border-radius:4px;background:linear-gradient(90deg,#2a2f35,#8d949b,#f2f5f8);border:1px solid var(--t-line)}
+  [data-theme="light"] #mdp .rleg-bar{background:linear-gradient(90deg,#3c4249,#98a0a8,#f4f6f8)}
+  #mdp .rleg-lbls{display:flex;justify-content:space-between;align-items:baseline;margin-top:3px;font:500 9px 'JetBrains Mono',monospace;color:var(--t-mut)}
+  #mdp .rleg-cap{font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--t-dim)}
   #mdp .lrow,#mdp .lrow-switch{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:11px;
     background:var(--t-track);border:1px solid var(--t-line);font-family:'Space Grotesk',sans-serif;font-size:12.5px;color:var(--t-ink)}
   #mdp .lrow:hover,#mdp .lrow-switch:hover{border-color:var(--t-line-str)}
@@ -1792,14 +1808,28 @@ async function loadVectorFiles(files) {
 function fileToDataURL(file) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file); }); }
 function renderImgList() {
   const list = $('img-list');
+  const fmtEl = v => (Math.abs(v) >= 1000 ? Math.round(v).toLocaleString() : (Math.round(v * 10) / 10));
   list.innerHTML = imgLayers.map(e => {
-    const rows = [
+    const head = [
       '<button class="icbtn" data-act="eye" title="Toggle visibility">' + (e.visible ? EYE_SVG : EYE_OFF_SVG) + '</button>',
       '<span class="lname" title="' + e.name.replace(/"/g, '&quot;') + '">' + e.name + '</span>',
       e.bounds ? '<button class="icbtn" data-act="zoom" title="Zoom to layer">' + EXPAND_SVG + '</button>' : '',
       '<button class="icbtn" data-act="remove" title="Remove">' + X_SVG + '</button>'
     ].join('');
-    return '<div class="lrow' + (e.visible ? '' : ' muted') + '" data-id="' + e.id + '">' + rows + '</div>';
+    const pct = Math.round((e.opacity == null ? 0.9 : e.opacity) * 100);
+    const op = '<div class="ropacity">'
+      + '<span class="rop-lbl">Opacity</span>'
+      + '<input type="range" class="rop-range" data-act="opacity" min="0" max="100" value="' + pct + '" aria-label="Layer opacity" />'
+      + '<span class="rop-val">' + pct + '%</span></div>';
+    // single-band raster (DEM) -> show the value range we computed while rasterising
+    const legend = e.stats
+      ? '<div class="rlegend"><div class="rleg-bar"></div>'
+        + '<div class="rleg-lbls"><span>' + fmtEl(e.stats.min) + '</span>'
+        + '<span class="rleg-cap">elevation</span>'
+        + '<span>' + fmtEl(e.stats.max) + '</span></div></div>'
+      : '';
+    return '<div class="rcard' + (e.visible ? '' : ' muted') + '" data-id="' + e.id + '">'
+      + '<div class="lrow">' + head + '</div>' + op + legend + '</div>';
   }).join('');
 }
 function clearRasters() {
@@ -1912,9 +1942,11 @@ async function rasterizeGeoTIFF(file) {
     }
   }
   ctx.putImageData(imgData, 0, 0);
+  // single-band statistics (used for the DEM legend) - computed above, keep them
+  const stats = (samples === 1 && isFinite(mn) && isFinite(mx) && mn !== mx) ? { min: mn, max: mx } : null;
   const lngs = corners.map(c => c[0]), lats = corners.map(c => c[1]);
   const geoBbox = [Math.min.apply(null, lngs), Math.min.apply(null, lats), Math.max.apply(null, lngs), Math.max.apply(null, lats)];
-  return { dataUrl: canvas.toDataURL('image/png'), bbox: geoBbox, corners };
+  return { dataUrl: canvas.toDataURL('image/png'), bbox: geoBbox, corners, stats, bands: samples };
 }
 async function addUploadedRaster(file) {
   const name = file.name.toLowerCase();
@@ -1925,19 +1957,20 @@ async function addUploadedRaster(file) {
 
   // Push the entry FIRST so async updates can always find it. If anything below throws,
   // the entry is rolled back in the catch so a failed load never leaves a phantom row.
-  const entry = { id: uid, name: file.name, srcKey: file.name + ':' + file.size, visible: true, removable: true, bounds: null };
+  const entry = { id: uid, name: file.name, srcKey: file.name + ':' + file.size, visible: true, removable: true, bounds: null, opacity: 0.9, stats: null, bands: 0 };
   imgLayers.push(entry);
   renderImgList();
   try {
   if (isTif) {
     // Parse the GeoTIFF ourselves (works for raw *and* COG), so we always get bounds + a visible image.
-    const { dataUrl, bbox, corners } = await rasterizeGeoTIFF(file);
+    const { dataUrl, bbox, corners, stats, bands } = await rasterizeGeoTIFF(file);
+    entry.stats = stats; entry.bands = bands;
     const [w, s, e, n] = bbox;
     if (![w, s, e, n].every(isFinite)) throw new Error('GeoTIFF has no georeferencing');
     // corners are already TL,TR,BR,BL in lng/lat (reprojected if the file was projected)
     const coords = (corners && corners.length === 4) ? corners : [[w, n], [e, n], [e, s], [w, s]];
     map.addSource(uid, { type: 'image', url: dataUrl, coordinates: coords });
-    map.addLayer({ id: uid, type: 'raster', source: uid, paint: { 'raster-opacity': 0.9, 'raster-resampling': 'nearest' } });
+    map.addLayer({ id: uid, type: 'raster', source: uid, paint: { 'raster-opacity': entry.opacity, 'raster-resampling': 'nearest' } });
     entry.bounds = [[w, s], [e, n]];
     renderImgList();
     map.fitBounds(entry.bounds, { padding: fitPadding(), maxZoom: 14, duration: 900 });
@@ -1947,7 +1980,7 @@ async function addUploadedRaster(file) {
     const b = map.getBounds();
     const coords = [[b.getWest(), b.getNorth()], [b.getEast(), b.getNorth()], [b.getEast(), b.getSouth()], [b.getWest(), b.getSouth()]];
     map.addSource(uid, { type: 'image', url: dataUrl, coordinates: coords });
-    map.addLayer({ id: uid, type: 'raster', source: uid, paint: { 'raster-opacity': 0.9 } });
+    map.addLayer({ id: uid, type: 'raster', source: uid, paint: { 'raster-opacity': entry.opacity } });
     entry.bounds = [[b.getWest(), b.getSouth()], [b.getEast(), b.getNorth()]];
     renderImgList();
   }
@@ -2552,7 +2585,7 @@ function wireControls() {
   // uploaded raster list
   $('img-list').addEventListener('click', e => {
     const btn = e.target.closest('button[data-act]'); if (!btn) return;
-    const row = btn.closest('.lrow'); const entry = imgLayers.find(x => x.id === row.dataset.id); if (!entry) return;
+    const row = btn.closest('.rcard'); const entry = row ? imgLayers.find(x => x.id === row.dataset.id) : null; if (!entry) return;
     const act = btn.dataset.act;
     if (act === 'eye') { entry.visible = !entry.visible; if (map.getLayer(entry.id)) map.setLayoutProperty(entry.id, 'visibility', entry.visible ? 'visible' : 'none'); renderImgList(); }
     else if (act === 'zoom') { if (entry.bounds) map.fitBounds(entry.bounds, { padding: fitPadding(), maxZoom: 15, duration: 900 }); }
@@ -2565,6 +2598,15 @@ function wireControls() {
   rdrop.addEventListener('drop', e => { e.preventDefault(); rdrop.classList.remove('over'); if (e.dataTransfer.files.length) loadRasterFiles(Array.from(e.dataTransfer.files)); });
   rfile.addEventListener('change', e => { if (e.target.files.length) loadRasterFiles(Array.from(e.target.files)); });
   { const cr = $('clear-raster'); if (cr) cr.addEventListener('click', clearRasters); }
+  $('img-list').addEventListener('input', ev => {
+    const r = ev.target.closest('input[data-act="opacity"]'); if (!r) return;
+    const card = r.closest('.rcard'); const entry = card ? imgLayers.find(x => x.id === card.dataset.id) : null;
+    if (!entry) return;
+    const v = Math.max(0, Math.min(100, Number(r.value))) / 100;
+    entry.opacity = v;
+    if (map.getLayer(entry.id)) map.setPaintProperty(entry.id, 'raster-opacity', v);
+    const out = card.querySelector('.rop-val'); if (out) out.textContent = Math.round(v * 100) + '%';
+  });
 
   window.addEventListener('keydown', e => {
     if (e.target.tagName === 'INPUT') return;
