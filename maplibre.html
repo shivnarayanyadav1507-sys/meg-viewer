@@ -12,6 +12,17 @@
 <link href="https://cdn.jsdelivr.net/npm/maplibre-gl@5/dist/maplibre-gl.css" rel="stylesheet" />
 
 <style>
+  /* ---- Phase 2a: kill the stray blinking text caret ----
+     A collapsed text selection was painting a blinking cursor on tabs, icons and labels.
+     caret-color only affects the insertion caret, so this is visually inert elsewhere.
+     Real editable fields opt back in below. */
+  *{caret-color:transparent}
+  input[type="text"],input[type="search"],input[type="number"],input:not([type]),textarea,[contenteditable="true"]{caret-color:auto}
+  /* interactive chrome shouldn't be text-selectable (but readouts/status stay selectable so they can be copied) */
+  button,.seg-btn,.mdp-rail-btn,.mdp-title,.mdp-eyebrow,.mdp-lbl,.tab,.tl-snap,.tl-hint,.tl-speed,.tl-year,
+  .cmp-dd,.cmp-opt,.zc-btn,.zc-center,.icbtn,.sw,.sw-btn,.btn-clear,.legend-cap,.legend-labels,.lname,
+  .mdp-brand,.mdp-welcome,.tl-dot-year,.tl-dot-label{user-select:none;-webkit-user-select:none}
+
   :root{
     --bg:#0a0c0e; --panel-solid:#0f1317; --panel:rgba(15,19,23,.9);
     --accent:#b6f441; --accent-dim:rgba(182,244,65,.12); --warn:#ff8a4c; --blue:#b3d4f0;
@@ -1758,6 +1769,13 @@ async function addUploadedVector(gj, filename, srcKey) {
   if (bounds) map.fitBounds(bounds, { padding: fitPadding(), maxZoom: 15, duration: 900 });
 }
 async function loadVectorFiles(files) {
+  // a raster dropped here belongs in the imagery panel — say so instead of failing to parse
+  const misdirected = files.filter(f => isRasterFile(f.name));
+  files = files.filter(f => !isRasterFile(f.name));
+  if (misdirected.length) {
+    setVec(prettyKind(misdirected[0].name) + ' is a raster — load it under Image \u2192 Custom raster', 'warn');
+    if (!files.length) return;
+  }
   for (const file of files) {
     if (file.size > MAX_VECTOR_BYTES) { setVec('Too large to open · ' + file.name + ' (' + fmtMB(file.size) + ')', 'err'); continue; }
     const key = file.name + ':' + file.size;
@@ -1799,6 +1817,34 @@ async function getGeoTIFF() {
   _geotiffLib = await import('https://esm.sh/geotiff@2.1.3');
   return _geotiffLib;
 }
+// ---- Phase 2a: corner CRS reprojection ----
+// Projected GeoTIFFs (UTM etc.) carry their CRS in the GeoTIFF geo-keys. We resolve that to a
+// proj4 definition, reproject the four corners to lng/lat, and hand MapLibre the real quad.
+// (Exact per-pixel warping is Phase 5 - corner placement is accurate to metres at this scale.)
+let _proj4Lib = null;
+async function getProj4() {
+  if (_proj4Lib) return _proj4Lib;
+  const m = await import('https://esm.sh/proj4@2.19.10');
+  _proj4Lib = m.default || m;
+  return _proj4Lib;
+}
+function projDefForEPSG(code) {
+  if (!code) return null;
+  code = Number(code);
+  if (code === 4326 || code === 4979) return 'EPSG:4326';
+  if (code === 3857 || code === 900913 || code === 3785) return '+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +no_defs';
+  if (code >= 32601 && code <= 32660) return '+proj=utm +zone=' + (code - 32600) + ' +datum=WGS84 +units=m +no_defs';
+  if (code >= 32701 && code <= 32760) return '+proj=utm +zone=' + (code - 32700) + ' +south +datum=WGS84 +units=m +no_defs';
+  if (code >= 32401 && code <= 32460) return '+proj=utm +zone=' + (code - 32400) + ' +datum=WGS84 +units=m +no_defs';
+  return null;
+}
+function epsgFromGeoKeys(image) {
+  let keys = null;
+  try { keys = image.getGeoKeys ? image.getGeoKeys() : null; } catch (e) {}
+  if (!keys) return null;
+  return keys.ProjectedCSTypeGeoKey || keys.GeographicTypeGeoKey || null;
+}
+
 // Render a GeoTIFF (raw or COG) to a data URL + return its geographic bbox.
 async function rasterizeGeoTIFF(file) {
   const GeoTIFF = await getGeoTIFF();
@@ -1808,8 +1854,25 @@ async function rasterizeGeoTIFF(file) {
   const bbox = image.getBoundingBox(); // [minX, minY, maxX, maxY] in the file's CRS
   // If the bbox values look like projected metres (well outside lat/lng range),
   // the image can't be placed on a lng/lat map without reprojection.
+  // Corners in file CRS: TL, TR, BR, BL
+  let corners = [[bbox[0], bbox[3]], [bbox[2], bbox[3]], [bbox[2], bbox[1]], [bbox[0], bbox[1]]];
   const looksProjected = bbox.some(v => Math.abs(v) > 360);
-  if (looksProjected) throw new Error('projected CRS — reproject to EPSG:4326 (lat/lng)');
+  if (looksProjected) {
+    const epsg = epsgFromGeoKeys(image);
+    const def = projDefForEPSG(epsg);
+    if (!def) {
+      throw new Error(epsg
+        ? 'unsupported CRS EPSG:' + epsg + ' — reproject to EPSG:4326'
+        : 'projected CRS with no EPSG code — reproject to EPSG:4326');
+    }
+    if (def !== 'EPSG:4326') {
+      const proj4 = await getProj4();
+      corners = corners.map(c => proj4(def, 'EPSG:4326', [c[0], c[1]]));
+      if (!corners.every(c => c && isFinite(c[0]) && isFinite(c[1]) && Math.abs(c[0]) <= 180 && Math.abs(c[1]) <= 90)) {
+        throw new Error('CRS reprojection failed — reproject to EPSG:4326');
+      }
+    }
+  }
   const width = image.getWidth(), height = image.getHeight();
   if (!width || !height) throw new Error('empty raster');
   // downsample very large rasters so the canvas stays reasonable
@@ -1849,7 +1912,9 @@ async function rasterizeGeoTIFF(file) {
     }
   }
   ctx.putImageData(imgData, 0, 0);
-  return { dataUrl: canvas.toDataURL('image/png'), bbox };
+  const lngs = corners.map(c => c[0]), lats = corners.map(c => c[1]);
+  const geoBbox = [Math.min.apply(null, lngs), Math.min.apply(null, lats), Math.max.apply(null, lngs), Math.max.apply(null, lats)];
+  return { dataUrl: canvas.toDataURL('image/png'), bbox: geoBbox, corners };
 }
 async function addUploadedRaster(file) {
   const name = file.name.toLowerCase();
@@ -1866,10 +1931,11 @@ async function addUploadedRaster(file) {
   try {
   if (isTif) {
     // Parse the GeoTIFF ourselves (works for raw *and* COG), so we always get bounds + a visible image.
-    const { dataUrl, bbox } = await rasterizeGeoTIFF(file);
+    const { dataUrl, bbox, corners } = await rasterizeGeoTIFF(file);
     const [w, s, e, n] = bbox;
     if (![w, s, e, n].every(isFinite)) throw new Error('GeoTIFF has no georeferencing');
-    const coords = [[w, n], [e, n], [e, s], [w, s]];
+    // corners are already TL,TR,BR,BL in lng/lat (reprojected if the file was projected)
+    const coords = (corners && corners.length === 4) ? corners : [[w, n], [e, n], [e, s], [w, s]];
     map.addSource(uid, { type: 'image', url: dataUrl, coordinates: coords });
     map.addLayer({ id: uid, type: 'raster', source: uid, paint: { 'raster-opacity': 0.9, 'raster-resampling': 'nearest' } });
     entry.bounds = [[w, s], [e, n]];
@@ -1894,6 +1960,25 @@ async function addUploadedRaster(file) {
     throw err;
   }
 }
+// ---- Phase 2a: recognise files dropped on the wrong panel ----
+// Drag-and-drop bypasses the input's accept list, so a raster can land on the vector
+// panel (and vice versa). Detect it and point at the right place instead of "unsupported".
+const RASTER_EXT = ['.tif', '.tiff', '.geotiff', '.png', '.jpg', '.jpeg'];
+const VECTOR_EXT = ['.geojson', '.json', '.kml', '.kmz', '.zip', '.gpkg'];
+const extOf = n => { const m = String(n).toLowerCase().match(/\.[a-z0-9]+$/); return m ? m[0] : ''; };
+const isRasterFile = n => RASTER_EXT.includes(extOf(n));
+const isVectorFile = n => VECTOR_EXT.includes(extOf(n));
+const prettyKind = n => {
+  const e = extOf(n);
+  if (e === '.tif' || e === '.tiff' || e === '.geotiff') return 'GeoTIFF';
+  if (e === '.png' || e === '.jpg' || e === '.jpeg') return 'image';
+  if (e === '.geojson' || e === '.json') return 'GeoJSON';
+  if (e === '.kml' || e === '.kmz') return 'KML';
+  if (e === '.zip') return 'Shapefile';
+  if (e === '.gpkg') return 'GeoPackage';
+  return e ? e.slice(1).toUpperCase() : 'file';
+};
+
 // Upload ceilings. The decode reads the whole file into memory, so there is a hard backstop —
 // but it is set high so legitimate DEMs/mosaics are never blocked. Files past the "large"
 // threshold still load, they just warn that it may take a moment.
@@ -1903,6 +1988,13 @@ const LARGE_RASTER_BYTES = 150 * 1024 * 1024;
 const LARGE_VECTOR_BYTES = 60 * 1024 * 1024;
 const fmtMB = b => (b / 1024 / 1024).toFixed(0) + ' MB';
 async function loadRasterFiles(files) {
+  // a vector dropped here belongs in the vector panel
+  const misdirected = files.filter(f => isVectorFile(f.name));
+  files = files.filter(f => !isVectorFile(f.name));
+  if (misdirected.length) {
+    setStatus(prettyKind(misdirected[0].name) + ' is a vector — load it under the Vector tab', 'warn');
+    if (!files.length) return;
+  }
   for (const file of files) {
     const short = file.name.length > 22 ? file.name.slice(0, 20) + '…' : file.name;
     if (file.size > MAX_RASTER_BYTES) { setStatus('Too large to open · ' + short + ' (' + fmtMB(file.size) + ')', 'err'); continue; }
