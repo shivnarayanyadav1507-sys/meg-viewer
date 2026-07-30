@@ -1402,9 +1402,28 @@ map.on('sourcedata', (e) => {
 map.on('error', (e) => console.error('MapLibre error:', e && e.error));
 
 // ---------- vectors: districts + clustered villages ----------
+const EMPTY_FC = { type: 'FeatureCollection', features: [] };
+// Fetch a built-in vector file once, push it into its source, and record its bounds.
+const _vecLoaded = {};
+function loadBuiltinVector(sourceId, url, entryId) {
+  if (_vecLoaded[sourceId]) return _vecLoaded[sourceId];
+  _vecLoaded[sourceId] = fetch(url)
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(gj => {
+      const src = map.getSource(sourceId);
+      if (src && src.setData) src.setData(gj);
+      const e = vecLayers.find(x => x.id === entryId);
+      if (e) { e.bounds = bboxOf(gj); renderVecList(); }
+      return gj;
+    })
+    .catch(err => { console.warn(entryId + ' load failed:', err); _vecLoaded[sourceId] = null; setVec('Could not load ' + entryId, 'err'); });
+  return _vecLoaded[sourceId];
+}
 function addVectors() {
   // districts (line + invisible fill for clicks + label)
-  map.addSource('districts', { type: 'geojson', data: 'data/vectors/Meghalaya_Districts_named.geojson' });
+  // Loaded once below and pushed in via setData - avoids MapLibre and our bounds code
+  // fetching the same file twice.
+  map.addSource('districts', { type: 'geojson', data: EMPTY_FC });
   map.addLayer({ id: 'dist-fill', type: 'fill', source: 'districts', paint: { 'fill-color': '#000000', 'fill-opacity': 0 } });
   map.addLayer({ id: 'dist-line', type: 'line', source: 'districts', paint: { 'line-color': '#b3d4f0', 'line-width': 1.6, 'line-opacity': 0.85 } });
   map.addLayer({ id: 'dist-label', type: 'symbol', source: 'districts', layout: {
@@ -1412,7 +1431,8 @@ function addVectors() {
     paint: { 'text-color': '#b3d4f0', 'text-halo-color': '#0a0c0e', 'text-halo-width': 1.3 } });
 
   // villages (clustered points) — small solid green dot for single villages
-  map.addSource('villages', { type: 'geojson', data: 'data/vectors/Meghalaya_Villages.geojson', cluster: true, clusterRadius: 46, clusterMaxZoom: 12 });
+  // Villages start hidden, so their 6,060-feature file is fetched lazily on first toggle-on.
+  map.addSource('villages', { type: 'geojson', data: EMPTY_FC, cluster: true, clusterRadius: 46, clusterMaxZoom: 12 });
   // cluster: soft translucent outer glow ring (modern layered look)
   map.addLayer({ id: 'vil-cluster-glow', type: 'circle', source: 'villages', filter: ['has', 'point_count'], layout: { visibility: 'none' },
     paint: { 'circle-color': '#b6f441', 'circle-opacity': 0.18, 'circle-blur': 0.35,
@@ -1465,12 +1485,8 @@ function addVectors() {
     { id: 'villages', name: 'Villages · 6,060', color: '#b6f441', visible: false, labelOn: true,
       labelLayerId: 'vil-label', layerIds: ['vil-cluster-glow', 'vil-clusters', 'vil-count', 'vil-point'], removable: false, bounds: null }
   );
-  fetch('data/vectors/Meghalaya_Districts_named.geojson').then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }).then(gj => {
-    const e = vecLayers.find(x => x.id === 'districts'); if (e) e.bounds = bboxOf(gj); renderVecList();
-  }).catch(err => console.warn('Districts bounds load failed:', err));
-  fetch('data/vectors/Meghalaya_Villages.geojson').then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }).then(gj => {
-    const e = vecLayers.find(x => x.id === 'villages'); if (e) e.bounds = bboxOf(gj); renderVecList();
-  }).catch(err => console.warn('Villages bounds load failed:', err));
+  // districts are visible from the start, so load them now (one fetch, feeds source + bounds)
+  loadBuiltinVector('districts', 'data/vectors/Meghalaya_Districts_named.geojson', 'districts');
   renderVecList();
 }
 
@@ -1722,10 +1738,17 @@ function rowUpload(e) {
   return '<div class="lrow' + (e.visible ? '' : ' muted') + '" data-id="' + e.id + '">' + rows + '</div>';
 }
 function renderVecList() {
-  $('vec-list').innerHTML = vecLayers.map(e => e.removable ? rowUpload(e) : rowBuiltin(e)).join('');
+  // newest layer draws on top of the map, so show it at the TOP of the list (GIS convention)
+  $('vec-list').innerHTML = vecLayers.slice().reverse().map(e => e.removable ? rowUpload(e) : rowBuiltin(e)).join('');
 }
 function toggleVecVisibility(e) {
   e.visible = !e.visible;
+  // villages data is deferred until first use
+  if (e.visible && e.id === 'villages') {
+    setVec('Loading villages…', 'load');
+    Promise.resolve(loadBuiltinVector('villages', 'data/vectors/Meghalaya_Villages.geojson', 'villages'))
+      .then(gj => { if (gj) setVec('Villages loaded', 'ok'); });
+  }
   const v = e.visible ? 'visible' : 'none';
   e.layerIds.forEach(l => map.getLayer(l) && map.setLayoutProperty(l, 'visibility', v));
   if (e.labelLayerId && map.getLayer(e.labelLayerId)) map.setLayoutProperty(e.labelLayerId, 'visibility', (e.visible && e.labelOn) ? 'visible' : 'none');
@@ -1809,7 +1832,8 @@ function fileToDataURL(file) { return new Promise((res, rej) => { const r = new 
 function renderImgList() {
   const list = $('img-list');
   const fmtEl = v => (Math.abs(v) >= 1000 ? Math.round(v).toLocaleString() : (Math.round(v * 10) / 10));
-  list.innerHTML = imgLayers.map(e => {
+  // newest layer draws on top of the map, so show it at the TOP of the list
+  list.innerHTML = imgLayers.slice().reverse().map(e => {
     const head = [
       '<button class="icbtn" data-act="eye" title="Toggle visibility">' + (e.visible ? EYE_SVG : EYE_OFF_SVG) + '</button>',
       '<span class="lname" title="' + e.name.replace(/"/g, '&quot;') + '">' + e.name + '</span>',
