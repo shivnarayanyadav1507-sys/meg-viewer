@@ -1402,7 +1402,10 @@ map.on('sourcedata', (e) => {
 map.on('error', (e) => console.error('MapLibre error:', e && e.error));
 
 // ---------- vectors: districts + clustered villages ----------
-const EMPTY_FC = { type: 'FeatureCollection', features: [] };
+// NOTE: must return a FRESH object per source. MapLibre serialises source data to its worker
+// pool, so sharing one object reference across two sources corrupts that transfer
+// ('marker was not found' / "Cannot read properties of undefined (reading 'buffer')").
+const emptyFC = () => ({ type: 'FeatureCollection', features: [] });
 // Fetch a built-in vector file once, push it into its source, and record its bounds.
 const _vecLoaded = {};
 function loadBuiltinVector(sourceId, url, entryId) {
@@ -1423,7 +1426,7 @@ function addVectors() {
   // districts (line + invisible fill for clicks + label)
   // Loaded once below and pushed in via setData - avoids MapLibre and our bounds code
   // fetching the same file twice.
-  map.addSource('districts', { type: 'geojson', data: EMPTY_FC });
+  map.addSource('districts', { type: 'geojson', data: emptyFC() });
   map.addLayer({ id: 'dist-fill', type: 'fill', source: 'districts', paint: { 'fill-color': '#000000', 'fill-opacity': 0 } });
   map.addLayer({ id: 'dist-line', type: 'line', source: 'districts', paint: { 'line-color': '#b3d4f0', 'line-width': 1.6, 'line-opacity': 0.85 } });
   map.addLayer({ id: 'dist-label', type: 'symbol', source: 'districts', layout: {
@@ -1432,7 +1435,7 @@ function addVectors() {
 
   // villages (clustered points) — small solid green dot for single villages
   // Villages start hidden, so their 6,060-feature file is fetched lazily on first toggle-on.
-  map.addSource('villages', { type: 'geojson', data: EMPTY_FC, cluster: true, clusterRadius: 46, clusterMaxZoom: 12 });
+  map.addSource('villages', { type: 'geojson', data: emptyFC(), cluster: true, clusterRadius: 46, clusterMaxZoom: 12 });
   // cluster: soft translucent outer glow ring (modern layered look)
   map.addLayer({ id: 'vil-cluster-glow', type: 'circle', source: 'villages', filter: ['has', 'point_count'], layout: { visibility: 'none' },
     paint: { 'circle-color': '#b6f441', 'circle-opacity': 0.18, 'circle-blur': 0.35,
