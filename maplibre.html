@@ -43,7 +43,7 @@
     --t-panel:rgba(15,19,23,.55); --t-panel2:rgba(255,255,255,.04); --t-panel-solid:#0f1317; --t-panel-strong:rgba(12,15,18,.9);
     --t-ink:#e9eef2; --t-mut:#8a97a2; --t-dim:#5d6873;
     --t-line:rgba(255,255,255,.1); --t-line-str:rgba(255,255,255,.18);
-    --t-lime:#b6f441; --t-lime-soft:rgba(182,244,65,.14); --t-lime-line:rgba(182,244,65,.4); --t-lime-ink:#0a0c0e; --t-year:#a4e034; --t-dot:#aeb8c2;
+    --t-lime:#b6f441; --t-lime-soft:rgba(182,244,65,.14); --t-lime-line:rgba(182,244,65,.4); --t-lime-ink:#0a0c0e; --t-year:#a4e034; --t-dot:#aeb8c2; --t-err:#ff6b6b;
     --zc-moon:#d5d9dd; --zc-comet-head:#ff9f5c; --zc-comet-tail:#ff8a4c; --zc-comet-glow:rgba(255,138,76,.85); --zc-sun-ring:rgba(182,244,65,.5); --zc-sun-ring-glow:rgba(182,244,65,.22);
     --t-blue:#b3d4f0; --t-blue-soft:rgba(179,212,240,.14); --t-blue-line:rgba(179,212,240,.4);
     --t-orange:#ff8a4c; --t-orange-soft:rgba(255,138,76,.14); --t-orange-line:rgba(255,138,76,.4);
@@ -60,7 +60,7 @@
     --t-panel:rgba(251,251,250,.92); --t-panel2:#f1f3ee; --t-panel-solid:#fbfbfa; --t-panel-strong:rgba(251,251,250,.97);
     --t-ink:#1b211d; --t-mut:#6b756c; --t-dim:#9aa39a;
     --t-line:#dde2da; --t-line-str:#c7cec2;
-    --t-lime:#5f8f21; --t-lime-soft:#e3edd2; --t-lime-line:#b9d38c; --t-lime-ink:#ffffff; --t-year:#3f6b16; --t-dot:#5a6570;
+    --t-lime:#5f8f21; --t-lime-soft:#e3edd2; --t-lime-line:#b9d38c; --t-lime-ink:#ffffff; --t-year:#3f6b16; --t-dot:#5a6570; --t-err:#c0392b;
     --zc-moon:#5a6570; --zc-comet-head:#c85a1e; --zc-comet-tail:#cf7330; --zc-comet-glow:rgba(181,89,31,.55); --zc-sun-ring:rgba(95,143,33,.32); --zc-sun-ring-glow:rgba(95,143,33,.12);
     --t-blue:#3f6f95; --t-blue-soft:#dfe9f0; --t-blue-line:#aac4d6;
     --t-orange:#b5591f; --t-orange-soft:#f3e2d2; --t-orange-line:#e0b78c;
@@ -708,7 +708,11 @@
     line-height:1.45;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   #mdp .vec-status{font:500 10px 'JetBrains Mono',monospace;color:var(--t-dim);line-height:1.45;overflow-wrap:anywhere;
     display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-  #mdp .vec-status.ok{color:var(--t-lime)} #mdp .vec-status.err{color:#ff6b6b}
+  /* status message states: green = success, orange = needs attention, red = failure */
+  #mdp .status.ok,#mdp .vec-status.ok{color:var(--t-lime)}
+  #mdp .status.warn,#mdp .vec-status.warn{color:var(--t-orange)}
+  #mdp .status.err,#mdp .vec-status.err{color:var(--t-err)}
+  #mdp .status.load,#mdp .vec-status.load{color:var(--t-mut)}
 
   /* clear buttons — rounded */
   #mdp .btn-clear{font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:600;color:var(--t-mut);background:var(--t-track);border:1px solid var(--t-line);border-radius:9px;padding:7px 13px;cursor:pointer;transition:.15s}
@@ -1757,7 +1761,7 @@ async function loadVectorFiles(files) {
   for (const file of files) {
     if (file.size > MAX_VECTOR_BYTES) { setVec('Too large to open · ' + file.name + ' (' + fmtMB(file.size) + ')', 'err'); continue; }
     const key = file.name + ':' + file.size;
-    if (vecLayers.some(e => e.srcKey === key)) { setVec('Already loaded · ' + file.name, 'ok'); continue; }
+    if (vecLayers.some(e => e.srcKey === key)) { setVec('Already loaded · ' + file.name, 'warn'); continue; }
     setVec(file.size > LARGE_VECTOR_BYTES
       ? 'Large file (' + fmtMB(file.size) + ') — this may take a moment…'
       : 'Reading ' + file.name + '…');
@@ -1902,7 +1906,7 @@ async function loadRasterFiles(files) {
   for (const file of files) {
     const short = file.name.length > 22 ? file.name.slice(0, 20) + '…' : file.name;
     if (file.size > MAX_RASTER_BYTES) { setStatus('Too large to open · ' + short + ' (' + fmtMB(file.size) + ')', 'err'); continue; }
-    if (imgLayers.some(e => e.srcKey === file.name + ':' + file.size)) { setStatus('Already loaded · ' + short, 'ok'); continue; }
+    if (imgLayers.some(e => e.srcKey === file.name + ':' + file.size)) { setStatus('Already loaded · ' + short, 'warn'); continue; }
     setStatus(file.size > LARGE_RASTER_BYTES
       ? 'Large file (' + fmtMB(file.size) + ') — this may take a moment…'
       : 'Reading ' + short + '…', 'load');
