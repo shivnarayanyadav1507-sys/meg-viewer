@@ -1805,7 +1805,7 @@ async function rasterizeGeoTIFF(file) {
   // If the bbox values look like projected metres (well outside lat/lng range),
   // the image can't be placed on a lng/lat map without reprojection.
   const looksProjected = bbox.some(v => Math.abs(v) > 360);
-  if (looksProjected) throw new Error('projected CRS (needs EPSG:4326)');
+  if (looksProjected) throw new Error('projected CRS — reproject to EPSG:4326 (lat/lng)');
   const width = image.getWidth(), height = image.getHeight();
   if (!width || !height) throw new Error('empty raster');
   // downsample very large rasters so the canvas stays reasonable
@@ -1854,11 +1854,12 @@ async function addUploadedRaster(file) {
   const isImg = name.endsWith('.png') || name.endsWith('.jpg') || name.endsWith('.jpeg');
   if (!isTif && !isImg) throw new Error('unsupported raster format');
 
-  // Push the entry FIRST so async updates can always find it.
+  // Push the entry FIRST so async updates can always find it. If anything below throws,
+  // the entry is rolled back in the catch so a failed load never leaves a phantom row.
   const entry = { id: uid, name: file.name, srcKey: file.name + ':' + file.size, visible: true, removable: true, bounds: null };
   imgLayers.push(entry);
   renderImgList();
-
+  try {
   if (isTif) {
     // Parse the GeoTIFF ourselves (works for raw *and* COG), so we always get bounds + a visible image.
     const { dataUrl, bbox } = await rasterizeGeoTIFF(file);
@@ -1880,6 +1881,14 @@ async function addUploadedRaster(file) {
     entry.bounds = [[b.getWest(), b.getSouth()], [b.getEast(), b.getNorth()]];
     renderImgList();
   }
+  } catch (err) {
+    // roll back: drop the row and any partially-added source/layer
+    imgLayers = imgLayers.filter(x => x !== entry);
+    if (map.getLayer(uid)) map.removeLayer(uid);
+    if (map.getSource(uid)) map.removeSource(uid);
+    renderImgList();
+    throw err;
+  }
 }
 // Upload ceilings. The decode reads the whole file into memory, so there is a hard backstop —
 // but it is set high so legitimate DEMs/mosaics are never blocked. Files past the "large"
@@ -1898,7 +1907,7 @@ async function loadRasterFiles(files) {
       ? 'Large file (' + fmtMB(file.size) + ') — this may take a moment…'
       : 'Reading ' + short + '…', 'load');
     try { await addUploadedRaster(file); setStatus('Loaded · ' + short, 'ok'); }
-    catch (err) { console.error('raster load failed:', err); setStatus('Could not load ' + short + ' (' + (err && err.message ? err.message : 'unreadable') + ')', 'err'); }
+    catch (err) { console.error('raster load failed:', err); const why = (err && err.message) ? err.message : 'could not read file'; setStatus(why.charAt(0).toUpperCase() + why.slice(1) + ' · ' + short, 'err'); }
   }
 }
 
