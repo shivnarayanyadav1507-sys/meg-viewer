@@ -284,6 +284,14 @@
     box-shadow:var(--t-sh);letter-spacing:.03em;pointer-events:none;display:flex;align-items:center;gap:9px}
   .coord-readout .cr-pin{width:13px;height:13px;flex:none;color:var(--t-lime);filter:drop-shadow(0 0 5px var(--t-lime));order:99}
   .coord-readout .cr-pin svg{width:100%;height:100%;display:block;stroke:currentColor;fill:none}
+  .coord-readout .cr-pin{border:0;background:transparent;padding:0;cursor:pointer;transition:transform .12s,filter .15s}
+  .coord-readout .cr-pin:hover{transform:scale(1.15)}
+  .coord-readout .cr-pin.arm{color:var(--t-orange);filter:drop-shadow(0 0 7px var(--t-orange));animation:cr-arm 1.1s ease-in-out infinite}
+  .coord-readout.picking{border-color:var(--t-orange)}
+  .coord-readout.copied{border-color:var(--t-lime-line);box-shadow:var(--t-glow),var(--t-sh)}
+  .coord-readout .cr-flash{font:700 8.5px 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--t-lime);order:100;flex:none}
+  @keyframes cr-arm{0%,100%{opacity:.55}50%{opacity:1}}
   .coord-readout .cr-sep{color:var(--t-dim)}
   .coord-readout .cr-lab{color:var(--t-dim)}
   /* MapLibre attribution + scale — glassy themed */
@@ -654,7 +662,10 @@
   #mdp .icbtn.ord svg{width:13px;height:13px}
   #mdp .icbtn.ord:disabled{opacity:.25;cursor:default;pointer-events:none}
   /* map search + coordinate picker (sits under the coordinate pill) */
-  .map-search{position:absolute;right:14px;top:88px;z-index:900;width:266px;font-family:'JetBrains Mono',monospace}
+  .map-search{position:absolute;right:14px;top:90px;z-index:1100;width:266px;font-family:'JetBrains Mono',monospace}
+  /* short viewports: the corner cluster is 250px tall and would reach up into the search bar */
+  @media (max-height:780px){ .zoom-cluster{transform:scale(.72)} }
+  @media (max-height:620px){ .zoom-cluster{transform:scale(.58)} }
   .ms-bar{display:flex;align-items:center;gap:7px;padding:7px 9px;border-radius:12px;border:1px solid var(--t-line);
     background:var(--t-panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:var(--t-sh)}
   .ms-bar:focus-within{border-color:var(--t-lime-line);box-shadow:var(--t-glow),var(--t-sh)}
@@ -662,11 +673,6 @@
   #ms-input{flex:1;min-width:0;border:0;background:transparent;outline:none;color:var(--t-ink);
     font:600 11px 'JetBrains Mono',monospace;letter-spacing:.02em}
   #ms-input::placeholder{color:var(--t-dim);font-weight:500}
-  .ms-pick{flex:none;width:24px;height:24px;border-radius:7px;border:1px solid var(--t-line);background:transparent;
-    color:var(--t-mut);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;transition:.15s}
-  .ms-pick svg{width:14px;height:14px}
-  .ms-pick:hover{color:var(--t-lime);border-color:var(--t-lime-line)}
-  .ms-pick.on{color:var(--t-lime-ink);background:var(--t-lime);border-color:var(--t-lime)}
   .ms-results{margin-top:6px;border-radius:12px;border:1px solid var(--t-line);background:var(--t-panel-strong);
     backdrop-filter:blur(14px);box-shadow:var(--t-sh);overflow:hidden;max-height:230px;overflow-y:auto}
   .ms-row{display:flex;align-items:center;gap:8px;padding:8px 11px;cursor:pointer;border-bottom:1px solid var(--t-line)}
@@ -676,13 +682,6 @@
   .ms-row .ms-name{font:600 11px 'JetBrains Mono',monospace;color:var(--t-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .ms-row.ms-empty{color:var(--t-dim);cursor:default;font:500 10.5px 'JetBrains Mono',monospace}
   .ms-row.ms-empty:hover{background:transparent}
-  .ms-picked{display:flex;align-items:center;gap:8px;margin-top:6px;padding:7px 10px;border-radius:11px;
-    border:1px solid var(--t-lime-line);background:var(--t-panel-strong);backdrop-filter:blur(14px);box-shadow:var(--t-sh)}
-  .ms-pk-lab{font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--t-dim);flex:none}
-  .ms-pk-val{flex:1;min-width:0;font:600 10.5px 'JetBrains Mono',monospace;color:var(--t-lime);user-select:text;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .ms-pk-copy{flex:none;border:1px solid var(--t-line);background:transparent;color:var(--t-mut);border-radius:6px;
-    font:600 9px 'JetBrains Mono',monospace;padding:3px 7px;cursor:pointer}
-  .ms-pk-copy:hover{color:var(--t-lime);border-color:var(--t-lime-line)}
   .pick-dot{width:14px;height:14px;border-radius:50%;background:var(--t-lime);border:2px solid var(--t-panel-solid);box-shadow:0 0 0 4px var(--t-lime-soft)}
   #map.picking{cursor:crosshair}
   @media (max-width:760px){ .map-search{display:none} }
@@ -1263,26 +1262,19 @@
   <span id="cr-latlng">—</span>
   <span class="cr-sep">·</span>
   <span><span class="cr-lab">Z</span> <span id="cr-zoom">—</span></span>
-  <span class="cr-pin" aria-hidden="true"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.3 7-11a7 7 0 0 0-14 0c0 4.7 7 11 7 11Z"/><circle cx="12" cy="10" r="2.4"/></svg></span>
+  <button class="cr-pin" id="cr-pin" title="Pick a point: click the map to freeze and copy these coordinates" aria-label="Pick a point on the map"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.3 7-11a7 7 0 0 0-14 0c0 4.7 7 11 7 11Z"/><circle cx="12" cy="10" r="2.4"/></svg></button>
 </div>
-
-<div class="zoom-cluster" id="zoom-cluster">
-  <div class="zc-ring rA"></div>
 <div class="map-search" id="map-search">
   <div class="ms-bar">
     <svg class="ms-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
     <input id="ms-input" type="text" placeholder="Coordinates or place…" autocomplete="off" spellcheck="false" aria-label="Search coordinates or a place" />
-    <button class="ms-pick" id="ms-pick" title="Pick a point on the map" aria-label="Pick a point on the map">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 21s-7-6.1-7-11a7 7 0 1 1 14 0c0 4.9-7 11-7 11z"/><circle cx="12" cy="10" r="2.4"/></svg>
-    </button>
   </div>
   <div class="ms-results" id="ms-results" hidden></div>
-  <div class="ms-picked" id="ms-picked" hidden>
-    <span class="ms-pk-lab">Picked</span>
-    <span class="ms-pk-val" id="ms-pk-val">—</span>
-    <button class="ms-pk-copy" id="ms-pk-copy" title="Copy coordinates">copy</button>
-  </div>
 </div>
+
+<div class="zoom-cluster" id="zoom-cluster">
+  <div class="zc-ring rA"></div>
+
   <div class="zc-ring rCtl"></div>
   <div class="zc-ring rB"></div>
   <div class="zc-ring rC"></div>
@@ -2366,34 +2358,6 @@ function wireMapSearch() {
   box.addEventListener('click', e => { const r = e.target.closest('.ms-row[data-i]'); if (r) choose(items[+r.dataset.i]); });
   document.addEventListener('click', e => { if (!$('map-search').contains(e.target)) hide(); });
 
-  // ---- picker ----
-  const pickBtn = $('ms-pick'), pickBox = $('ms-picked'), pickVal = $('ms-pk-val');
-  let picking = false, pickMarker = null;
-  const setPicking = on => {
-    picking = on;
-    pickBtn.classList.toggle('on', on);
-    const c = map.getCanvas && map.getCanvas();
-    if (c && c.style) c.style.cursor = on ? 'crosshair' : '';
-  };
-  pickBtn.addEventListener('click', () => setPicking(!picking));
-  map.on('click', e => {
-    if (!picking) return;
-    const { lat, lng } = e.lngLat;
-    pickVal.textContent = fmtLatLng(lat, lng);
-    pickBox.hidden = false;
-    const el = document.createElement('div'); el.className = 'pick-dot';
-    if (pickMarker) pickMarker.remove();
-    pickMarker = new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map);
-    setPicking(false);
-  });
-  $('ms-pk-copy').addEventListener('click', async () => {
-    const txt = pickVal.textContent;
-    try {
-      if (navigator.clipboard && navigator.clipboard.writeText) await navigator.clipboard.writeText(txt);
-      else { const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); }
-      const b = $('ms-pk-copy'); b.textContent = 'copied'; setTimeout(() => { b.textContent = 'copy'; }, 1200);
-    } catch (err) { console.warn('clipboard failed', err); }
-  });
 }
 
 // ---------- layer ordering ----------
@@ -2744,7 +2708,54 @@ function wireViewTools() {
     const ns = lat >= 0 ? 'N' : 'S', ew = lng >= 0 ? 'E' : 'W';
     return Math.abs(lat).toFixed(4) + '° ' + ns + ' · ' + Math.abs(lng).toFixed(4) + '° ' + ew;
   };
-  map.on('mousemove', e => { crLatLng.textContent = fmtLatLng(e.lngLat.lat, e.lngLat.lng); });
+  // The pin doubles as the coordinate picker: arm it, click the map, and the pill freezes on
+  // that point and copies it automatically (no second readout, no extra copy step).
+  let frozen = false, picking = false, pickMarker = null;
+  const pin = $('cr-pin'), pill = $('coord-readout');
+  const setPicking = on => {
+    picking = on;
+    if (pin) pin.classList.toggle('arm', on);
+    if (pill) pill.classList.toggle('picking', on);
+    const c = map.getCanvas && map.getCanvas();
+    if (c && c.style) c.style.cursor = on ? 'crosshair' : '';
+  };
+  const flash = msg => {
+    if (!pill) return;
+    pill.classList.add('copied');
+    const tag = document.createElement('span');
+    tag.className = 'cr-flash'; tag.textContent = msg;
+    pill.appendChild(tag);
+    setTimeout(() => { pill.classList.remove('copied'); tag.remove(); }, 1500);
+  };
+  const copyText = async txt => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) await navigator.clipboard.writeText(txt);
+      else { const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); }
+      return true;
+    } catch (e) { console.warn('clipboard failed', e); return false; }
+  };
+  map.on('mousemove', e => { if (!frozen) crLatLng.textContent = fmtLatLng(e.lngLat.lat, e.lngLat.lng); });
+  if (pin) pin.addEventListener('click', () => {
+    if (frozen) {                       // click again to resume live tracking
+      frozen = false;
+      if (pickMarker) { pickMarker.remove(); pickMarker = null; }
+      setPicking(false);
+      return;
+    }
+    setPicking(!picking);
+  });
+  map.on('click', async e => {
+    if (!picking) return;
+    const { lat, lng } = e.lngLat;
+    const txt = fmtLatLng(lat, lng);
+    crLatLng.textContent = txt;
+    frozen = true;
+    setPicking(false);
+    const el = document.createElement('div'); el.className = 'pick-dot';
+    if (pickMarker) pickMarker.remove();
+    pickMarker = new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map);
+    flash(await copyText(txt) ? 'copied' : 'copy failed');
+  });
   const updZoom = () => { crZoom.textContent = map.getZoom().toFixed(1); };
   map.on('zoom', updZoom); updZoom();
 }
