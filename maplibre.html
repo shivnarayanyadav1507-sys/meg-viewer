@@ -894,12 +894,12 @@
   #timeline .tl-hint{color:var(--t-mut);font:500 9.5px 'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;flex:1;text-align:center}
   #timeline .cmp-eye{font:600 9px 'JetBrains Mono',monospace;letter-spacing:.08em;text-transform:uppercase}
   /* subtle shadow keeps timeline text readable over varied map terrain */
-  /* year label shows a soft pulse while that year's tiles are still loading */
-  .tl-year{position:relative}
-  .tl-year.loading::after{content:'';position:absolute;right:-16px;top:50%;width:9px;height:9px;margin-top:-4px;
-    border-radius:50%;border:2px solid var(--t-lime);border-top-color:transparent;animation:tl-spin .7s linear infinite}
+  /* small spinner sits in the flow after the mode badge while that year's tiles load */
+  .tl-spin{flex:none;width:11px;height:11px;border-radius:50%;border:2px solid var(--t-lime);
+    border-top-color:transparent;animation:tl-spin .7s linear infinite;margin-left:2px}
+  .tl-spin[hidden]{display:none}
   @keyframes tl-spin{to{transform:rotate(360deg)}}
-  @media (prefers-reduced-motion:reduce){.tl-year.loading::after{animation:none;opacity:.5}}
+  @media (prefers-reduced-motion:reduce){.tl-spin{animation:none;opacity:.5}}
   #timeline .tl-year,#timeline .tl-snap,#timeline .tl-hint,#timeline .tl-speed,#timeline .tl-dot-label{text-shadow:0 1px 3px var(--t-bg)}
   /* The timeline floats bare over the basemap, which stays dark in BOTH themes. So in light mode
      we DON'T switch to dark text (which needs blurry white halos to read over the dark map) — we keep
@@ -1237,6 +1237,7 @@
     <div class="tl-head">
       <span class="tl-year" id="ro-year">2018</span>
       <span class="tl-badge" id="ro-mode">RGB</span>
+      <span class="tl-spin" id="ro-spin" hidden aria-hidden="true"></span>
       <span class="tl-fade" id="ro-fade"></span>
     </div>
     <div class="tl-ctrls">
@@ -2266,15 +2267,23 @@ function buildHillshade() {
   if (!map.getSource('terrain-dem')) {
     map.addSource('terrain-dem', { type: 'raster-dem', tiles: [TERRAIN_TILES], encoding: 'terrarium', tileSize: 256, maxzoom: 14 });
   }
-  let firstSymbol;
-  try { for (const l of map.getStyle().layers) { if (l.type === 'symbol') { firstSymbol = l.id; break; } } } catch (e) {}
+  // Insert beneath the imagery so shaded relief reads as terrain *under* the layers, not over
+  // them. Falls back to the first label layer, then to the top, if the imagery isn't there yet.
+  let beforeId;
+  for (const y of YEARS) {
+    for (const m of ['sat', 'ndvi']) { const id = lid(y, m); if (map.getLayer(id)) { beforeId = id; break; } }
+    if (beforeId) break;
+  }
+  if (!beforeId) {
+    try { for (const l of map.getStyle().layers) { if (l.type === 'symbol') { beforeId = l.id; break; } } } catch (e) {}
+  }
   const paint = {
     'hillshade-exaggeration': 0.45,
     'hillshade-shadow-color': '#0a0c0e',
     'hillshade-highlight-color': '#e9eef2',
     'hillshade-accent-color': '#5d6873'
   };
-  map.addLayer({ id: 'hillshade', type: 'hillshade', source: 'terrain-dem', paint, layout: { visibility: 'none' } }, firstSymbol);
+  map.addLayer({ id: 'hillshade', type: 'hillshade', source: 'terrain-dem', paint, layout: { visibility: 'none' } }, beforeId);
   hillshadeBuilt = true;
   restackMapLayers();          // keep rasters/vectors above it
 }
@@ -2294,8 +2303,8 @@ function wireHillshade() {
 // ---------- imagery load indicator ----------
 // The status line already says "Loading <year>", but the eye is on the timeline, so mirror it there.
 function setYearLoading(on) {
-  const el = document.getElementById('ro-year');
-  if (el) el.classList.toggle('loading', !!on);
+  const sp = document.getElementById('ro-spin');
+  if (sp) sp.hidden = !on;
 }
 function wireYearLoading() {
   const check = () => {
