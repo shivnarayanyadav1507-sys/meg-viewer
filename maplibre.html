@@ -648,6 +648,10 @@
   .mdp-section[data-tab="view"] .tool-row:hover,.mdp-section[data-tab="measure"] .tool-row:hover{border-color:var(--t-lime);background:var(--t-lime-soft)}
   .mdp-section[data-tab="view"] .tool-row svg,.mdp-section[data-tab="measure"] .tool-row svg{width:16px;height:16px;color:var(--t-mut);flex:none}
   .mdp-section[data-tab="view"] .tool-row:hover svg,.mdp-section[data-tab="measure"] .tool-row:hover svg{color:var(--t-lime)}
+  /* layer order buttons */
+  #mdp .icbtn.ord{width:20px;height:20px;flex:none;padding:0}
+  #mdp .icbtn.ord svg{width:13px;height:13px}
+  #mdp .icbtn.ord:disabled{opacity:.25;cursor:default;pointer-events:none}
   /* COG prep tool */
   #mdp .cog-hint{font:500 10.5px 'JetBrains Mono',monospace;line-height:1.5;color:var(--t-dim);margin-bottom:9px}
   #mdp .cog-in{width:100%;padding:9px 11px;border:1px solid var(--t-line);border-radius:10px;background:var(--t-track);
@@ -1291,6 +1295,8 @@ const EYE_SVG    = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 const EYE_OFF_SVG= '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a18.6 18.6 0 0 1 4.22-5.06M9.9 4.24A10.9 10.9 0 0 1 12 4c7 0 11 7 11 7a18.5 18.5 0 0 1-2.16 3.19m-6.3-1.13a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg>';
 const TAG_SVG    = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4l-7.2 7.2a1.8 1.8 0 0 1-2.5 0L3 13V3h10l7.6 7.9a1.8 1.8 0 0 1 0 2.5z"/><circle cx="8" cy="8" r="1.4"/></svg>';
 const EXPAND_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>';
+const UP_SVG     = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>';
+const DOWN_SVG   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
 const X_SVG      = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
 const VEC_PALETTE = ['#ffd166', '#ef476f', '#06d6a0', '#c77dff', '#4cc9f0', '#f4a261'];
 let vecPaletteI = 0;
@@ -1758,6 +1764,7 @@ function rowBuiltin(e) {
     '<button class="icbtn sw-btn" data-act="eye" title="Toggle visibility"><span class="sw' + (e.visible ? ' on' : '') + '"></span></button>' +
     '<span class="vname">' + e.name + '</span>' +
     (e.labelLayerId ? '<button class="icbtn' + (e.labelOn ? ' active' : '') + '" data-act="label" title="Toggle labels">' + TAG_SVG + '</button>' : '') +
+    orderBtns(vecLayers, e) +
     (e.bounds ? '<button class="icbtn" data-act="zoom" title="Zoom to layer">' + EXPAND_SVG + '</button>' : '') +
     '</div>';
 }
@@ -1854,6 +1861,7 @@ async function addUploadedVector(gj, filename, srcKey) {
   vecLayers.push({ id: uid, name: filename, srcKey: srcKey || (filename + ':' + (gj.features ? gj.features.length : 0)), color, visible: true, labelOn: true, labelLayerId,
     layerIds: [uid + '-fill', uid + '-line', uid + '-pt'], removable: true, bounds });
   renderVecList();
+  restackMapLayers();
   if (bounds) map.fitBounds(bounds, { padding: fitPadding(), maxZoom: 15, duration: 900 });
 }
 async function loadVectorFiles(files) {
@@ -1886,6 +1894,7 @@ function renderImgList() {
     const head = [
       '<button class="icbtn" data-act="eye" title="Toggle visibility">' + (e.visible ? EYE_SVG : EYE_OFF_SVG) + '</button>',
       '<span class="lname" title="' + e.name.replace(/"/g, '&quot;') + '">' + e.name + '</span>',
+      orderBtns(imgLayers, e),
       e.bounds ? '<button class="icbtn" data-act="zoom" title="Zoom to layer">' + EXPAND_SVG + '</button>' : '',
       '<button class="icbtn" data-act="remove" title="Remove">' + X_SVG + '</button>'
     ].join('');
@@ -2052,6 +2061,7 @@ async function addUploadedRaster(file) {
     map.addSource(uid, { type: 'image', url: dataUrl, coordinates: coords });
     map.addLayer({ id: uid, type: 'raster', source: uid, paint: { 'raster-opacity': entry.opacity, 'raster-resampling': 'nearest' } });
     entry.bounds = [[w, s], [e, n]];
+    restackMapLayers();
     renderImgList();
     map.fitBounds(entry.bounds, { padding: fitPadding(), maxZoom: 14, duration: 900 });
   } else {
@@ -2123,6 +2133,31 @@ async function loadRasterFiles(files) {
     try { await addUploadedRaster(file); setStatus('Loaded · ' + short, 'ok'); }
     catch (err) { console.error('raster load failed:', err); const why = (err && err.message) ? err.message : 'could not read file'; setStatus(why.charAt(0).toUpperCase() + why.slice(1) + ' · ' + short, 'err'); }
   }
+}
+
+// ---------- layer ordering ----------
+// Draw order policy: uploaded rasters sit above the basemap/imagery, and vectors always sit
+// above rasters (lines and points must stay readable). Within each group, array order wins and
+// the LAST entry draws on top - which is why both lists render reversed (top of list = top of map).
+function restackMapLayers() {
+  const top = ids => ids.forEach(id => { if (id && map.getLayer(id)) { try { map.moveLayer(id); } catch (e) {} } });
+  imgLayers.forEach(e => top([e.id]));
+  vecLayers.forEach(e => top((e.layerIds || []).concat(e.labelLayerId ? [e.labelLayerId] : [])));
+}
+// dir = +1 moves the layer UP the list (higher on the map), -1 moves it down
+function moveLayerEntry(arr, entry, dir) {
+  const i = arr.indexOf(entry);
+  const j = i + dir;
+  if (i < 0 || j < 0 || j >= arr.length) return false;
+  arr[i] = arr[j]; arr[j] = entry;
+  restackMapLayers();
+  return true;
+}
+function orderBtns(arr, entry) {
+  const i = arr.indexOf(entry);
+  const canUp = i < arr.length - 1, canDown = i > 0;
+  return '<button class="icbtn ord" data-act="up"' + (canUp ? '' : ' disabled') + ' title="Move up (draw above)">' + UP_SVG + '</button>'
+       + '<button class="icbtn ord" data-act="down"' + (canDown ? '' : ' disabled') + ' title="Move down (draw below)">' + DOWN_SVG + '</button>';
 }
 
 // ---------- COG prep tool (generates the exact GDAL commands) ----------
@@ -2712,7 +2747,8 @@ function wireControls() {
     const btn = e.target.closest('button[data-act]'); if (!btn) return;
     const row = btn.closest('.lrow, .lrow-switch'); const entry = vecLayers.find(x => x.id === row.dataset.id); if (!entry) return;
     const act = btn.dataset.act;
-    if (act === 'eye') toggleVecVisibility(entry);
+    if (act === 'up' || act === 'down') { if (moveLayerEntry(vecLayers, entry, act === 'up' ? 1 : -1)) renderVecList(); }
+    else if (act === 'eye') toggleVecVisibility(entry);
     else if (act === 'label') toggleVecLabel(entry);
     else if (act === 'zoom') zoomToVecBounds(entry);
     else if (act === 'remove') removeVecLayer(entry);
@@ -2731,6 +2767,7 @@ function wireControls() {
     const row = btn.closest('.rcard'); const entry = row ? imgLayers.find(x => x.id === row.dataset.id) : null; if (!entry) return;
     const act = btn.dataset.act;
     if (act === 'eye') { entry.visible = !entry.visible; if (map.getLayer(entry.id)) map.setLayoutProperty(entry.id, 'visibility', entry.visible ? 'visible' : 'none'); renderImgList(); }
+    else if (act === 'up' || act === 'down') { if (moveLayerEntry(imgLayers, entry, act === 'up' ? 1 : -1)) renderImgList(); }
     else if (act === 'zoom') { if (entry.bounds) map.fitBounds(entry.bounds, { padding: fitPadding(), maxZoom: 15, duration: 900 }); }
     else if (act === 'remove') { if (map.getLayer(entry.id)) map.removeLayer(entry.id); if (map.getSource(entry.id)) map.removeSource(entry.id); imgLayers = imgLayers.filter(x => x !== entry); renderImgList(); }
   });
