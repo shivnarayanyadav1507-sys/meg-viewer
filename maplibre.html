@@ -702,6 +702,10 @@
   .pick-dot{width:14px;height:14px;border-radius:50%;background:var(--t-lime);border:2px solid var(--t-panel-solid);box-shadow:0 0 0 4px var(--t-lime-soft)}
   #map.picking{cursor:crosshair}
   @media (max-width:760px){ .map-search{display:none} }
+  #mdp .tool-state{margin-left:auto;font:600 9px 'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--t-dim)}
+  #mdp .tool-row.on{border-color:var(--t-lime-line);background:var(--t-lime-soft)}
+  #mdp .tool-row.on .tool-state{color:var(--t-lime)}
+  #mdp .tool-row.on svg{color:var(--t-lime)}
   /* COG prep tool */
   #mdp .cog-hint{font:500 10.5px 'JetBrains Mono',monospace;line-height:1.5;color:var(--t-dim);margin-bottom:9px}
   #mdp .cog-in{width:100%;padding:9px 11px;border:1px solid var(--t-line);border-radius:10px;background:var(--t-track);
@@ -890,6 +894,12 @@
   #timeline .tl-hint{color:var(--t-mut);font:500 9.5px 'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;flex:1;text-align:center}
   #timeline .cmp-eye{font:600 9px 'JetBrains Mono',monospace;letter-spacing:.08em;text-transform:uppercase}
   /* subtle shadow keeps timeline text readable over varied map terrain */
+  /* year label shows a soft pulse while that year's tiles are still loading */
+  .tl-year{position:relative}
+  .tl-year.loading::after{content:'';position:absolute;right:-16px;top:50%;width:9px;height:9px;margin-top:-4px;
+    border-radius:50%;border:2px solid var(--t-lime);border-top-color:transparent;animation:tl-spin .7s linear infinite}
+  @keyframes tl-spin{to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion:reduce){.tl-year.loading::after{animation:none;opacity:.5}}
   #timeline .tl-year,#timeline .tl-snap,#timeline .tl-hint,#timeline .tl-speed,#timeline .tl-dot-label{text-shadow:0 1px 3px var(--t-bg)}
   /* The timeline floats bare over the basemap, which stays dark in BOTH themes. So in light mode
      we DON'T switch to dark text (which needs blurry white halos to read over the dark map) — we keep
@@ -1073,6 +1083,15 @@
       <div class="mdp-section" data-tab="view">
         <div class="mdp-eyebrow">Map</div>
         <h2 class="mdp-title">View &amp; export</h2>
+        <div class="mdp-grp">
+          <div class="tool-section-lab">Terrain</div>
+          <button class="tool-row" id="hillshade-toggle" aria-pressed="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20l6-9 4 6 3-4 5 7z"/><path d="M14 7l2-3 2 3"/></svg>
+            <span>Hillshade relief</span>
+            <span class="tool-state" id="hillshade-state">Off</span>
+          </button>
+          <div class="cog-hint" style="margin-top:8px">Shaded terrain from public elevation tiles. Draws beneath your imagery and boundaries.</div>
+        </div>
         <div class="mdp-grp">
           <div class="tool-section-lab">Appearance</div>
           <div class="theme-seg" id="theme-seg">
@@ -1277,8 +1296,6 @@
 
 <div class="coord-readout" id="coord-readout">
   <span id="cr-latlng">—</span>
-  <span class="cr-sep">·</span>
-  <span><span class="cr-lab">Z</span> <span id="cr-zoom">—</span></span>
   <button class="cr-pin" id="cr-pin" title="Pick a point: click the map to freeze and copy these coordinates" aria-label="Pick a point on the map"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.3 7-11a7 7 0 0 0-14 0c0 4.7 7 11 7 11Z"/><circle cx="12" cy="10" r="2.4"/></svg></button>
 </div>
 <div class="map-search collapsed" id="map-search">
@@ -1485,6 +1502,8 @@ map.on('load', () => {
   wireZoomCluster();
   wireCogTool();
   wireMapSearch();
+  wireYearLoading();
+  wireHillshade();
   wirePanelCollapse();
   wireMdpPanel();
   render();
@@ -2237,6 +2256,58 @@ async function loadRasterFiles(files) {
   }
 }
 
+// ---------- hillshade (terrain relief) ----------
+// Public terrarium-encoded elevation tiles (AWS OpenData). Created lazily on first toggle so the
+// tiles are never fetched unless asked for, and inserted below labels/vectors so data stays readable.
+const TERRAIN_TILES = 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png';
+let hillshadeOn = false, hillshadeBuilt = false;
+function buildHillshade() {
+  if (hillshadeBuilt) return;
+  if (!map.getSource('terrain-dem')) {
+    map.addSource('terrain-dem', { type: 'raster-dem', tiles: [TERRAIN_TILES], encoding: 'terrarium', tileSize: 256, maxzoom: 14 });
+  }
+  let firstSymbol;
+  try { for (const l of map.getStyle().layers) { if (l.type === 'symbol') { firstSymbol = l.id; break; } } } catch (e) {}
+  const paint = {
+    'hillshade-exaggeration': 0.45,
+    'hillshade-shadow-color': '#0a0c0e',
+    'hillshade-highlight-color': '#e9eef2',
+    'hillshade-accent-color': '#5d6873'
+  };
+  map.addLayer({ id: 'hillshade', type: 'hillshade', source: 'terrain-dem', paint, layout: { visibility: 'none' } }, firstSymbol);
+  hillshadeBuilt = true;
+  restackMapLayers();          // keep rasters/vectors above it
+}
+function setHillshade(on) {
+  hillshadeOn = !!on;
+  if (hillshadeOn) buildHillshade();
+  if (map.getLayer('hillshade')) map.setLayoutProperty('hillshade', 'visibility', hillshadeOn ? 'visible' : 'none');
+  const btn = document.getElementById('hillshade-toggle'), st = document.getElementById('hillshade-state');
+  if (btn) { btn.classList.toggle('on', hillshadeOn); btn.setAttribute('aria-pressed', hillshadeOn ? 'true' : 'false'); }
+  if (st) st.textContent = hillshadeOn ? 'On' : 'Off';
+}
+function wireHillshade() {
+  const btn = document.getElementById('hillshade-toggle');
+  if (btn) btn.addEventListener('click', () => setHillshade(!hillshadeOn));
+}
+
+// ---------- imagery load indicator ----------
+// The status line already says "Loading <year>", but the eye is on the timeline, so mirror it there.
+function setYearLoading(on) {
+  const el = document.getElementById('ro-year');
+  if (el) el.classList.toggle('loading', !!on);
+}
+function wireYearLoading() {
+  const check = () => {
+    const id = lid(YEARS[Math.round(pos)] || YEARS[0], mode);
+    const ready = !map.isSourceLoaded || map.isSourceLoaded(id);
+    setYearLoading(!ready);
+  };
+  map.on('sourcedata', check);
+  map.on('idle', () => setYearLoading(false));
+  check();
+}
+
 // ---------- coordinate search + picker ----------
 // Tier 1: parse coordinates locally (decimal, DMS, DDM).  Tier 2: search the district and
 // village data we already ship - instant, offline, and far more reliable for Meghalaya than a
@@ -2736,7 +2807,7 @@ function wireViewTools() {
   });
 
   // 6. Coordinate + zoom readout
-  const crLatLng = $('cr-latlng'), crZoom = $('cr-zoom');
+  const crLatLng = $('cr-latlng'), crZoom = $('cr-zoom');   // crZoom removed from the pill (the cluster shows it)
   const fmtLatLng = (lat, lng) => {
     const ns = lat >= 0 ? 'N' : 'S', ew = lng >= 0 ? 'E' : 'W';
     return Math.abs(lat).toFixed(4) + '° ' + ns + ' · ' + Math.abs(lng).toFixed(4) + '° ' + ew;
@@ -2789,7 +2860,7 @@ function wireViewTools() {
     pickMarker = new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map);
     flash(await copyText(txt) ? 'copied' : 'copy failed');
   });
-  const updZoom = () => { crZoom.textContent = map.getZoom().toFixed(1); };
+  const updZoom = () => { if (crZoom) crZoom.textContent = map.getZoom().toFixed(1); };
   map.on('zoom', updZoom); updZoom();
 }
 
