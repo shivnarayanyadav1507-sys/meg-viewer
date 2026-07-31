@@ -1422,6 +1422,36 @@ function loadBuiltinVector(sourceId, url, entryId) {
     .catch(err => { console.warn(entryId + ' load failed:', err); _vecLoaded[sourceId] = null; setVec('Could not load ' + entryId, 'err'); });
   return _vecLoaded[sourceId];
 }
+// Villages are created on first use with their real data. Creating a CLUSTERED source with an
+// empty FeatureCollection and populating it later makes MapLibre's supercluster worker throw
+// ("Cannot read properties of undefined (reading 'buffer')"), so we never do that.
+let _villagesBuilt = false;
+function buildVillageLayers(gj) {
+  if (_villagesBuilt) return;
+  _villagesBuilt = true;
+    map.addSource('villages', { type: 'geojson', data: gj, cluster: true, clusterRadius: 46, clusterMaxZoom: 12 });
+    // cluster: soft translucent outer glow ring (modern layered look)
+    map.addLayer({ id: 'vil-cluster-glow', type: 'circle', source: 'villages', filter: ['has', 'point_count'], layout: { visibility: 'none' },
+      paint: { 'circle-color': '#b6f441', 'circle-opacity': 0.18, 'circle-blur': 0.35,
+        'circle-radius': ['step', ['get', 'point_count'], 20, 50, 26, 200, 34] } });
+    // cluster: solid inner core
+    map.addLayer({ id: 'vil-clusters', type: 'circle', source: 'villages', filter: ['has', 'point_count'], layout: { visibility: 'none' },
+      paint: { 'circle-color': '#c7f95a', 'circle-opacity': 0.95, 'circle-stroke-width': 2, 'circle-stroke-color': 'rgba(10,12,14,0.55)',
+        'circle-radius': ['step', ['get', 'point_count'], 12, 50, 16, 200, 21] } });
+    map.addLayer({ id: 'vil-count', type: 'symbol', source: 'villages', filter: ['has', 'point_count'], layout: { visibility: 'none',
+      'text-field': ['get', 'point_count_abbreviated'], 'text-font': ['Open Sans Semibold'], 'text-size': 11 }, paint: { 'text-color': '#0a0c0e' } });
+    // individual village: bright white core + lime ring, grows with zoom for visibility on any basemap
+    map.addLayer({ id: 'vil-point', type: 'circle', source: 'villages', filter: ['!', ['has', 'point_count']], layout: { visibility: 'none' },
+      paint: {
+        'circle-color': '#ffffff', 'circle-opacity': 0.95,
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 3, 11, 4.5, 14, 6.5, 17, 9],
+        'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 8, 1.5, 14, 2.5, 17, 3],
+        'circle-stroke-color': '#b6f441' } });
+    map.addLayer({ id: 'vil-label', type: 'symbol', source: 'villages', filter: ['!', ['has', 'point_count']], minzoom: 11, layout: { visibility: 'none',
+      'text-field': ['get', 'HAB_NAME'], 'text-font': ['Open Sans Regular'], 'text-size': 10, 'text-offset': [0, 1], 'text-anchor': 'top' },
+      paint: { 'text-color': '#e9eef2', 'text-halo-color': '#0a0c0e', 'text-halo-width': 1.4 } });
+}
+
 function addVectors() {
   // districts (line + invisible fill for clicks + label)
   // Loaded once below and pushed in via setData - avoids MapLibre and our bounds code
@@ -1434,28 +1464,6 @@ function addVectors() {
     paint: { 'text-color': '#b3d4f0', 'text-halo-color': '#0a0c0e', 'text-halo-width': 1.3 } });
 
   // villages (clustered points) — small solid green dot for single villages
-  // Villages start hidden, so their 6,060-feature file is fetched lazily on first toggle-on.
-  map.addSource('villages', { type: 'geojson', data: emptyFC(), cluster: true, clusterRadius: 46, clusterMaxZoom: 12 });
-  // cluster: soft translucent outer glow ring (modern layered look)
-  map.addLayer({ id: 'vil-cluster-glow', type: 'circle', source: 'villages', filter: ['has', 'point_count'], layout: { visibility: 'none' },
-    paint: { 'circle-color': '#b6f441', 'circle-opacity': 0.18, 'circle-blur': 0.35,
-      'circle-radius': ['step', ['get', 'point_count'], 20, 50, 26, 200, 34] } });
-  // cluster: solid inner core
-  map.addLayer({ id: 'vil-clusters', type: 'circle', source: 'villages', filter: ['has', 'point_count'], layout: { visibility: 'none' },
-    paint: { 'circle-color': '#c7f95a', 'circle-opacity': 0.95, 'circle-stroke-width': 2, 'circle-stroke-color': 'rgba(10,12,14,0.55)',
-      'circle-radius': ['step', ['get', 'point_count'], 12, 50, 16, 200, 21] } });
-  map.addLayer({ id: 'vil-count', type: 'symbol', source: 'villages', filter: ['has', 'point_count'], layout: { visibility: 'none',
-    'text-field': ['get', 'point_count_abbreviated'], 'text-font': ['Open Sans Semibold'], 'text-size': 11 }, paint: { 'text-color': '#0a0c0e' } });
-  // individual village: bright white core + lime ring, grows with zoom for visibility on any basemap
-  map.addLayer({ id: 'vil-point', type: 'circle', source: 'villages', filter: ['!', ['has', 'point_count']], layout: { visibility: 'none' },
-    paint: {
-      'circle-color': '#ffffff', 'circle-opacity': 0.95,
-      'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 3, 11, 4.5, 14, 6.5, 17, 9],
-      'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 8, 1.5, 14, 2.5, 17, 3],
-      'circle-stroke-color': '#b6f441' } });
-  map.addLayer({ id: 'vil-label', type: 'symbol', source: 'villages', filter: ['!', ['has', 'point_count']], minzoom: 11, layout: { visibility: 'none',
-    'text-field': ['get', 'HAB_NAME'], 'text-font': ['Open Sans Regular'], 'text-size': 10, 'text-offset': [0, 1], 'text-anchor': 'top' },
-    paint: { 'text-color': '#e9eef2', 'text-halo-color': '#0a0c0e', 'text-halo-width': 1.4 } });
 
   // interactions
   map.on('click', 'dist-fill', e => {
@@ -1744,13 +1752,26 @@ function renderVecList() {
   // newest layer draws on top of the map, so show it at the TOP of the list (GIS convention)
   $('vec-list').innerHTML = vecLayers.slice().reverse().map(e => e.removable ? rowUpload(e) : rowBuiltin(e)).join('');
 }
+function applyVecVisibility(e) {
+  const v = e.visible ? 'visible' : 'none';
+  e.layerIds.forEach(l => map.getLayer(l) && map.setLayoutProperty(l, 'visibility', v));
+  if (e.labelLayerId && map.getLayer(e.labelLayerId)) map.setLayoutProperty(e.labelLayerId, 'visibility', (e.visible && e.labelOn) ? 'visible' : 'none');
+}
 function toggleVecVisibility(e) {
   e.visible = !e.visible;
   // villages data is deferred until first use
-  if (e.visible && e.id === 'villages') {
+  if (e.visible && e.id === 'villages' && !_villagesBuilt) {
     setVec('Loading villages…', 'load');
-    Promise.resolve(loadBuiltinVector('villages', 'data/vectors/Meghalaya_Villages.geojson', 'villages'))
-      .then(gj => { if (gj) setVec('Villages loaded', 'ok'); });
+    fetch('data/vectors/Meghalaya_Villages.geojson')
+      .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(gj => {
+        buildVillageLayers(gj);              // source created WITH data, never empty
+        e.bounds = bboxOf(gj);
+        applyVecVisibility(e);               // honour the toggle state as it is now
+        renderVecList();
+        setVec('Villages loaded', 'ok');
+      })
+      .catch(err => { console.warn('villages load failed:', err); setVec('Could not load villages', 'err'); });
   }
   const v = e.visible ? 'visible' : 'none';
   e.layerIds.forEach(l => map.getLayer(l) && map.setLayoutProperty(l, 'visibility', v));
