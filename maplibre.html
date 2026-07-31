@@ -653,6 +653,39 @@
   #mdp .icbtn.ord{width:20px;height:20px;flex:none;padding:0}
   #mdp .icbtn.ord svg{width:13px;height:13px}
   #mdp .icbtn.ord:disabled{opacity:.25;cursor:default;pointer-events:none}
+  /* map search + coordinate picker (sits under the coordinate pill) */
+  .map-search{position:absolute;right:14px;top:88px;z-index:900;width:266px;font-family:'JetBrains Mono',monospace}
+  .ms-bar{display:flex;align-items:center;gap:7px;padding:7px 9px;border-radius:12px;border:1px solid var(--t-line);
+    background:var(--t-panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:var(--t-sh)}
+  .ms-bar:focus-within{border-color:var(--t-lime-line);box-shadow:var(--t-glow),var(--t-sh)}
+  .ms-ic{width:14px;height:14px;color:var(--t-dim);flex:none}
+  #ms-input{flex:1;min-width:0;border:0;background:transparent;outline:none;color:var(--t-ink);
+    font:600 11px 'JetBrains Mono',monospace;letter-spacing:.02em}
+  #ms-input::placeholder{color:var(--t-dim);font-weight:500}
+  .ms-pick{flex:none;width:24px;height:24px;border-radius:7px;border:1px solid var(--t-line);background:transparent;
+    color:var(--t-mut);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;transition:.15s}
+  .ms-pick svg{width:14px;height:14px}
+  .ms-pick:hover{color:var(--t-lime);border-color:var(--t-lime-line)}
+  .ms-pick.on{color:var(--t-lime-ink);background:var(--t-lime);border-color:var(--t-lime)}
+  .ms-results{margin-top:6px;border-radius:12px;border:1px solid var(--t-line);background:var(--t-panel-strong);
+    backdrop-filter:blur(14px);box-shadow:var(--t-sh);overflow:hidden;max-height:230px;overflow-y:auto}
+  .ms-row{display:flex;align-items:center;gap:8px;padding:8px 11px;cursor:pointer;border-bottom:1px solid var(--t-line)}
+  .ms-row:last-child{border-bottom:0}
+  .ms-row:hover,.ms-row.sel{background:var(--t-lime-soft)}
+  .ms-row .ms-kind{font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--t-dim);flex:none;min-width:52px}
+  .ms-row .ms-name{font:600 11px 'JetBrains Mono',monospace;color:var(--t-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ms-row.ms-empty{color:var(--t-dim);cursor:default;font:500 10.5px 'JetBrains Mono',monospace}
+  .ms-row.ms-empty:hover{background:transparent}
+  .ms-picked{display:flex;align-items:center;gap:8px;margin-top:6px;padding:7px 10px;border-radius:11px;
+    border:1px solid var(--t-lime-line);background:var(--t-panel-strong);backdrop-filter:blur(14px);box-shadow:var(--t-sh)}
+  .ms-pk-lab{font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--t-dim);flex:none}
+  .ms-pk-val{flex:1;min-width:0;font:600 10.5px 'JetBrains Mono',monospace;color:var(--t-lime);user-select:text;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ms-pk-copy{flex:none;border:1px solid var(--t-line);background:transparent;color:var(--t-mut);border-radius:6px;
+    font:600 9px 'JetBrains Mono',monospace;padding:3px 7px;cursor:pointer}
+  .ms-pk-copy:hover{color:var(--t-lime);border-color:var(--t-lime-line)}
+  .pick-dot{width:14px;height:14px;border-radius:50%;background:var(--t-lime);border:2px solid var(--t-panel-solid);box-shadow:0 0 0 4px var(--t-lime-soft)}
+  #map.picking{cursor:crosshair}
+  @media (max-width:760px){ .map-search{display:none} }
   /* COG prep tool */
   #mdp .cog-hint{font:500 10.5px 'JetBrains Mono',monospace;line-height:1.5;color:var(--t-dim);margin-bottom:9px}
   #mdp .cog-in{width:100%;padding:9px 11px;border:1px solid var(--t-line);border-radius:10px;background:var(--t-track);
@@ -1235,6 +1268,21 @@
 
 <div class="zoom-cluster" id="zoom-cluster">
   <div class="zc-ring rA"></div>
+<div class="map-search" id="map-search">
+  <div class="ms-bar">
+    <svg class="ms-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    <input id="ms-input" type="text" placeholder="Coordinates or place…" autocomplete="off" spellcheck="false" aria-label="Search coordinates or a place" />
+    <button class="ms-pick" id="ms-pick" title="Pick a point on the map" aria-label="Pick a point on the map">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 21s-7-6.1-7-11a7 7 0 1 1 14 0c0 4.9-7 11-7 11z"/><circle cx="12" cy="10" r="2.4"/></svg>
+    </button>
+  </div>
+  <div class="ms-results" id="ms-results" hidden></div>
+  <div class="ms-picked" id="ms-picked" hidden>
+    <span class="ms-pk-lab">Picked</span>
+    <span class="ms-pk-val" id="ms-pk-val">—</span>
+    <button class="ms-pk-copy" id="ms-pk-copy" title="Copy coordinates">copy</button>
+  </div>
+</div>
   <div class="zc-ring rCtl"></div>
   <div class="zc-ring rB"></div>
   <div class="zc-ring rC"></div>
@@ -1422,6 +1470,7 @@ map.on('load', () => {
   wireViewTools();
   wireZoomCluster();
   wireCogTool();
+  wireMapSearch();
   wirePanelCollapse();
   wireMdpPanel();
   render();
@@ -1920,7 +1969,7 @@ function renderImgList() {
     const legend = e.stats
       ? '<div class="rlegend"><div class="rleg-bar"></div>'
         + '<div class="rleg-lbls"><span>' + fmtEl(e.stats.min) + '</span>'
-        + '<span class="rleg-cap">' + bandLabel(e.name) + '</span>'
+        + '<span class="rleg-cap' + (e.partial ? ' cog-flag' : '') + '">' + bandLabel(e.name) + (e.partial ? ' (partial)' : '') + '</span>'
         + '<span>' + fmtEl(e.stats.max) + '</span></div></div>'
       : '';
     return '<div class="rcard' + (e.visible ? '' : ' muted') + '" data-id="' + e.id + '">'
@@ -2031,6 +2080,13 @@ async function rasterizeGeoTIFF(file) {
   const ow = Math.max(1, Math.round(width * scale)), oh = Math.max(1, Math.round(height * scale));
   const rgba = await image.readRasters({ width: ow, height: oh, interleave: true });
   const samples = image.getSamplesPerPixel();
+  // Integrity check. Some GDAL-written LZW TIFFs end a strip without the terminating EOI code;
+  // geotiff.js warns ("ran off the end of the buffer before finding EOI_CODE") and returns what
+  // it decoded. That is usually complete, but verify rather than assume - a short buffer would
+  // silently skew the min/max shown in the legend.
+  const expected = ow * oh * samples;
+  const truncated = !rgba || rgba.length < expected;
+  if (truncated) console.warn('raster decoded short: got ' + (rgba ? rgba.length : 0) + ' of ' + expected + ' samples');
   // Real nodata value if the file declares one; otherwise no nodata (don't assume 0).
   let nodata = null;
   try { const nd = image.getGDALNoData && image.getGDALNoData(); if (nd !== null && nd !== undefined && isFinite(nd)) nodata = nd; } catch (e) {}
@@ -2064,9 +2120,10 @@ async function rasterizeGeoTIFF(file) {
   ctx.putImageData(imgData, 0, 0);
   // single-band statistics (used for the DEM legend) - computed above, keep them
   const stats = (samples === 1 && isFinite(mn) && isFinite(mx) && mn !== mx) ? { min: mn, max: mx } : null;
+  if (truncated) stats && (stats.partial = true);
   const lngs = corners.map(c => c[0]), lats = corners.map(c => c[1]);
   const geoBbox = [Math.min.apply(null, lngs), Math.min.apply(null, lats), Math.max.apply(null, lngs), Math.max.apply(null, lats)];
-  return { dataUrl: canvas.toDataURL('image/png'), bbox: geoBbox, corners, stats, bands: samples };
+  return { dataUrl: canvas.toDataURL('image/png'), bbox: geoBbox, corners, stats, bands: samples, truncated };
 }
 async function addUploadedRaster(file) {
   const name = file.name.toLowerCase();
@@ -2084,7 +2141,7 @@ async function addUploadedRaster(file) {
   if (isTif) {
     // Parse the GeoTIFF ourselves (works for raw *and* COG), so we always get bounds + a visible image.
     const { dataUrl, bbox, corners, stats, bands } = await rasterizeGeoTIFF(file);
-    entry.stats = stats; entry.bands = bands;
+    entry.stats = stats; entry.bands = bands; entry.partial = !!(stats && stats.partial);
     const [w, s, e, n] = bbox;
     if (![w, s, e, n].every(isFinite)) throw new Error('GeoTIFF has no georeferencing');
     // corners are already TL,TR,BR,BL in lng/lat (reprojected if the file was projected)
@@ -2164,6 +2221,179 @@ async function loadRasterFiles(files) {
     try { await addUploadedRaster(file); setStatus('Loaded · ' + short, 'ok'); }
     catch (err) { console.error('raster load failed:', err); const why = (err && err.message) ? err.message : 'could not read file'; setStatus(why.charAt(0).toUpperCase() + why.slice(1) + ' · ' + short, 'err'); }
   }
+}
+
+// ---------- coordinate search + picker ----------
+// Tier 1: parse coordinates locally (decimal, DMS, DDM).  Tier 2: search the district and
+// village data we already ship - instant, offline, and far more reliable for Meghalaya than a
+// global geocoder would be.
+function parseCoordinates(raw) {
+  if (!raw) return null;
+  let t = String(raw).trim()
+    .replace(/[\u00b0\u00ba]/g, ' ')          // degree signs
+    .replace(/[\u2032\u2019']/g, ' ')          // minutes
+    .replace(/[\u2033\u201d"]/g, ' ')          // seconds
+    .replace(/,/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!t) return null;
+  const hemis = [];
+  t = t.replace(/\b([NSEW])\b/gi, (m, h) => { hemis.push(h.toUpperCase()); return ' '; })
+       .replace(/\s+/g, ' ').trim();
+  const nums = (t.match(/-?\d+(?:\.\d+)?/g) || []).map(Number);
+  if (nums.length < 2) return null;
+  const group = arr => arr.length === 1 ? arr[0]
+    : arr.length === 2 ? Math.abs(arr[0]) + arr[1] / 60
+    : Math.abs(arr[0]) + arr[1] / 60 + arr[2] / 3600;
+  let a, b, negA = false, negB = false;
+  if (nums.length === 2)      { a = [nums[0]]; b = [nums[1]]; }
+  else if (nums.length === 4) { a = nums.slice(0, 2); b = nums.slice(2, 4); }
+  else if (nums.length === 6) { a = nums.slice(0, 3); b = nums.slice(3, 6); }
+  else return null;
+  negA = a[0] < 0; negB = b[0] < 0;
+  let A = group(a), B = group(b);
+  if (negA) A = -A;
+  if (negB) B = -B;
+  // hemisphere letters override sign and can also swap the order (e.g. "91E 25N")
+  let lat = A, lng = B;
+  if (hemis.length === 2) {
+    const [h1, h2] = hemis;
+    const firstIsLat = (h1 === 'N' || h1 === 'S');
+    lat = firstIsLat ? A : B;
+    lng = firstIsLat ? B : A;
+    const latH = firstIsLat ? h1 : h2, lngH = firstIsLat ? h2 : h1;
+    lat = Math.abs(lat) * (latH === 'S' ? -1 : 1);
+    lng = Math.abs(lng) * (lngH === 'W' ? -1 : 1);
+  }
+  if (!isFinite(lat) || !isFinite(lng)) return null;
+  // if it only makes sense the other way round, swap (people paste lng,lat too)
+  if (Math.abs(lat) > 90 && Math.abs(lng) <= 90) { const t2 = lat; lat = lng; lng = t2; }
+  if (Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
+  return { lat, lng };
+}
+const fmtLatLng = (lat, lng) =>
+  Math.abs(lat).toFixed(5) + '\u00b0 ' + (lat >= 0 ? 'N' : 'S') + ' \u00b7 ' +
+  Math.abs(lng).toFixed(5) + '\u00b0 ' + (lng >= 0 ? 'E' : 'W');
+
+// name -> centre index built from the data already loaded
+let _placeIndex = [];      // { name, kind, lat, lng }
+let _placesLoading = null;
+function centroidOf(geom) {
+  if (!geom) return null;
+  if (geom.type === 'Point') return { lng: geom.coordinates[0], lat: geom.coordinates[1] };
+  const bb = bboxOf({ type: 'FeatureCollection', features: [{ type: 'Feature', geometry: geom, properties: {} }] });
+  if (!bb) return null;
+  return { lng: (bb[0][0] + bb[1][0]) / 2, lat: (bb[0][1] + bb[1][1]) / 2 };
+}
+function indexFeatures(gj, kind, nameKeys) {
+  (gj.features || []).forEach(f => {
+    const props = f.properties || {};
+    let nm = null;
+    for (const k of nameKeys) { if (props[k]) { nm = String(props[k]); break; } }
+    if (!nm) return;
+    const c = centroidOf(f.geometry);
+    if (c) _placeIndex.push({ name: nm, kind, lat: c.lat, lng: c.lng });
+  });
+}
+function ensurePlaceIndex() {
+  if (_placesLoading) return _placesLoading;
+  _placesLoading = Promise.all([
+    fetch('data/vectors/Meghalaya_Districts_named.geojson').then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch('data/vectors/Meghalaya_Villages.geojson').then(r => r.ok ? r.json() : null).catch(() => null)
+  ]).then(([d, v]) => {
+    _placeIndex = [];
+    if (d) indexFeatures(d, 'district', ['distname', 'DISTRICT', 'name', 'NAME']);
+    if (v) indexFeatures(v, 'village', ['HAB_NAME', 'name', 'NAME', 'village']);
+    return _placeIndex;
+  });
+  return _placesLoading;
+}
+function searchPlaces(q, limit) {
+  const needle = q.toLowerCase();
+  const starts = [], contains = [];
+  for (const e of _placeIndex) {
+    const n = e.name.toLowerCase();
+    if (n.startsWith(needle)) starts.push(e);
+    else if (n.includes(needle)) contains.push(e);
+    if (starts.length >= limit) break;
+  }
+  return starts.concat(contains).slice(0, limit);
+}
+let _searchMarker = null;
+function goToPoint(lat, lng, zoom) {
+  map.flyTo({ center: [lng, lat], zoom: zoom || Math.max(map.getZoom(), 12), duration: 1200, essential: true });
+  const el = document.createElement('div');
+  el.className = 'pick-dot';
+  if (_searchMarker) _searchMarker.remove();
+  _searchMarker = new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map);
+}
+function wireMapSearch() {
+  const input = $('ms-input'), box = $('ms-results');
+  if (!input || !box) return;
+  let items = [], sel = -1;
+  const hide = () => { box.hidden = true; box.innerHTML = ''; items = []; sel = -1; };
+  const render = () => {
+    if (!items.length) { hide(); return; }
+    box.innerHTML = items.map((it, i) =>
+      '<div class="ms-row' + (i === sel ? ' sel' : '') + '" data-i="' + i + '">'
+      + '<span class="ms-kind">' + it.kind + '</span>'
+      + '<span class="ms-name">' + it.label + '</span></div>').join('');
+    box.hidden = false;
+  };
+  const choose = it => { if (!it) return; hide(); input.blur(); goToPoint(it.lat, it.lng, it.zoom); };
+  const run = async () => {
+    const q = input.value.trim();
+    if (!q) { hide(); return; }
+    const c = parseCoordinates(q);
+    if (c) { items = [{ kind: 'coords', label: fmtLatLng(c.lat, c.lng), lat: c.lat, lng: c.lng, zoom: 13 }]; render(); return; }
+    if (q.length < 2) { hide(); return; }
+    items = [{ kind: '', label: 'Searching\u2026', lat: null, lng: null }];
+    box.innerHTML = '<div class="ms-row ms-empty">Searching\u2026</div>'; box.hidden = false;
+    await ensurePlaceIndex();
+    const hits = searchPlaces(q, 8);
+    items = hits.map(h => ({ kind: h.kind, label: h.name, lat: h.lat, lng: h.lng, zoom: h.kind === 'village' ? 14 : 10 }));
+    if (!items.length) { box.innerHTML = '<div class="ms-row ms-empty">No match in districts or villages</div>'; box.hidden = false; return; }
+    render();
+  };
+  let t = null;
+  input.addEventListener('input', () => { clearTimeout(t); t = setTimeout(run, 180); });
+  input.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); if (items.length) { sel = (sel + 1) % items.length; render(); } }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); if (items.length) { sel = (sel - 1 + items.length) % items.length; render(); } }
+    else if (e.key === 'Enter') { e.preventDefault(); if (sel >= 0) choose(items[sel]); else if (items.length === 1) choose(items[0]); else run(); }
+    else if (e.key === 'Escape') { hide(); input.blur(); }
+  });
+  box.addEventListener('click', e => { const r = e.target.closest('.ms-row[data-i]'); if (r) choose(items[+r.dataset.i]); });
+  document.addEventListener('click', e => { if (!$('map-search').contains(e.target)) hide(); });
+
+  // ---- picker ----
+  const pickBtn = $('ms-pick'), pickBox = $('ms-picked'), pickVal = $('ms-pk-val');
+  let picking = false, pickMarker = null;
+  const setPicking = on => {
+    picking = on;
+    pickBtn.classList.toggle('on', on);
+    const c = map.getCanvas && map.getCanvas();
+    if (c && c.style) c.style.cursor = on ? 'crosshair' : '';
+  };
+  pickBtn.addEventListener('click', () => setPicking(!picking));
+  map.on('click', e => {
+    if (!picking) return;
+    const { lat, lng } = e.lngLat;
+    pickVal.textContent = fmtLatLng(lat, lng);
+    pickBox.hidden = false;
+    const el = document.createElement('div'); el.className = 'pick-dot';
+    if (pickMarker) pickMarker.remove();
+    pickMarker = new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map);
+    setPicking(false);
+  });
+  $('ms-pk-copy').addEventListener('click', async () => {
+    const txt = pickVal.textContent;
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) await navigator.clipboard.writeText(txt);
+      else { const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); }
+      const b = $('ms-pk-copy'); b.textContent = 'copied'; setTimeout(() => { b.textContent = 'copy'; }, 1200);
+    } catch (err) { console.warn('clipboard failed', err); }
+  });
 }
 
 // ---------- layer ordering ----------
