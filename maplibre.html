@@ -648,6 +648,18 @@
   .mdp-section[data-tab="view"] .tool-row:hover,.mdp-section[data-tab="measure"] .tool-row:hover{border-color:var(--t-lime);background:var(--t-lime-soft)}
   .mdp-section[data-tab="view"] .tool-row svg,.mdp-section[data-tab="measure"] .tool-row svg{width:16px;height:16px;color:var(--t-mut);flex:none}
   .mdp-section[data-tab="view"] .tool-row:hover svg,.mdp-section[data-tab="measure"] .tool-row:hover svg{color:var(--t-lime)}
+  /* COG prep tool */
+  #mdp .cog-hint{font:500 10.5px 'JetBrains Mono',monospace;line-height:1.5;color:var(--t-dim);margin-bottom:9px}
+  #mdp .cog-in{width:100%;padding:9px 11px;border:1px solid var(--t-line);border-radius:10px;background:var(--t-track);
+    color:var(--t-ink);font:600 11.5px 'JetBrains Mono',monospace;margin-bottom:8px;outline:none}
+  #mdp .cog-in:focus{border-color:var(--t-lime-line);box-shadow:var(--t-glow)}
+  #mdp .cog-check{display:flex;align-items:center;gap:8px;margin-bottom:7px;cursor:pointer;
+    font:500 11px 'Space Grotesk',sans-serif;color:var(--t-mut)}
+  #mdp .cog-check input{accent-color:var(--t-lime);width:14px;height:14px;cursor:pointer}
+  #mdp .cog-cmd{margin:4px 0 9px;padding:10px 11px;border:1px solid var(--t-line);border-radius:10px;background:var(--t-panel2);
+    color:var(--t-ink);font:500 10px 'JetBrains Mono',monospace;line-height:1.6;white-space:pre-wrap;word-break:break-all;
+    max-height:150px;overflow-y:auto;user-select:text}
+  #mdp .cog-flag{color:var(--t-orange)}
   .mdp-section[data-tab="view"] .tool-sep{display:none}
   .mdp-section[data-tab="view"] .tool-section-lab,.mdp-section[data-tab="measure"] .tool-section-lab{font:600 9.5px 'JetBrains Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--t-dim);margin-bottom:10px}
   .mdp-section[data-tab="view"] .basemap-opt{display:block;width:100%;text-align:left;padding:10px 12px 10px 30px;background:var(--t-track);border:1px solid var(--t-line);border-radius:10px;color:var(--t-mut);cursor:pointer;font:600 12px 'Space Grotesk',sans-serif;position:relative;margin-bottom:8px;transition:.15s}
@@ -973,6 +985,18 @@
           <button class="tool-row" id="tool-shot">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
             <span>Screenshot</span>
+          </button>
+        </div>
+        <div class="mdp-grp">
+          <div class="tool-section-lab">Raster prep &middot; COG</div>
+          <div class="cog-hint" id="cog-hint">Turn a heavy GeoTIFF into a Cloud-Optimised GeoTIFF (and reproject it) using GDAL, then load the output here.</div>
+          <input type="text" id="cog-name" class="cog-in" placeholder="input.tif" spellcheck="false" />
+          <label class="cog-check"><input type="checkbox" id="cog-reproject" /> <span>Also reproject to EPSG:4326</span></label>
+          <label class="cog-check"><input type="checkbox" id="cog-downsample" /> <span>Halve resolution (for very large files)</span></label>
+          <pre class="cog-cmd" id="cog-cmd"></pre>
+          <button class="tool-row" id="cog-copy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <span>Copy command</span>
           </button>
         </div>
         <div class="mdp-grp">
@@ -1390,6 +1414,7 @@ map.on('load', () => {
   setupMeasure();
   wireViewTools();
   wireZoomCluster();
+  wireCogTool();
   wirePanelCollapse();
   wireMdpPanel();
   render();
@@ -1926,8 +1951,9 @@ function epsgFromGeoKeys(image) {
 // Render a GeoTIFF (raw or COG) to a data URL + return its geographic bbox.
 async function rasterizeGeoTIFF(file) {
   const GeoTIFF = await getGeoTIFF();
-  const buf = await file.arrayBuffer();
-  const tiff = await GeoTIFF.fromArrayBuffer(buf);
+  // fromBlob reads lazily, so the header can be inspected without pulling the whole
+  // file into an ArrayBuffer (and keeps peak memory lower on the normal path too).
+  const tiff = GeoTIFF.fromBlob ? await GeoTIFF.fromBlob(file) : await GeoTIFF.fromArrayBuffer(await file.arrayBuffer());
   const image = await tiff.getImage();
   const bbox = image.getBoundingBox(); // [minX, minY, maxX, maxY] in the file's CRS
   // If the bbox values look like projected metres (well outside lat/lng range),
@@ -1953,6 +1979,12 @@ async function rasterizeGeoTIFF(file) {
   }
   const width = image.getWidth(), height = image.getHeight();
   if (!width || !height) throw new Error('empty raster');
+  // header-only check: refuse before any pixels are decoded
+  const megapixels = (width * height) / 1e6;
+  if (megapixels > MAX_RASTER_MEGAPIXELS) {
+    cogSuggest(file.name, Math.round(megapixels));
+    throw new Error('too big to decode: ' + Math.round(megapixels) + ' MP (limit ' + MAX_RASTER_MEGAPIXELS + ') \u2014 use the COG tool in Tools');
+  }
   // downsample very large rasters so the canvas stays reasonable
   const maxDim = 2048;
   const scale = Math.min(1, maxDim / Math.max(width, height));
@@ -2063,10 +2095,14 @@ const prettyKind = n => {
 // Upload ceilings. The decode reads the whole file into memory, so there is a hard backstop —
 // but it is set high so legitimate DEMs/mosaics are never blocked. Files past the "large"
 // threshold still load, they just warn that it may take a moment.
-const MAX_RASTER_BYTES = 800 * 1024 * 1024; // hard backstop
+const MAX_RASTER_BYTES = 400 * 1024 * 1024;   // stage 1: file-size backstop
 const MAX_VECTOR_BYTES = 300 * 1024 * 1024;
-const LARGE_RASTER_BYTES = 150 * 1024 * 1024;
+const LARGE_RASTER_BYTES = 100 * 1024 * 1024; // warn (still loads)
 const LARGE_VECTOR_BYTES = 60 * 1024 * 1024;
+// Stage 2, the reliable one: file size doesn't predict memory - pixel count does. A small
+// compressed GeoTIFF can decode to gigabytes, so we read the header only and refuse before
+// allocating anything. ~250 MP is about 1 GB as Float32.
+const MAX_RASTER_MEGAPIXELS = 250;
 const fmtMB = b => (b / 1024 / 1024).toFixed(0) + ' MB';
 async function loadRasterFiles(files) {
   // a vector dropped here belongs in the vector panel
@@ -2078,7 +2114,8 @@ async function loadRasterFiles(files) {
   }
   for (const file of files) {
     const short = file.name.length > 22 ? file.name.slice(0, 20) + '…' : file.name;
-    if (file.size > MAX_RASTER_BYTES) { setStatus('Too large to open · ' + short + ' (' + fmtMB(file.size) + ')', 'err'); continue; }
+    if (file.size > MAX_RASTER_BYTES) { cogSuggest(file.name, 0);
+      setStatus('Too large (' + fmtMB(file.size) + ', limit ' + fmtMB(MAX_RASTER_BYTES) + ') \u2014 use the COG tool in Tools \u00b7 ' + short, 'err'); continue; }
     if (imgLayers.some(e => e.srcKey === file.name + ':' + file.size)) { setStatus('Already loaded · ' + short, 'warn'); continue; }
     setStatus(file.size > LARGE_RASTER_BYTES
       ? 'Large file (' + fmtMB(file.size) + ') — this may take a moment…'
@@ -2086,6 +2123,64 @@ async function loadRasterFiles(files) {
     try { await addUploadedRaster(file); setStatus('Loaded · ' + short, 'ok'); }
     catch (err) { console.error('raster load failed:', err); const why = (err && err.message) ? err.message : 'could not read file'; setStatus(why.charAt(0).toUpperCase() + why.slice(1) + ' · ' + short, 'err'); }
   }
+}
+
+// ---------- COG prep tool (generates the exact GDAL commands) ----------
+// A true COG needs internally-tiled TIFF + overview pyramids, which the browser can't write
+// reliably - so we generate the guaranteed-correct GDAL command instead of faking it.
+function cogOutName(inName, reproject) {
+  const base = String(inName || 'input.tif').replace(/\.[^.]*$/, '') || 'input';
+  return base + (reproject ? '_4326' : '') + '_cog.tif';
+}
+function buildCogCommand() {
+  const nameEl = $('cog-name'), cmdEl = $('cog-cmd');
+  if (!cmdEl) return;
+  const inName = (nameEl && nameEl.value.trim()) || 'input.tif';
+  const reproject = $('cog-reproject') && $('cog-reproject').checked;
+  const downsample = $('cog-downsample') && $('cog-downsample').checked;
+  const out = cogOutName(inName, reproject);
+  const lines = [];
+  let src = inName;
+  if (reproject) {
+    const mid = inName.replace(/\.[^.]*$/, '') + '_wgs84.tif';
+    lines.push('gdalwarp -t_srs EPSG:4326 -r bilinear \\\n  "' + inName + '" "' + mid + '"');
+    src = mid;
+  }
+  const co = ['-of COG', '-co COMPRESS=DEFLATE', '-co BLOCKSIZE=512', '-co BIGTIFF=IF_SAFER', '-co OVERVIEWS=AUTO'];
+  if (downsample) co.push('-outsize 50% 50%');
+  lines.push('gdal_translate ' + co.join(' ') + ' \\\n  "' + src + '" "' + out + '"');
+  cmdEl.textContent = lines.join('\n\n');
+  return cmdEl.textContent;
+}
+// called when a raster is refused, so the tool is pre-filled with the offending file
+function cogSuggest(fileName, megapixels) {
+  const nameEl = $('cog-name'); if (nameEl) nameEl.value = fileName || '';
+  const ds = $('cog-downsample');
+  if (ds && megapixels && megapixels > MAX_RASTER_MEGAPIXELS) ds.checked = true;
+  const hint = $('cog-hint');
+  if (hint) hint.innerHTML = '<span class="cog-flag">' + (fileName || 'That file') +
+    ' is too heavy to open directly.</span> Run the command below with GDAL, then load the generated <b>_cog.tif</b> here.';
+  buildCogCommand();
+}
+function wireCogTool() {
+  const nameEl = $('cog-name'); if (!nameEl) return;
+  ['input', 'change'].forEach(ev => {
+    nameEl.addEventListener(ev, buildCogCommand);
+    const a = $('cog-reproject'), b = $('cog-downsample');
+    if (a) a.addEventListener('change', buildCogCommand);
+    if (b) b.addEventListener('change', buildCogCommand);
+  });
+  const copy = $('cog-copy');
+  if (copy) copy.addEventListener('click', async () => {
+    const txt = $('cog-cmd').textContent;
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) await navigator.clipboard.writeText(txt);
+      else { const t = document.createElement('textarea'); t.value = txt; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); }
+      const lab = copy.querySelector('span'); const old = lab.textContent;
+      lab.textContent = 'Copied'; setTimeout(() => { lab.textContent = old; }, 1400);
+    } catch (e) { console.warn('clipboard failed', e); }
+  });
+  buildCogCommand();
 }
 
 // ---------- swipe compare (year A vs year B) ----------
