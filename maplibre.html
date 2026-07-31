@@ -1835,9 +1835,24 @@ function wkbToGeoJSON(dv) {
 
 function bboxOf(gj) {
   let mnx = 180, mny = 90, mxx = -180, mxy = -90, any = false;
-  const eat = c => { if (typeof c[0] === 'number') { any = true; mnx = Math.min(mnx, c[0]); mxx = Math.max(mxx, c[0]); mny = Math.min(mny, c[1]); mxy = Math.max(mxy, c[1]); } else c.forEach(eat); };
-  const feats = gj.type === 'FeatureCollection' ? gj.features : [gj];
-  feats.forEach(f => f && f.geometry && eat(f.geometry.coordinates));
+  const eat = c => {
+    if (!Array.isArray(c) || !c.length) return;                 // null / empty coordinates
+    if (typeof c[0] === 'number') {
+      if (!isFinite(c[0]) || !isFinite(c[1])) return;
+      any = true;
+      mnx = Math.min(mnx, c[0]); mxx = Math.max(mxx, c[0]);
+      mny = Math.min(mny, c[1]); mxy = Math.max(mxy, c[1]);
+    } else c.forEach(eat);
+  };
+  // GeometryCollection carries `geometries`, not `coordinates` - walk it recursively
+  const eatGeom = g => {
+    if (!g) return;
+    if (g.type === 'GeometryCollection') { (g.geometries || []).forEach(eatGeom); return; }
+    eat(g.coordinates);
+  };
+  if (!gj || typeof gj !== 'object') return null;
+  const feats = gj.type === 'FeatureCollection' ? (gj.features || []) : [gj];
+  feats.forEach(f => { if (!f) return; eatGeom(f.geometry || f); });
   return any ? [[mnx, mny], [mxx, mxy]] : null;
 }
 function pickLabelProp(gj) {
@@ -1966,7 +1981,7 @@ async function addUploadedVector(gj, filename, srcKey) {
     layerIds: [uid + '-fill', uid + '-line', uid + '-pt'], removable: true, bounds });
   renderVecList();
   restackMapLayers();
-  if (bounds) map.fitBounds(bounds, { padding: fitPadding(), maxZoom: 15, duration: 900 });
+  if (bounds) { try { map.fitBounds(bounds, { padding: fitPadding(), maxZoom: 15, duration: 900 }); } catch (err) { console.warn('fitBounds failed', err); } }
 }
 async function loadVectorFiles(files) {
   // a raster dropped here belongs in the imagery panel — say so instead of failing to parse
