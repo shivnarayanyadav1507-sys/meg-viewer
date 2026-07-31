@@ -648,6 +648,7 @@
   .mdp-section[data-tab="view"] .tool-row:hover,.mdp-section[data-tab="measure"] .tool-row:hover{border-color:var(--t-lime);background:var(--t-lime-soft)}
   .mdp-section[data-tab="view"] .tool-row svg,.mdp-section[data-tab="measure"] .tool-row svg{width:16px;height:16px;color:var(--t-mut);flex:none}
   .mdp-section[data-tab="view"] .tool-row:hover svg,.mdp-section[data-tab="measure"] .tool-row:hover svg{color:var(--t-lime)}
+  #mdp .rtools{display:flex;align-items:center;gap:6px;padding:0 10px 4px}
   /* layer order buttons */
   #mdp .icbtn.ord{width:20px;height:20px;flex:none;padding:0}
   #mdp .icbtn.ord svg{width:13px;height:13px}
@@ -1886,18 +1887,30 @@ async function loadVectorFiles(files) {
 
 // ---------- raster upload (COG-style GeoTIFF, or PNG/JPEG over current view) ----------
 function fileToDataURL(file) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file); }); }
+// A single-band raster isn't necessarily elevation (canopy height, NDVI, rainfall...), so only
+// label it "elevation" when the filename actually looks like a DEM. Otherwise stay neutral.
+function bandLabel(name) {
+  const n = String(name || '').toLowerCase();
+  if (/dem|dtm|dsm|elev|srtm|aster|copernicus|terrain|topo/.test(n)) return 'elevation';
+  if (/canopy|height|chm|forest/.test(n)) return 'height';
+  if (/ndvi|evi|ndwi|index/.test(n)) return 'index';
+  if (/slope/.test(n)) return 'slope';
+  if (/rain|precip/.test(n)) return 'rainfall';
+  if (/temp|lst/.test(n)) return 'temperature';
+  return 'value range';
+}
 function renderImgList() {
   const list = $('img-list');
   const fmtEl = v => (Math.abs(v) >= 1000 ? Math.round(v).toLocaleString() : (Math.round(v * 10) / 10));
   // newest layer draws on top of the map, so show it at the TOP of the list
   list.innerHTML = imgLayers.slice().reverse().map(e => {
-    const head = [
-      '<button class="icbtn" data-act="eye" title="Toggle visibility">' + (e.visible ? EYE_SVG : EYE_OFF_SVG) + '</button>',
-      '<span class="lname" title="' + e.name.replace(/"/g, '&quot;') + '">' + e.name + '</span>',
-      orderBtns(imgLayers, e),
-      e.bounds ? '<button class="icbtn" data-act="zoom" title="Zoom to layer">' + EXPAND_SVG + '</button>' : '',
-      '<button class="icbtn" data-act="remove" title="Remove">' + X_SVG + '</button>'
-    ].join('');
+    // name on its own row: with 5 controls there isn't room for it inline in a 344px panel
+    const head = '<button class="icbtn" data-act="eye" title="Toggle visibility">' + (e.visible ? EYE_SVG : EYE_OFF_SVG) + '</button>'
+      + '<span class="lname" title="' + e.name.replace(/"/g, '&quot;') + '">' + e.name + '</span>'
+      + '<button class="icbtn" data-act="remove" title="Remove">' + X_SVG + '</button>';
+    const tools = '<div class="rtools">' + orderBtns(imgLayers, e)
+      + (e.bounds ? '<button class="icbtn" data-act="zoom" title="Zoom to layer">' + EXPAND_SVG + '</button>' : '')
+      + '</div>';
     const pct = Math.round((e.opacity == null ? 0.9 : e.opacity) * 100);
     const op = '<div class="ropacity">'
       + '<span class="rop-lbl">Opacity</span>'
@@ -1907,11 +1920,11 @@ function renderImgList() {
     const legend = e.stats
       ? '<div class="rlegend"><div class="rleg-bar"></div>'
         + '<div class="rleg-lbls"><span>' + fmtEl(e.stats.min) + '</span>'
-        + '<span class="rleg-cap">elevation</span>'
+        + '<span class="rleg-cap">' + bandLabel(e.name) + '</span>'
         + '<span>' + fmtEl(e.stats.max) + '</span></div></div>'
       : '';
     return '<div class="rcard' + (e.visible ? '' : ' muted') + '" data-id="' + e.id + '">'
-      + '<div class="lrow">' + head + '</div>' + op + legend + '</div>';
+      + '<div class="lrow">' + head + '</div>' + tools + op + legend + '</div>';
   }).join('');
 }
 function clearRasters() {
@@ -1962,7 +1975,25 @@ async function rasterizeGeoTIFF(file) {
   const GeoTIFF = await getGeoTIFF();
   // fromBlob reads lazily, so the header can be inspected without pulling the whole
   // file into an ArrayBuffer (and keeps peak memory lower on the normal path too).
-  const tiff = GeoTIFF.fromBlob ? await GeoTIFF.fromBlob(file) : await GeoTIFF.fromArrayBuffer(await file.arrayBuffer());
+  // Two phases on purpose:
+  //  1) probe the header lazily (fromBlob) so an oversized image is refused before we allocate;
+  //  2) decode from a COMPLETE ArrayBuffer - a lazily-read blob can hand the LZW/Deflate
+  //     decoder a partial strip ("ran off the end of the buffer before finding EOI_CODE").
+  if (GeoTIFF.fromBlob) {
+    try {
+      const probe = await GeoTIFF.fromBlob(file);
+      const pi = await probe.getImage();
+      const mp = (pi.getWidth() * pi.getHeight()) / 1e6;
+      if (mp > MAX_RASTER_MEGAPIXELS) {
+        cogSuggest(file.name, Math.round(mp));
+        throw new Error('too big to decode: ' + Math.round(mp) + ' MP (limit ' + MAX_RASTER_MEGAPIXELS + ') \u2014 use the COG tool in Tools');
+      }
+    } catch (err) {
+      if (err && /too big to decode/.test(err.message)) throw err;   // real refusal
+      // otherwise the probe just couldn't read the header lazily - fall through to full decode
+    }
+  }
+  const tiff = await GeoTIFF.fromArrayBuffer(await file.arrayBuffer());
   const image = await tiff.getImage();
   const bbox = image.getBoundingBox(); // [minX, minY, maxX, maxY] in the file's CRS
   // If the bbox values look like projected metres (well outside lat/lng range),
@@ -2769,7 +2800,7 @@ function wireControls() {
     if (act === 'eye') { entry.visible = !entry.visible; if (map.getLayer(entry.id)) map.setLayoutProperty(entry.id, 'visibility', entry.visible ? 'visible' : 'none'); renderImgList(); }
     else if (act === 'up' || act === 'down') { if (moveLayerEntry(imgLayers, entry, act === 'up' ? 1 : -1)) renderImgList(); }
     else if (act === 'zoom') { if (entry.bounds) map.fitBounds(entry.bounds, { padding: fitPadding(), maxZoom: 15, duration: 900 }); }
-    else if (act === 'remove') { if (map.getLayer(entry.id)) map.removeLayer(entry.id); if (map.getSource(entry.id)) map.removeSource(entry.id); imgLayers = imgLayers.filter(x => x !== entry); renderImgList(); }
+    else if (act === 'remove') { if (map.getLayer(entry.id)) map.removeLayer(entry.id); if (map.getSource(entry.id)) map.removeSource(entry.id); imgLayers = imgLayers.filter(x => x !== entry); renderImgList(); setStatus(imgLayers.length ? 'Removed \u00b7 ' + entry.name : '', imgLayers.length ? 'warn' : ''); }
   });
   const rdrop = $('raster-drop'), rfile = $('raster-file');
   rdrop.addEventListener('click', () => rfile.click());
