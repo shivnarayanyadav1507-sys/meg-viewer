@@ -661,6 +661,11 @@
   .mdp-section[data-tab="view"] .tool-row svg,.mdp-section[data-tab="measure"] .tool-row svg{width:16px;height:16px;color:var(--t-mut);flex:none}
   .mdp-section[data-tab="view"] .tool-row:hover svg,.mdp-section[data-tab="measure"] .tool-row:hover svg{color:var(--t-lime)}
   #mdp .rtools{display:flex;align-items:center;gap:6px;padding:0 10px 4px}
+  #mdp .vcard{border:1px solid var(--t-line);border-radius:12px;background:var(--t-panel2);padding:4px 4px 6px;display:flex;flex-direction:column;gap:2px}
+  #mdp .vcard:hover{border-color:var(--t-line-str)}
+  #mdp .vcard.muted{opacity:.6}
+  #mdp .vcard .lrow,#mdp .vcard .lrow-switch{border:0!important;background:transparent!important;padding:7px 8px}
+  #mdp .vcard .vname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   /* layer order buttons */
   #mdp .icbtn.ord{width:20px;height:20px;flex:none;padding:0}
   #mdp .icbtn.ord svg{width:13px;height:13px}
@@ -1844,25 +1849,32 @@ function pickLabelProp(gj) {
 
 // ---------- dynamic vector layer list ----------
 function rowBuiltin(e) {
-  return '<div class="lrow-switch" data-id="' + e.id + '">' +
-    '<button class="icbtn sw-btn" data-act="eye" title="Toggle visibility"><span class="sw' + (e.visible ? ' on' : '') + '"></span></button>' +
-    '<span class="vname">' + e.name + '</span>' +
-    (e.labelLayerId ? '<button class="icbtn' + (e.labelOn ? ' active' : '') + '" data-act="label" title="Toggle labels">' + TAG_SVG + '</button>' : '') +
-    orderBtns(vecLayers, e) +
-    (e.bounds ? '<button class="icbtn" data-act="zoom" title="Zoom to layer">' + EXPAND_SVG + '</button>' : '') +
+  // name gets its own line - with the toggle plus label/order/zoom controls there is no room inline
+  return '<div class="vcard' + (e.visible ? '' : ' muted') + '" data-id="' + e.id + '">' +
+    '<div class="lrow-switch">' +
+      '<button class="icbtn sw-btn" data-act="eye" title="Toggle visibility"><span class="sw' + (e.visible ? ' on' : '') + '"></span></button>' +
+      '<span class="vname" title="' + String(e.name).replace(/"/g, '&quot;') + '">' + e.name + '</span>' +
+    '</div>' +
+    '<div class="rtools">' +
+      (e.labelLayerId ? '<button class="icbtn' + (e.labelOn ? ' active' : '') + '" data-act="label" title="Toggle labels">' + TAG_SVG + '</button>' : '') +
+      orderBtns(vecLayers, e) +
+      (e.bounds ? '<button class="icbtn" data-act="zoom" title="Zoom to layer">' + EXPAND_SVG + '</button>' : '') +
+    '</div>' +
     '</div>';
 }
 function rowUpload(e) {
   const eyeColor = e.visible ? e.color : 'var(--muted-dim)';
-  const rows = [
-    '<button class="icbtn" data-act="eye" title="Toggle visibility" style="color:' + eyeColor + '">' + (e.visible ? EYE_SVG : EYE_OFF_SVG) + '</button>',
-    '<span class="dot" style="background:' + e.color + '"></span>',
-    '<span class="lname" title="' + e.name.replace(/"/g, '&quot;') + '">' + e.name + '</span>',
-    e.labelLayerId ? '<button class="icbtn' + (e.labelOn ? ' active' : '') + '" data-act="label" title="Toggle labels">' + TAG_SVG + '</button>' : '',
-    e.bounds ? '<button class="icbtn" data-act="zoom" title="Zoom to layer">' + EXPAND_SVG + '</button>' : '',
-    '<button class="icbtn" data-act="remove" title="Remove">' + X_SVG + '</button>'
-  ].join('');
-  return '<div class="lrow' + (e.visible ? '' : ' muted') + '" data-id="' + e.id + '">' + rows + '</div>';
+  const head = '<button class="icbtn" data-act="eye" title="Toggle visibility" style="color:' + eyeColor + '">' + (e.visible ? EYE_SVG : EYE_OFF_SVG) + '</button>'
+    + '<span class="dot" style="background:' + e.color + '"></span>'
+    + '<span class="lname" title="' + e.name.replace(/"/g, '&quot;') + '">' + e.name + '</span>'
+    + '<button class="icbtn" data-act="remove" title="Remove">' + X_SVG + '</button>';
+  const tools = '<div class="rtools">'
+    + (e.labelLayerId ? '<button class="icbtn' + (e.labelOn ? ' active' : '') + '" data-act="label" title="Toggle labels">' + TAG_SVG + '</button>' : '')
+    + orderBtns(vecLayers, e)
+    + (e.bounds ? '<button class="icbtn" data-act="zoom" title="Zoom to layer">' + EXPAND_SVG + '</button>' : '')
+    + '</div>';
+  return '<div class="vcard' + (e.visible ? '' : ' muted') + '" data-id="' + e.id + '">'
+    + '<div class="lrow">' + head + '</div>' + tools + '</div>';
 }
 function renderVecList() {
   // newest layer draws on top of the map, so show it at the TOP of the list (GIS convention)
@@ -1875,6 +1887,7 @@ function applyVecVisibility(e) {
 }
 function toggleVecVisibility(e) {
   e.visible = !e.visible;
+  if (!e.visible && e.id === 'villages') setVec('');   // don't leave "Villages loaded" showing
   // villages data is deferred until first use
   if (e.visible && e.id === 'villages' && !_villagesBuilt) {
     setVec('Loading villages…', 'load');
@@ -3130,7 +3143,7 @@ function wireControls() {
   // vector layer list (built-ins + uploads)
   $('vec-list').addEventListener('click', e => {
     const btn = e.target.closest('button[data-act]'); if (!btn) return;
-    const row = btn.closest('.lrow, .lrow-switch'); const entry = vecLayers.find(x => x.id === row.dataset.id); if (!entry) return;
+    const row = btn.closest('.vcard'); const entry = row ? vecLayers.find(x => x.id === row.dataset.id) : null; if (!entry) return;
     const act = btn.dataset.act;
     if (act === 'up' || act === 'down') { if (moveLayerEntry(vecLayers, entry, act === 'up' ? 1 : -1)) renderVecList(); }
     else if (act === 'eye') toggleVecVisibility(entry);
