@@ -284,9 +284,11 @@
     box-shadow:var(--t-sh);letter-spacing:.03em;pointer-events:none;display:flex;align-items:center;gap:9px}
   .coord-readout .cr-pin{width:22px;height:22px;flex:none;order:99;display:flex;align-items:center;justify-content:center;
     color:var(--t-lime);border:1px solid var(--t-lime-line);border-radius:7px;background:var(--t-lime-soft);
-    padding:0;cursor:pointer;transition:.15s;margin-left:2px}
+    padding:0;cursor:pointer;transition:.15s;margin-left:2px;pointer-events:auto}
   .coord-readout .cr-pin svg{width:13px;height:13px}
   .coord-readout .cr-pin svg{display:block;stroke:currentColor;fill:none}
+  /* pill itself stays click-through so map dragging works; these two opt back in */
+  .coord-readout #cr-latlng{pointer-events:auto;user-select:text;cursor:text}
   .coord-readout .cr-pin:hover{background:var(--t-lime);color:var(--t-lime-ink);box-shadow:var(--t-glow)}
   .coord-readout .cr-pin.arm{color:#fff;background:var(--t-orange);border-color:var(--t-orange);animation:cr-arm 1.1s ease-in-out infinite}
   .coord-readout.picking{border-color:var(--t-orange)}
@@ -664,7 +666,7 @@
   #mdp .icbtn.ord svg{width:13px;height:13px}
   #mdp .icbtn.ord:disabled{opacity:.25;cursor:default;pointer-events:none}
   /* map search + coordinate picker (sits under the coordinate pill) */
-  .map-search{position:absolute;right:14px;top:90px;z-index:1100;width:266px;font-family:'JetBrains Mono',monospace}
+  .map-search{position:absolute;right:14px;top:108px;z-index:1100;width:266px;font-family:'JetBrains Mono',monospace}
   /* short viewports: the corner cluster is 250px tall and would reach up into the search bar */
   @media (max-height:780px){ .zoom-cluster{transform:scale(.72)} }
   @media (max-height:620px){ .zoom-cluster{transform:scale(.58)} }
