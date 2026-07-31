@@ -704,7 +704,9 @@
   .ms-row .ms-name{font:600 11px 'JetBrains Mono',monospace;color:var(--t-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .ms-row.ms-empty{color:var(--t-dim);cursor:default;font:500 10.5px 'JetBrains Mono',monospace}
   .ms-row.ms-empty:hover{background:transparent}
-  .pick-dot{width:14px;height:14px;border-radius:50%;background:var(--t-lime);border:2px solid var(--t-panel-solid);box-shadow:0 0 0 4px var(--t-lime-soft)}
+  .pick-dot{width:14px;height:14px;border-radius:50%;background:var(--t-lime);border:2px solid var(--t-panel-solid);
+    box-shadow:0 0 0 4px var(--t-lime-soft);cursor:pointer;transition:transform .12s,box-shadow .15s}
+  .pick-dot:hover{transform:scale(1.25);box-shadow:0 0 0 5px var(--t-orange),0 0 10px var(--t-orange)}
   #map.picking{cursor:crosshair}
   @media (max-width:760px){ .map-search{display:none} }
   #mdp .tool-state{margin-left:auto;font:600 9px 'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--t-dim)}
@@ -1927,14 +1929,19 @@ function zoomToVecBounds(e) {
   if (!e.bounds) return;
   map.fitBounds(e.bounds, { padding: fitPadding(), maxZoom: 15, duration: 900 });
 }
-function removeVecLayer(e) {
+function removeVecLayer(e, quiet) {
   e.layerIds.forEach(l => map.getLayer(l) && map.removeLayer(l));
   if (e.labelLayerId && map.getLayer(e.labelLayerId)) map.removeLayer(e.labelLayerId);
   if (map.getSource(e.id)) map.removeSource(e.id);
   vecLayers = vecLayers.filter(x => x !== e);
   renderVecList();
+  // never leave a stale "Loaded <name>" behind
+  if (!quiet) {
+    const left = vecLayers.filter(x => x.removable).length;
+    setVec(left ? 'Removed \u00b7 ' + e.name : '', left ? 'warn' : '');
+  }
 }
-function clearVectors() { vecLayers.filter(e => e.removable).forEach(removeVecLayer); setVec(''); }
+function clearVectors() { vecLayers.filter(e => e.removable).forEach(e => removeVecLayer(e, true)); setVec(''); }
 
 async function addUploadedVector(gj, filename, srcKey) {
   const uid = 'up' + (++vecUid);
@@ -2426,13 +2433,21 @@ function searchPlaces(q, limit) {
   }
   return starts.concat(contains).slice(0, limit);
 }
+// A dot the user can dismiss by clicking it - otherwise search/pick markers pile up with no
+// way to clear them. Returns the marker so callers can drop it programmatically too.
+function makeDismissibleDot(lat, lng, onRemove) {
+  const el = document.createElement('div');
+  el.className = 'pick-dot';
+  el.title = 'Click to remove this marker';
+  const m = new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map);
+  el.addEventListener('click', ev => { ev.stopPropagation(); m.remove(); if (onRemove) onRemove(); });
+  return m;
+}
 let _searchMarker = null;
 function goToPoint(lat, lng, zoom) {
   map.flyTo({ center: [lng, lat], zoom: zoom || Math.max(map.getZoom(), 12), duration: 1200, essential: true });
-  const el = document.createElement('div');
-  el.className = 'pick-dot';
   if (_searchMarker) _searchMarker.remove();
-  _searchMarker = new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map);
+  _searchMarker = makeDismissibleDot(lat, lng, () => { _searchMarker = null; });
 }
 function wireMapSearch() {
   const input = $('ms-input'), box = $('ms-results');
@@ -2877,9 +2892,8 @@ function wireViewTools() {
     crLatLng.textContent = txt;
     frozen = true;
     setPicking(false);
-    const el = document.createElement('div'); el.className = 'pick-dot';
     if (pickMarker) pickMarker.remove();
-    pickMarker = new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map);
+    pickMarker = makeDismissibleDot(lat, lng, () => { pickMarker = null; frozen = false; });
     flash(await copyText(txt) ? 'copied' : 'copy failed');
   });
   const updZoom = () => { if (crZoom) crZoom.textContent = map.getZoom().toFixed(1); };
