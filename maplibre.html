@@ -713,6 +713,9 @@
   #mdp .tool-row.on{border-color:var(--t-lime-line);background:var(--t-lime-soft)}
   #mdp .tool-row.on .tool-state{color:var(--t-lime)}
   #mdp .tool-row.on svg{color:var(--t-lime)}
+  #mdp .vc-drop{padding:14px 12px}
+  #mdp .vc-seg .seg-btn{font-size:10.5px}
+  #mdp #vc-status{margin-top:8px}
   /* COG prep tool */
   #mdp .cog-hint{font:500 10.5px 'JetBrains Mono',monospace;line-height:1.5;color:var(--t-dim);margin-bottom:9px}
   #mdp .cog-in{width:100%;padding:9px 11px;border:1px solid var(--t-line);border-radius:10px;background:var(--t-track);
@@ -1069,6 +1072,26 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
             <span>Copy command</span>
           </button>
+        </div>
+        <div class="mdp-grp">
+          <div class="tool-section-lab">Vector convert</div>
+          <div class="cog-hint" id="vc-hint">Read KML, KMZ, GeoJSON, Shapefile (.zip) or GeoPackage &mdash; write GeoJSON, KML or CSV (WKT).</div>
+          <div class="upload vc-drop" id="vc-drop">
+            <svg class="u-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h9l3 3h4v13H4z"/><path d="M12 11v6"/><path d="M9 14l3 3 3-3"/></svg>
+            <span><b>Choose a vector file</b><span class="u-hint" id="vc-file"> &middot; nothing selected</span></span>
+            <input type="file" id="vc-input" accept=".geojson,.json,.kml,.kmz,.zip,.gpkg" hidden />
+          </div>
+          <div class="mdp-lbl" style="margin-top:10px">Output format</div>
+          <div class="seg vc-seg" id="vc-seg">
+            <button class="seg-btn on" data-fmt="geojson">GeoJSON</button>
+            <button class="seg-btn" data-fmt="kml">KML</button>
+            <button class="seg-btn" data-fmt="csv">CSV</button>
+          </div>
+          <button class="tool-row" id="vc-run" style="margin-top:9px" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+            <span>Convert &amp; download</span>
+          </button>
+          <div class="status" id="vc-status"></div>
         </div>
         <div class="mdp-grp">
           <div class="tool-section-lab">Measure</div>
@@ -1509,6 +1532,7 @@ map.on('load', () => {
   wireViewTools();
   wireZoomCluster();
   wireCogTool();
+  wireVectorConvert();
   wireMapSearch();
   wireYearLoading();
   wireHillshade();
@@ -1671,6 +1695,11 @@ function buildCurveDots() {
     dot.setAttribute('cx', p.x); dot.setAttribute('cy', p.y); dot.setAttribute('r', 5);
     dot.dataset.i = i;
     dot.style.cursor = 'pointer';
+    // reachable and announced for keyboard / screen-reader users
+    dot.setAttribute('role', 'button');
+    dot.setAttribute('tabindex', '0');
+    dot.setAttribute('aria-label', 'Show imagery for ' + yr);
+    dot.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); setPos(i); } });
     dot.addEventListener('click', () => setPos(i));
     g.appendChild(dot);
     const txt = document.createElementNS(NS, 'text');
@@ -2541,6 +2570,117 @@ function orderBtns(arr, entry) {
        + '<button class="icbtn ord" data-act="down"' + (canDown ? '' : ' disabled') + ' title="Move down (draw below)">' + DOWN_SVG + '</button>';
 }
 
+// ---------- vector format converter ----------
+// Input parsing is already solved by parseFile() (kml/kmz/zip-shp/gpkg/geojson -> sanitised
+// GeoJSON), so this only needs writers for the output formats.
+function coordsToWKT(g) {
+  const pair = c => c[0] + ' ' + c[1];
+  const ring = r => '(' + r.map(pair).join(', ') + ')';
+  const poly = p => '(' + p.map(ring).join(', ') + ')';
+  switch (g && g.type) {
+    case 'Point': return 'POINT (' + pair(g.coordinates) + ')';
+    case 'MultiPoint': return 'MULTIPOINT (' + g.coordinates.map(pair).join(', ') + ')';
+    case 'LineString': return 'LINESTRING ' + ring(g.coordinates);
+    case 'MultiLineString': return 'MULTILINESTRING (' + g.coordinates.map(ring).join(', ') + ')';
+    case 'Polygon': return 'POLYGON ' + poly(g.coordinates);
+    case 'MultiPolygon': return 'MULTIPOLYGON (' + g.coordinates.map(poly).join(', ') + ')';
+    case 'GeometryCollection': return 'GEOMETRYCOLLECTION (' + (g.geometries || []).map(coordsToWKT).join(', ') + ')';
+    default: return '';
+  }
+}
+const xmlEsc = v => String(v == null ? '' : v)
+  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+function geojsonToKML(gj, name) {
+  const cs = arr => arr.map(c => c[0] + ',' + c[1] + (c[2] != null ? ',' + c[2] : '')).join(' ');
+  const geomKML = g => {
+    if (!g) return '';
+    switch (g.type) {
+      case 'Point': return '<Point><coordinates>' + cs([g.coordinates]) + '</coordinates></Point>';
+      case 'MultiPoint': return '<MultiGeometry>' + g.coordinates.map(c => '<Point><coordinates>' + cs([c]) + '</coordinates></Point>').join('') + '</MultiGeometry>';
+      case 'LineString': return '<LineString><coordinates>' + cs(g.coordinates) + '</coordinates></LineString>';
+      case 'MultiLineString': return '<MultiGeometry>' + g.coordinates.map(l => '<LineString><coordinates>' + cs(l) + '</coordinates></LineString>').join('') + '</MultiGeometry>';
+      case 'Polygon': return polyKML(g.coordinates);
+      case 'MultiPolygon': return '<MultiGeometry>' + g.coordinates.map(polyKML).join('') + '</MultiGeometry>';
+      case 'GeometryCollection': return '<MultiGeometry>' + (g.geometries || []).map(geomKML).join('') + '</MultiGeometry>';
+      default: return '';
+    }
+  };
+  const polyKML = rings => '<Polygon><outerBoundaryIs><LinearRing><coordinates>' + cs(rings[0] || []) +
+    '</coordinates></LinearRing></outerBoundaryIs>' +
+    rings.slice(1).map(r => '<innerBoundaryIs><LinearRing><coordinates>' + cs(r) + '</coordinates></LinearRing></innerBoundaryIs>').join('') +
+    '</Polygon>';
+  const placemarks = (gj.features || []).map(f => {
+    const props = f.properties || {};
+    const label = props.name || props.NAME || props.HAB_NAME || props.distname || '';
+    const rows = Object.keys(props).map(k => '<Data name="' + xmlEsc(k) + '"><value>' + xmlEsc(props[k]) + '</value></Data>').join('');
+    return '<Placemark>' + (label ? '<name>' + xmlEsc(label) + '</name>' : '') +
+      (rows ? '<ExtendedData>' + rows + '</ExtendedData>' : '') + geomKML(f.geometry) + '</Placemark>';
+  }).join('\n');
+  return '<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>\n<name>' +
+    xmlEsc(name || 'export') + '</name>\n' + placemarks + '\n</Document>\n</kml>';
+}
+function geojsonToCSV(gj) {
+  const feats = gj.features || [];
+  const keys = [];
+  feats.forEach(f => Object.keys(f.properties || {}).forEach(k => { if (!keys.includes(k)) keys.push(k); }));
+  const cell = v => {
+    const t = v == null ? '' : String(v);
+    return /[",\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
+  };
+  const head = keys.concat(['WKT']).map(cell).join(',');
+  const rows = feats.map(f => keys.map(k => cell((f.properties || {})[k])).concat([cell(coordsToWKT(f.geometry))]).join(','));
+  return [head].concat(rows).join('\n');
+}
+function downloadText(text, filename, mime) {
+  const blob = new Blob([text], { type: mime || 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+function wireVectorConvert() {
+  const input = $('vc-input'), drop = $('vc-drop'), run = $('vc-run'), seg = $('vc-seg'), label = $('vc-file');
+  if (!input || !run) return;
+  let file = null, fmt = 'geojson';
+  const setVcStatus = (t, cls) => { const el = $('vc-status'); if (el) { el.textContent = t; el.title = t || ''; el.className = 'status ' + (cls || ''); } };
+  drop.addEventListener('click', () => input.click());
+  drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+  drop.addEventListener('drop', e => {
+    e.preventDefault(); drop.classList.remove('over');
+    if (e.dataTransfer.files.length) pick(e.dataTransfer.files[0]);
+  });
+  input.addEventListener('change', e => { if (e.target.files.length) pick(e.target.files[0]); });
+  function pick(f) {
+    if (isRasterFile(f.name)) { setVcStatus(prettyKind(f.name) + ' is a raster \u2014 this converts vectors only', 'warn'); return; }
+    file = f; label.textContent = ' \u00b7 ' + f.name; run.disabled = false; setVcStatus('');
+  }
+  seg.addEventListener('click', e => {
+    const b = e.target.closest('.seg-btn'); if (!b) return;
+    fmt = b.dataset.fmt;
+    [...seg.children].forEach(x => x.classList.toggle('on', x === b));
+  });
+  run.addEventListener('click', async () => {
+    if (!file) return;
+    run.disabled = true;
+    setVcStatus('Converting\u2026', 'load');
+    try {
+      const gj = await parseFile(file);                      // reuses the existing readers + sanitiser
+      const base = file.name.replace(/\.[^.]*$/, '') || 'export';
+      const n = (gj.features || []).length;
+      if (fmt === 'geojson') downloadText(JSON.stringify(gj), base + '.geojson', 'application/geo+json');
+      else if (fmt === 'kml') downloadText(geojsonToKML(gj, base), base + '.kml', 'application/vnd.google-earth.kml+xml');
+      else downloadText(geojsonToCSV(gj), base + '.csv', 'text/csv;charset=utf-8');
+      setVcStatus('Converted ' + n + ' feature' + (n === 1 ? '' : 's') + ' \u2192 ' + fmt.toUpperCase(), 'ok');
+    } catch (err) {
+      console.error('convert failed:', err);
+      setVcStatus((err && err.message ? err.message.charAt(0).toUpperCase() + err.message.slice(1) : 'Could not convert file'), 'err');
+    }
+    run.disabled = false;
+  });
+}
+
 // ---------- COG prep tool (generates the exact GDAL commands) ----------
 // A true COG needs internally-tiled TIFF + overview pyramids, which the browser can't write
 // reliably - so we generate the guaranteed-correct GDAL command instead of faking it.
@@ -3088,6 +3228,19 @@ function wireCompare() {
     function open() { closeAllDD(); dd.classList.add('open'); btn.setAttribute('aria-expanded', 'true'); }
     function close() { dd.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); }
     btn.addEventListener('click', e => { e.stopPropagation(); dd.classList.contains('open') ? close() : open(); });
+    // keyboard: Up/Down move through years, Enter/Space commit, Escape closes, Home/End jump
+    btn.addEventListener('keydown', e => {
+      const opts = [...list.children];
+      const cur = opts.findIndex(o => +o.dataset.year === getVal());
+      const commit = i => { const o = opts[Math.max(0, Math.min(opts.length - 1, i))]; if (!o) return;
+        setVal(+o.dataset.year); syncDD(); renderCompare(); };
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { e.preventDefault(); if (!dd.classList.contains('open')) open(); commit(cur + 1); }
+      else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { e.preventDefault(); if (!dd.classList.contains('open')) open(); commit(cur - 1); }
+      else if (e.key === 'Home') { e.preventDefault(); commit(0); }
+      else if (e.key === 'End') { e.preventDefault(); commit(opts.length - 1); }
+      else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); dd.classList.contains('open') ? close() : open(); }
+      else if (e.key === 'Escape') { close(); btn.focus(); }
+    });
     dd._close = close; dd._sync = syncDD;
     syncDD();
     return dd;
