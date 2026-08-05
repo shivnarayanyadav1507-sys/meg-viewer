@@ -850,13 +850,10 @@
   #mdp .lrow .icbtn,#mdp .lrow-switch .icbtn{width:26px;height:26px;flex:none;border:1px solid var(--t-line);border-radius:8px;background:transparent;color:var(--t-mut);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:.15s}
   #mdp .lrow .icbtn:hover,#mdp .lrow-switch .icbtn:hover{border-color:var(--t-lime);color:var(--t-lime)}
   #mdp .lrow .icbtn svg,#mdp .lrow-switch .icbtn svg{width:13px;height:13px}
-  /* vector layers are the data domain -> blue, so they read distinctly from the green controls */
-  #mdp .lrow .icbtn.active,#mdp .lrow-switch .icbtn.active,#mdp .rtools .icbtn.active,#mdp .vcard .icbtn.active{color:var(--t-data);border-color:var(--t-data-line);background:var(--t-data-soft)}
-  #mdp .vcard .sw.on{background:var(--t-data-soft);border-color:var(--t-data-line)}
-  #mdp .vcard .sw.on::after{background:var(--t-data)}
-  #mdp .mdp-section[data-tab="vectors"] .upload:hover,#mdp .mdp-section[data-tab="vectors"] .upload.over{
-    border-color:var(--t-data-line);background:var(--t-data-soft)}
-  #mdp .mdp-section[data-tab="vectors"] .upload:hover .u-ic,#mdp .mdp-section[data-tab="vectors"] .upload.over .u-ic{color:var(--t-data)}
+  /* layer controls use the primary accent (green); blue stays reserved for compare B */
+  #mdp .lrow .icbtn.active,#mdp .lrow-switch .icbtn.active,#mdp .rtools .icbtn.active,#mdp .vcard .icbtn.active{color:var(--t-accent);border-color:var(--t-accent-line);background:var(--t-accent-soft)}
+  #mdp .sw.on{background:var(--t-accent-soft);border-color:var(--t-accent-line)}
+  #mdp .sw.on::after{background:var(--t-accent)}
   #mdp .lrow .icbtn.remove:hover{border-color:var(--t-orange);color:var(--t-orange)}
 
   /* measure readout — orange accent card */
@@ -1169,7 +1166,6 @@
             <span>Hillshade relief</span>
             <span class="tool-state" id="hillshade-state">Off</span>
           </button>
-          <div class="cog-hint" style="margin-top:8px">Shaded terrain from public elevation tiles. Draws beneath your imagery and boundaries.</div>
         </div>
       </div>
     </div>
