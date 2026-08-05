@@ -730,8 +730,14 @@
   #mdp #vc-status{margin-top:8px}
   /* theme toggle pinned to the bottom of the rail */
   #mdp .mdp-rail{display:flex;flex-direction:column}
-  #mdp .mdp-rail-theme{margin-top:auto;border-top:1px solid var(--t-line)}
-  #mdp .mdp-rail-theme .mdp-rail-ic svg{width:20px;height:20px}
+  /* .theme-btn was built for a 2-up horizontal segment (flex:1). In the vertical rail that made it
+     stretch into all the leftover space - and .on then filled that whole area lime. Reset it here. */
+  #mdp .mdp-rail-theme{flex:none!important;margin-top:auto;border-top:1px solid var(--t-line);
+    flex-direction:column;gap:6px;padding:12px 0 14px;background:transparent!important;color:var(--t-mut)!important;
+    font:500 9px 'JetBrains Mono',monospace!important;letter-spacing:.14em;text-transform:uppercase}
+  #mdp .mdp-rail-theme .mdp-rail-ic svg{width:18px;height:18px}
+  #mdp .mdp-rail-theme:hover{color:var(--t-ink)!important}
+  #mdp .mdp-rail-theme:hover .mdp-rail-ic{border-color:var(--t-line-str);color:var(--t-ink)}
   /* tool launcher: tiles -> detail view */
   #mdp .tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   #mdp .tool-tile{display:flex;flex-direction:column;align-items:center;gap:5px;padding:14px 8px;border:1px solid var(--t-line);
@@ -743,10 +749,11 @@
   #mdp .tool-tile b{font:500 11.5px 'Space Grotesk',sans-serif}
   #mdp .tool-tile small{font:500 9.5px 'JetBrains Mono',monospace;color:var(--t-dim);letter-spacing:.03em}
   #mdp .tool-detail[hidden]{display:none}
-  #mdp .tool-back{display:flex;align-items:center;gap:6px;background:transparent;border:0;padding:0 0 10px;cursor:pointer;
-    color:var(--t-mut);font:500 11px 'JetBrains Mono',monospace;letter-spacing:.06em}
-  #mdp .tool-back:hover{color:var(--t-accent)}
-  #mdp .tool-back svg{width:14px;height:14px}
+  #mdp .tool-back{display:inline-flex;align-items:center;gap:7px;background:transparent;
+    border:1px solid var(--t-line);border-radius:9px;padding:7px 12px 7px 9px;margin:0 0 12px;cursor:pointer;
+    color:var(--t-mut);font:500 12px 'Space Grotesk',sans-serif;letter-spacing:.01em;transition:.15s}
+  #mdp .tool-back:hover{color:var(--t-accent);border-color:var(--t-accent-line);background:var(--t-accent-soft)}
+  #mdp .tool-back svg{width:16px;height:16px;flex:none}
   /* COG prep tool */
   #mdp .cog-hint{font:500 10.5px 'JetBrains Mono',monospace;line-height:1.5;color:var(--t-dim);margin-bottom:9px}
   #mdp .cog-in{width:100%;padding:9px 11px;border:1px solid var(--t-line);border-radius:10px;background:var(--t-track);
@@ -1097,7 +1104,7 @@
           </div>
         </div>
         <div class="tool-detail" data-detail="export" hidden>
-          <button class="tool-back" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span>Tools</span></button>
+          <button class="tool-back" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span>Back</span></button>
         <div class="mdp-grp">
           <div class="tool-section-lab">Export</div>
           <button class="tool-row" id="tool-shot">
@@ -1107,7 +1114,7 @@
         </div>
         </div>
         <div class="tool-detail" data-detail="cog" hidden>
-          <button class="tool-back" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span>Tools</span></button>
+          <button class="tool-back" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span>Back</span></button>
         <div class="mdp-grp">
           <div class="tool-section-lab">Raster prep &middot; COG</div>
           <div class="cog-hint" id="cog-hint">Turn a heavy GeoTIFF into a Cloud-Optimised GeoTIFF (and reproject it) using GDAL, then load the output here.</div>
@@ -1122,7 +1129,7 @@
         </div>
         </div>
         <div class="tool-detail" data-detail="convert" hidden>
-          <button class="tool-back" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span>Tools</span></button>
+          <button class="tool-back" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span>Back</span></button>
         <div class="mdp-grp">
           <div class="tool-section-lab">Vector convert</div>
           <div class="cog-hint" id="vc-hint">Read KML, KMZ, GeoJSON, Shapefile (.zip) or GeoPackage &mdash; write GeoJSON, KML or CSV (WKT).</div>
@@ -1145,7 +1152,7 @@
         </div>
         </div>
         <div class="tool-detail" data-detail="measure" hidden>
-          <button class="tool-back" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span>Tools</span></button>
+          <button class="tool-back" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span>Back</span></button>
         <div class="mdp-grp">
           <div class="tool-section-lab">Measure</div>
           <div class="seg" id="measure-seg">
@@ -1176,7 +1183,7 @@
           </div>
         </div>
         <div class="tool-detail" data-detail="display" hidden>
-          <button class="tool-back" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span>View</span></button>
+          <button class="tool-back" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span>Back</span></button>
         <div class="mdp-grp">
         <button class="tool-row" id="tool-boundary">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg>
@@ -1189,7 +1196,7 @@
         </div>
         </div>
         <div class="tool-detail" data-detail="basemap" hidden>
-          <button class="tool-back" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span>View</span></button>
+          <button class="tool-back" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span>Back</span></button>
         <div class="mdp-grp">
         <div class="tool-section-lab">Basemap</div>
         <button class="basemap-opt on" data-base="dark">Dark Gray</button>
@@ -1198,7 +1205,7 @@
         </div>
         </div>
         <div class="tool-detail" data-detail="terrain" hidden>
-          <button class="tool-back" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span>View</span></button>
+          <button class="tool-back" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span>Back</span></button>
         <div class="mdp-grp">
           <div class="tool-section-lab">Terrain</div>
           <button class="tool-row" id="hillshade-toggle" aria-pressed="false">
