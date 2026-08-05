@@ -513,6 +513,7 @@
   .zc-in{left:125px;top:49px;transform:translate(-50%,-50%);--zc-hov:#79b7b0;--zc-hovg:rgba(121,183,176,.45)}
   .zc-out{left:125px;top:201px;transform:translate(-50%,-50%);--zc-hov:#c78f66;--zc-hovg:rgba(199,143,102,.45)}
   .zc-help{left:201px;top:125px;transform:translate(-50%,-50%);--zc-hov:#6f92c4;--zc-hovg:rgba(111,146,196,.45)}
+  .zc-reset{left:49px;top:125px;transform:translate(-50%,-50%);--zc-hov:#cabdad;--zc-hovg:rgba(202,189,173,.45)}
   /* orbiting planets (decorative) */
   .zc-orbit-layer{position:absolute;inset:0;pointer-events:none;z-index:1}
   .zc-orb{position:absolute;left:50%;top:50%;border-radius:50%}
@@ -554,6 +555,7 @@
     .zc-center{width:62px;height:62px}.zc-center span{font-size:9px}
     .zc-btn{width:34px;height:34px}
     .zc-in{left:100px;top:39px}.zc-out{left:100px;top:161px}.zc-help{left:161px;top:100px}
+    .zc-reset{left:39px;top:100px}
     .zc-oMerc{width:74px;height:74px;margin:-37px 0 0 -37px}.zc-oVenus{width:94px;height:94px;margin:-47px 0 0 -47px}
     .zc-oPluto{width:112px;height:112px;margin:-56px 0 0 -56px}.zc-oEarth{width:144px;height:144px;margin:-72px 0 0 -72px}
     .zc-oJup{width:164px;height:164px;margin:-82px 0 0 -82px}.zc-oSat{width:180px;height:180px;margin:-90px 0 0 -90px}
@@ -726,6 +728,25 @@
   #mdp .vc-drop{padding:14px 12px}
   #mdp .vc-seg .seg-btn{font-size:10.5px}
   #mdp #vc-status{margin-top:8px}
+  /* theme toggle pinned to the bottom of the rail */
+  #mdp .mdp-rail{display:flex;flex-direction:column}
+  #mdp .mdp-rail-theme{margin-top:auto;border-top:1px solid var(--t-line)}
+  #mdp .mdp-rail-theme .mdp-rail-ic svg{width:20px;height:20px}
+  /* tool launcher: tiles -> detail view */
+  #mdp .tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  #mdp .tool-tile{display:flex;flex-direction:column;align-items:center;gap:5px;padding:14px 8px;border:1px solid var(--t-line);
+    border-radius:11px;background:var(--t-panel2);color:var(--t-ink);cursor:pointer;text-align:center;transition:.15s}
+  #mdp .tool-tile:hover{border-color:var(--t-accent-line);background:var(--t-accent-soft)}
+  #mdp .tool-tile:hover .tt-ic{color:var(--t-accent)}
+  #mdp .tool-tile .tt-ic{color:var(--t-mut);display:flex}
+  #mdp .tool-tile .tt-ic svg{width:21px;height:21px}
+  #mdp .tool-tile b{font:500 11.5px 'Space Grotesk',sans-serif}
+  #mdp .tool-tile small{font:500 9.5px 'JetBrains Mono',monospace;color:var(--t-dim);letter-spacing:.03em}
+  #mdp .tool-detail[hidden]{display:none}
+  #mdp .tool-back{display:flex;align-items:center;gap:6px;background:transparent;border:0;padding:0 0 10px;cursor:pointer;
+    color:var(--t-mut);font:500 11px 'JetBrains Mono',monospace;letter-spacing:.06em}
+  #mdp .tool-back:hover{color:var(--t-accent)}
+  #mdp .tool-back svg{width:14px;height:14px}
   /* COG prep tool */
   #mdp .cog-hint{font:500 10.5px 'JetBrains Mono',monospace;line-height:1.5;color:var(--t-dim);margin-bottom:9px}
   #mdp .cog-in{width:100%;padding:9px 11px;border:1px solid var(--t-line);border-radius:10px;background:var(--t-track);
@@ -747,7 +768,6 @@
   .mdp-section[data-tab="view"] .basemap-opt.on::before{content:'';position:absolute;left:12px;top:50%;transform:translateY(-50%);width:7px;height:7px;border-radius:50%;background:var(--t-lime)}
 
   /* theme toggle (Appearance) in View tab */
-  .theme-seg{display:flex;gap:4px;padding:4px;background:var(--t-track);border:1px solid var(--t-line);border-radius:13px}
   .theme-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:9px;background:transparent;border:0;border-radius:9px;color:var(--t-mut);cursor:pointer;font:600 12px 'Space Grotesk',sans-serif;transition:.15s}
   .theme-btn svg{width:15px;height:15px}
   .theme-btn:hover{color:var(--t-ink)}
@@ -1010,6 +1030,7 @@
       <button class="mdp-rail-btn" data-tab="vectors"><span class="mdp-rail-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg></span><span>Vector</span></button>
       <button class="mdp-rail-btn" data-tab="measure"><span class="mdp-rail-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.1-.6-.6-2.1z"/></svg></span><span>Tools</span></button>
       <button class="mdp-rail-btn" data-tab="view"><span class="mdp-rail-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span><span>View</span></button>
+      <button class="mdp-rail-btn mdp-rail-theme theme-btn" id="rail-theme" title="Switch theme"><span class="mdp-rail-ic" id="rail-theme-ic"></span><span id="rail-theme-lab">Dark</span></button>
     </div>
     <div class="mdp-sections" id="mdp-sections">
       <div class="mdp-section on" data-tab="imagery">
@@ -1067,6 +1088,16 @@
       <div class="mdp-section" data-tab="measure">
         <div class="mdp-eyebrow">Map</div>
         <h2 class="mdp-title">Tools</h2>
+        <div class="mdp-grp tool-home">
+          <div class="tool-grid">
+          <button class="tool-tile" data-tool="export"><span class="tt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span><b>Screenshot</b><small>export view</small></button>
+          <button class="tool-tile" data-tool="cog"><span class="tt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg></span><b>Raster prep</b><small>make a COG</small></button>
+          <button class="tool-tile" data-tool="convert"><span class="tt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h13l-3-3M20 16H7l3 3"/></svg></span><b>Convert</b><small>vector formats</small></button>
+          <button class="tool-tile" data-tool="measure"><span class="tt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.1-.6-.6-2.1z"/></svg></span><b>Measure</b><small>distance, area</small></button>
+          </div>
+        </div>
+        <div class="tool-detail" data-detail="export" hidden>
+          <button class="tool-back" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span>Tools</span></button>
         <div class="mdp-grp">
           <div class="tool-section-lab">Export</div>
           <button class="tool-row" id="tool-shot">
@@ -1074,6 +1105,9 @@
             <span>Screenshot</span>
           </button>
         </div>
+        </div>
+        <div class="tool-detail" data-detail="cog" hidden>
+          <button class="tool-back" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span>Tools</span></button>
         <div class="mdp-grp">
           <div class="tool-section-lab">Raster prep &middot; COG</div>
           <div class="cog-hint" id="cog-hint">Turn a heavy GeoTIFF into a Cloud-Optimised GeoTIFF (and reproject it) using GDAL, then load the output here.</div>
@@ -1086,6 +1120,9 @@
             <span>Copy command</span>
           </button>
         </div>
+        </div>
+        <div class="tool-detail" data-detail="convert" hidden>
+          <button class="tool-back" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span>Tools</span></button>
         <div class="mdp-grp">
           <div class="tool-section-lab">Vector convert</div>
           <div class="cog-hint" id="vc-hint">Read KML, KMZ, GeoJSON, Shapefile (.zip) or GeoPackage &mdash; write GeoJSON, KML or CSV (WKT).</div>
@@ -1106,6 +1143,9 @@
           </button>
           <div class="status" id="vc-status"></div>
         </div>
+        </div>
+        <div class="tool-detail" data-detail="measure" hidden>
+          <button class="tool-back" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span>Tools</span></button>
         <div class="mdp-grp">
           <div class="tool-section-lab">Measure</div>
           <div class="seg" id="measure-seg">
@@ -1122,28 +1162,22 @@
           </div>
           <button class="btn-clear" id="clear-measure" hidden>Clear measurement</button>
         </div>
+        </div>
       </div>
+
       <div class="mdp-section" data-tab="view">
         <div class="mdp-eyebrow">Map</div>
         <h2 class="mdp-title">View &amp; export</h2>
-        <div class="mdp-grp">
-          <div class="tool-section-lab">Appearance</div>
-          <div class="theme-seg" id="theme-seg">
-            <button class="theme-btn" data-theme-set="dark">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></svg>
-              <span>Dark</span>
-            </button>
-            <button class="theme-btn" data-theme-set="light">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-              <span>Light</span>
-            </button>
+        <div class="mdp-grp tool-home">
+          <div class="tool-grid">
+          <button class="tool-tile" data-tool="display"><span class="tt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M16 21h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg></span><b>Display</b><small>boundary, fullscreen</small></button>
+          <button class="tool-tile" data-tool="basemap"><span class="tt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3 3 6v15l6-3 6 3 6-3V3l-6 3z"/><path d="M9 3v15M15 6v15"/></svg></span><b>Basemap</b><small>map style</small></button>
+          <button class="tool-tile" data-tool="terrain"><span class="tt-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20l6-9 4 6 3-4 5 7z"/><path d="M14 7l2-3 2 3"/></svg></span><b>Terrain</b><small>hillshade relief</small></button>
           </div>
         </div>
+        <div class="tool-detail" data-detail="display" hidden>
+          <button class="tool-back" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span>View</span></button>
         <div class="mdp-grp">
-        <button class="tool-row" id="tool-reset">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9 9 0 0 0-6.4 2.6L3 8"/><path d="M3 3v5h5"/></svg>
-          <span>Reset view</span>
-        </button>
         <button class="tool-row" id="tool-boundary">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg>
           <span id="tool-boundary-label">Hide boundary</span>
@@ -1153,12 +1187,18 @@
           <span id="tool-fs-label">Fullscreen</span>
         </button>
         </div>
+        </div>
+        <div class="tool-detail" data-detail="basemap" hidden>
+          <button class="tool-back" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span>View</span></button>
         <div class="mdp-grp">
         <div class="tool-section-lab">Basemap</div>
         <button class="basemap-opt on" data-base="dark">Dark Gray</button>
         <button class="basemap-opt" data-base="satellite">Satellite</button>
         <button class="basemap-opt" data-base="light">Light streets</button>
         </div>
+        </div>
+        <div class="tool-detail" data-detail="terrain" hidden>
+          <button class="tool-back" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg><span>View</span></button>
         <div class="mdp-grp">
           <div class="tool-section-lab">Terrain</div>
           <button class="tool-row" id="hillshade-toggle" aria-pressed="false">
@@ -1167,7 +1207,10 @@
             <span class="tool-state" id="hillshade-state">Off</span>
           </button>
         </div>
+        </div>
       </div>
+
+
     </div>
   </div>
 </div>
@@ -1372,6 +1415,7 @@
   <div class="zc-center" id="zc-locate" role="button" tabindex="0" aria-label="Go to my location" title="My location"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg><span id="zc-zoom"><span class="zc-zpfx">Z</span> 7.2</span></div>
   <button class="zc-btn zc-in" id="zc-in" aria-label="Zoom in" title="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="11" cy="11" r="7"/><path d="M11 8v6M8 11h6M21 21l-4.3-4.3"/></svg></button>
   <button class="zc-btn zc-out" id="zc-out" aria-label="Zoom out" title="Zoom out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="11" cy="11" r="7"/><path d="M8 11h6M21 21l-4.3-4.3"/></svg></button>
+  <button class="zc-btn zc-reset" id="zc-reset" aria-label="Reset view" title="Reset view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9 9 0 0 0-6.4 2.6L3 8"/><path d="M3 3v5h5"/></svg></button>
   <button class="zc-btn zc-help" id="help-btn" aria-label="How to use this viewer" title="How to use this viewer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M9.3 9.2a2.7 2.7 0 0 1 5.2 1c0 1.8-2.5 2.2-2.5 3.8"/><circle cx="12" cy="17.4" r="0.6" fill="currentColor" stroke="none"/></svg></button>
 </div>
 
@@ -1545,6 +1589,7 @@ map.on('load', () => {
   wireZoomCluster();
   wireCogTool();
   wireVectorConvert();
+  wireToolLauncher();
   wireMapSearch();
   wireYearLoading();
   wireHillshade();
@@ -2584,6 +2629,34 @@ function orderBtns(arr, entry) {
        + '<button class="icbtn ord" data-act="down"' + (canDown ? '' : ' disabled') + ' title="Move down (draw below)">' + DOWN_SVG + '</button>';
 }
 
+// ---------- tool launcher (tiles -> detail view) ----------
+// Each panel keeps a "home" grid of tiles plus one hidden detail block per tool, so a tool gets
+// the full panel width instead of competing with three siblings in one long scroll.
+function wireToolLauncher() {
+  document.querySelectorAll('#mdp .tool-tile').forEach(tile => {
+    tile.addEventListener('click', () => {
+      const key = tile.dataset.tool;
+      const home = tile.closest('.tool-home');
+      const scope = home.parentElement;
+      home.hidden = true;
+      scope.querySelectorAll('.tool-detail').forEach(d => { d.hidden = d.dataset.detail !== key; });
+    });
+  });
+  document.querySelectorAll('#mdp .tool-back').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const detail = btn.closest('.tool-detail');
+      const scope = detail.parentElement;
+      scope.querySelectorAll('.tool-detail').forEach(d => { d.hidden = true; });
+      const home = scope.querySelector('.tool-home'); if (home) home.hidden = false;
+    });
+  });
+  // leaving a tab resets it to its tile grid
+  document.querySelectorAll('.mdp-rail-btn[data-tab]').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('#mdp .tool-detail').forEach(d => { d.hidden = true; });
+    document.querySelectorAll('#mdp .tool-home').forEach(h => { h.hidden = false; });
+  }));
+}
+
 // ---------- vector format converter ----------
 // Input parsing is already solved by parseFile() (kml/kmz/zip-shp/gpkg/geojson -> sanitised
 // GeoJSON), so this only needs writers for the output formats.
@@ -2942,12 +3015,18 @@ function wireZoomCluster() {
 
 function wireViewTools() {
   // theme toggle (light/dark)
+  const RAIL_MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></svg>';
+  const RAIL_SUN  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
   const applyTheme = (t) => {
     document.documentElement.setAttribute('data-theme', t);
-    document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('on', b.dataset.themeSet === t));
+    // rail button shows the theme you'd switch TO
+    const ic = $('rail-theme-ic'), lab = $('rail-theme-lab');
+    if (ic) ic.innerHTML = t === 'dark' ? RAIL_SUN : RAIL_MOON;
+    if (lab) lab.textContent = t === 'dark' ? 'Light' : 'Dark';
     try { map.resize(); } catch(e){}
   };
-  document.querySelectorAll('.theme-btn').forEach(b => b.addEventListener('click', () => applyTheme(b.dataset.themeSet)));
+  { const rt = $('rail-theme'); if (rt) rt.addEventListener('click', () =>
+      applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark')); }
   applyTheme(document.documentElement.getAttribute('data-theme') || 'dark');
 
   // (menu open/close no longer needed — view tools live in the panel View tab)
@@ -2959,9 +3038,9 @@ function wireViewTools() {
   }
 
   // 1. Reset view
-  $('tool-reset').addEventListener('click', () => {
-    map.flyTo({ ...DEFAULT_VIEW, duration: 900, essential: true });
-  });
+  { const rb = $('zc-reset'); if (rb) rb.addEventListener('click', () => {
+      map.flyTo({ ...DEFAULT_VIEW, duration: 900, essential: true });
+    }); }
 
   // 2. Boundary toggle (label swaps)
   $('tool-boundary').addEventListener('click', () => {
