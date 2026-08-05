@@ -55,6 +55,13 @@
     --t-ink:#e9eef2; --t-mut:#8a97a2; --t-dim:#5d6873;
     --t-line:rgba(255,255,255,.1); --t-line-str:rgba(255,255,255,.18);
     --t-lime:#b6f441; --t-lime-soft:rgba(182,244,65,.14); --t-lime-line:rgba(182,244,65,.4); --t-lime-ink:#0a0c0e; --t-year:#a4e034; --t-dot:#aeb8c2; --t-err:#ff6b6b;
+    /* ---- accent roles (green leads) ----------------------------------------
+       --t-accent (green)  primary + controls: active tab, mode, current year, play, sliders, focus
+       --t-data   (blue)   the vector / comparison domain: layer state, compare B
+       --t-attn   (orange) attention: measure tool, warnings, NDVI "bare" end            */
+    --t-accent:var(--t-lime); --t-accent-soft:var(--t-lime-soft); --t-accent-line:var(--t-lime-line);
+    --t-data:var(--t-blue); --t-data-soft:var(--t-blue-soft); --t-data-line:var(--t-blue-line);
+    --t-attn:var(--t-orange);
     --zc-moon:#d5d9dd; --zc-comet-head:#ff9f5c; --zc-comet-tail:#ff8a4c; --zc-comet-glow:rgba(255,138,76,.85); --zc-sun-ring:rgba(182,244,65,.5); --zc-sun-ring-glow:rgba(182,244,65,.22);
     --t-blue:#b3d4f0; --t-blue-soft:rgba(179,212,240,.14); --t-blue-line:rgba(179,212,240,.4);
     --t-orange:#ff8a4c; --t-orange-soft:rgba(255,138,76,.14); --t-orange-line:rgba(255,138,76,.4);
@@ -72,6 +79,9 @@
     --t-ink:#1b211d; --t-mut:#6b756c; --t-dim:#9aa39a;
     --t-line:#dde2da; --t-line-str:#c7cec2;
     --t-lime:#5f8f21; --t-lime-soft:#e3edd2; --t-lime-line:#b9d38c; --t-lime-ink:#ffffff; --t-year:#3f6b16; --t-dot:#5a6570; --t-err:#c0392b;
+    --t-accent:var(--t-lime); --t-accent-soft:var(--t-lime-soft); --t-accent-line:var(--t-lime-line);
+    --t-data:var(--t-blue); --t-data-soft:var(--t-blue-soft); --t-data-line:var(--t-blue-line);
+    --t-attn:var(--t-orange);
     --zc-moon:#5a6570; --zc-comet-head:#c85a1e; --zc-comet-tail:#cf7330; --zc-comet-glow:rgba(181,89,31,.55); --zc-sun-ring:rgba(95,143,33,.32); --zc-sun-ring-glow:rgba(95,143,33,.12);
     --t-blue:#3f6f95; --t-blue-soft:#dfe9f0; --t-blue-line:#aac4d6;
     --t-orange:#b5591f; --t-orange-soft:#f3e2d2; --t-orange-line:#e0b78c;
@@ -87,7 +97,7 @@
     --md-surface:var(--t-panel-solid); --md-surface-2:var(--t-panel2);
     --md-ink:var(--t-ink); --md-muted:var(--t-mut); --md-dim:var(--t-dim);
     --md-accent:var(--t-lime); --md-accent-ink:var(--t-lime-ink);
-    --md-measure:var(--t-orange); --md-compare-a:var(--t-lime); --md-compare-b:var(--t-blue);
+    --md-measure:var(--t-attn); --md-compare-a:var(--t-accent); --md-compare-b:var(--t-data);
     --md-rule:var(--t-line); --md-rule-strong:var(--t-line-str);
     --md-accent-100:var(--t-lime-soft); --md-accent-200:var(--t-lime-soft); --md-accent-300:var(--t-lime-line);
     --md-measure-100:var(--t-orange-soft); --md-measure-200:var(--t-orange-soft);
@@ -840,7 +850,13 @@
   #mdp .lrow .icbtn,#mdp .lrow-switch .icbtn{width:26px;height:26px;flex:none;border:1px solid var(--t-line);border-radius:8px;background:transparent;color:var(--t-mut);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:.15s}
   #mdp .lrow .icbtn:hover,#mdp .lrow-switch .icbtn:hover{border-color:var(--t-lime);color:var(--t-lime)}
   #mdp .lrow .icbtn svg,#mdp .lrow-switch .icbtn svg{width:13px;height:13px}
-  #mdp .lrow .icbtn.active,#mdp .lrow-switch .icbtn.active{color:var(--t-lime);border-color:var(--t-lime-line);background:var(--t-lime-soft)}
+  /* vector layers are the data domain -> blue, so they read distinctly from the green controls */
+  #mdp .lrow .icbtn.active,#mdp .lrow-switch .icbtn.active,#mdp .rtools .icbtn.active,#mdp .vcard .icbtn.active{color:var(--t-data);border-color:var(--t-data-line);background:var(--t-data-soft)}
+  #mdp .vcard .sw.on{background:var(--t-data-soft);border-color:var(--t-data-line)}
+  #mdp .vcard .sw.on::after{background:var(--t-data)}
+  #mdp .mdp-section[data-tab="vectors"] .upload:hover,#mdp .mdp-section[data-tab="vectors"] .upload.over{
+    border-color:var(--t-data-line);background:var(--t-data-soft)}
+  #mdp .mdp-section[data-tab="vectors"] .upload:hover .u-ic,#mdp .mdp-section[data-tab="vectors"] .upload.over .u-ic{color:var(--t-data)}
   #mdp .lrow .icbtn.remove:hover{border-color:var(--t-orange);color:var(--t-orange)}
 
   /* measure readout — orange accent card */
