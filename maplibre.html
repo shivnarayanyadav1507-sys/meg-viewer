@@ -211,7 +211,7 @@
   /* ---- timeline (old-viewer style) ---- */
   .timeline{--zc-reserve:300px;position:absolute;left:calc(var(--md-panel-w) + 20px);right:var(--zc-reserve);bottom:22px;z-index:1000;margin:0 auto;
     width:min(1120px,calc(100vw - var(--md-panel-w) - 20px - var(--zc-reserve)));background:var(--panel);backdrop-filter:blur(16px);
-    -webkit-backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:28px;box-shadow:var(--shadow);padding:16px 56px 14px;display:flex;flex-direction:column;gap:11px}
+    -webkit-backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:28px;box-shadow:var(--shadow);padding:10px 56px 9px;display:flex;flex-direction:column;gap:6px}
   .tl-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
   .tl-head{display:flex;align-items:baseline;gap:11px;min-width:0;flex-wrap:wrap}
   .tl-year{font-family:'JetBrains Mono',monospace;font-size:30px;font-weight:700;line-height:1;color:var(--accent);letter-spacing:.02em}
@@ -225,7 +225,7 @@
   .tl-btn svg{width:16px;height:16px;fill:currentColor}
   .tl-compare svg{fill:none}
   .tl-btn.compare-on{background:var(--accent);border-color:var(--accent);color:#0a0c0e}
-  .tl-compare-row{display:flex;align-items:center;justify-content:center;gap:9px;padding:9px 0 2px;margin-top:8px}
+  .tl-compare-row{display:flex;align-items:center;justify-content:center;gap:9px;padding:3px 0 1px;margin-top:2px}
   .cmp-lbl{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.06em}
   .cmp-lbl.a{color:var(--blue)} .cmp-lbl.b{color:var(--accent)}
   #cmp-a,#cmp-b{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:var(--text);background:#141a1f;
@@ -239,7 +239,7 @@
   .tl-years{display:flex;justify-content:space-between}
   .tl-years button{background:none;border:none;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted-dim);cursor:pointer;padding:2px 3px;letter-spacing:.02em}
   .tl-years button.on{color:var(--accent);font-weight:700}
-  .tl-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:3px}
+  .tl-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:0}
   .tl-snap{display:flex;align-items:center;gap:8px;font-family:'Space Grotesk',sans-serif;font-size:12px;color:var(--muted);cursor:pointer;user-select:none}
   .tl-snap input{display:none}
   .tl-snap .sw{width:34px;height:19px;border-radius:10px;background:#222a31;border:1px solid #2e3942;position:relative;transition:.15s;flex:none}
@@ -927,7 +927,7 @@
   [data-theme="dark"] #timeline .tl-snap,[data-theme="dark"] #timeline .tl-hint,[data-theme="dark"] #timeline .tl-speed{text-shadow:0 1px 4px rgba(0,0,0,.85)}
 
   /* ---- curved year track ---- */
-  .tl-curve-wrap{position:relative;height:92px;margin:2px 0 4px;cursor:grab}
+  .tl-curve-wrap{position:relative;height:76px;margin:0;cursor:grab}
   .tl-curve-wrap.grabbing{cursor:grabbing}
   .tl-curve{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
   .tl-curve-base{stroke:var(--t-line)}
@@ -1280,9 +1280,9 @@
 
   <!-- curved year track -->
   <div class="tl-curve-wrap">
-    <svg class="tl-curve" viewBox="0 0 1120 96" preserveAspectRatio="xMidYMid meet">
-      <path class="tl-curve-base" d="M20 78 Q560 8 1100 78" fill="none" stroke-width="2.4"/>
-      <path class="tl-curve-fill" id="tl-curve-fill" d="M20 78 Q560 8 1100 78" fill="none" stroke-width="2.4"/>
+    <svg class="tl-curve" viewBox="0 0 1120 78" preserveAspectRatio="xMidYMid meet">
+      <path class="tl-curve-base" d="M20 58 Q560 -12 1100 58" fill="none" stroke-width="2.4"/>
+      <path class="tl-curve-fill" id="tl-curve-fill" d="M20 58 Q560 -12 1100 58" fill="none" stroke-width="2.4"/>
       <g id="tl-curve-dots"></g>
     </svg>
     <input type="range" id="scrub" min="0" max="6" step="0.01" value="3" aria-label="Scrub years" />
@@ -1673,12 +1673,14 @@ function render() {
   if (map.isSourceLoaded && map.isSourceLoaded(loId)) setStatus(YEARS[near] + ' · ' + modeLabel(), 'ok');
   else setStatus('Loading ' + YEARS[near] + '…', 'load');
 }
-// ---- curved year track geometry (widened to span the timeline: M20 78 Q560 8 1100 78) ----
+// ---- curved year track geometry (M20 58 Q560 -12 1100 58 inside a 1120x78 viewBox) ----
+// The box is deliberately short so the timeline panel stays slim; the control point sits above
+// the box so the arc keeps the same visual rise (~35 units) as the taller version did.
 function curvePoint(t) {
-  // quadratic bezier P0(20,78) P1(560,8) P2(1100,78), t in [0,1]
+  // quadratic bezier P0(20,58) P1(560,-12) P2(1100,58), t in [0,1]
   const mt = 1 - t;
   const x = mt*mt*20 + 2*mt*t*560 + t*t*1100;
-  const y = mt*mt*78 + 2*mt*t*8 + t*t*78;
+  const y = mt*mt*58 + 2*mt*t*(-12) + t*t*58;
   return { x, y };
 }
 function buildCurveDots() {
@@ -1704,7 +1706,7 @@ function buildCurveDots() {
     g.appendChild(dot);
     const txt = document.createElementNS(NS, 'text');
     txt.setAttribute('class', 'tl-dot-year');
-    txt.setAttribute('x', p.x); txt.setAttribute('y', p.y + 18);
+    txt.setAttribute('x', p.x); txt.setAttribute('y', p.y + 15);
     txt.setAttribute('text-anchor', 'middle');
     txt.textContent = "'" + String(yr).slice(2);
     g.appendChild(txt);
